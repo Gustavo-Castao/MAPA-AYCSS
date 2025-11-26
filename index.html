@@ -43,7 +43,7 @@
         h1 {
             text-align: center;
             color: #333;
-            font-size: 1.8em;
+            font-size: 1.2em; /* 50% más pequeño */
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
@@ -103,7 +103,14 @@
         .btn-export { background: #6f42c1; color: white; }
         .btn-preview { background: #20c997; color: white; }
         .btn-png { background: #e74c3c; color: white; }
-        .btn-bg { background: #6c757d; color: white; }
+        .btn-bg { 
+            background: #6c757d; 
+            color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
 
         button:hover {
             transform: translateY(-1px);
@@ -114,7 +121,7 @@
             position: relative;
             width: 100%;
             height: 1000px;
-            overflow: hidden;
+            overflow: auto;
             border: 1.3px solid #e0e0e0;
             border-radius: 5.2px;
             margin-bottom: 13px;
@@ -125,10 +132,11 @@
 
         .workspace {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 3500px; /* Nuevo ancho */
+            height: 2400px; /* Nuevo alto */
             transform-origin: 0 0;
             transition: transform 0.3s ease;
+            background: white;
         }
 
         .node {
@@ -548,6 +556,15 @@
             text-align: center;
         }
 
+        .node-delete-mode {
+            background: #dc3545;
+            color: white;
+        }
+
+        .file-input {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .workspace-container {
                 height: 500px;
@@ -584,7 +601,7 @@
             }
             
             h1 {
-                font-size: 1.4em;
+                font-size: 1em;
             }
         }
 
@@ -609,19 +626,14 @@
             <div class="left-controls">
                 <button class="btn-primary" onclick="showNodeFormModal('main')">➕ Tema Principal</button>
                 <button class="btn-info" onclick="startConnection()">🔗 Conectar Nodos</button>
+                <button class="btn-danger" id="deleteNodeBtn" onclick="toggleDeleteMode()">🗑️ Eliminar Nodo</button>
+                <button class="btn-bg" onclick="document.getElementById('fileInput').click()">📂 Abrir HTML</button>
                 <button class="btn-preview" onclick="openPreviewInNewWindow()">👁️ Vista Previa</button>
                 <button class="btn-export" onclick="showExportPanel()">💾 Exportar HTML</button>
                 <button class="btn-png" onclick="exportToPNG()">🖼️ Exportar PNG</button>
-                <button class="btn-danger" onclick="clearAll()">🗑️ Limpiar Todo</button>
+                <button class="btn-warning" onclick="changeMapBackground('#ffffff', this)">🎨 Color de Fondo</button>
                 
-                <div class="map-bg-controls">
-                    <div class="bg-label">Color de fondo:</div>
-                    <div class="bg-color-option active" style="background: #ffffff;" onclick="changeMapBackground('#ffffff', this)" title="Blanco"></div>
-                    <div class="bg-color-option" style="background: #f8f9fa;" onclick="changeMapBackground('#f8f9fa', this)" title="Gris claro"></div>
-                    <div class="bg-color-option" style="background: #e8f5e8;" onclick="changeMapBackground('#e8f5e8', this)" title="Verde claro"></div>
-                    <div class="bg-color-option" style="background: #e8f4fd;" onclick="changeMapBackground('#e8f4fd', this)" title="Azul claro"></div>
-                    <div class="bg-color-option" style="background: #fff3cd;" onclick="changeMapBackground('#fff3cd', this)" title="Amarillo claro"></div>
-                </div>
+                <input type="file" id="fileInput" class="file-input" accept=".html" onchange="loadHTMLFile(this.files[0])">
             </div>
 
             <div class="workspace-container" id="workspaceContainer">
@@ -743,6 +755,7 @@
         let nodes = [];
         let connections = [];
         let connectionMode = false;
+        let deleteMode = false;
         let sourceNodeId = null;
         let nodeCounter = 0;
         let selectedBgColor = 'white';
@@ -766,6 +779,7 @@
         const exportPanel = document.getElementById('exportPanel');
         const descriptionModal = document.getElementById('descriptionModal');
         const mapTitle = document.getElementById('mapTitle');
+        const deleteNodeBtn = document.getElementById('deleteNodeBtn');
 
         // Vista previa de imagen
         function previewImage(input) {
@@ -814,10 +828,13 @@
         // Cambiar color de fondo del mapa
         function changeMapBackground(color, element) {
             workspaceContainer.style.backgroundColor = color;
-            document.querySelectorAll('.bg-color-option').forEach(opt => {
-                opt.classList.remove('active');
+            // Actualizar todos los botones de color de fondo
+            document.querySelectorAll('.btn-bg').forEach(btn => {
+                btn.classList.remove('active');
             });
-            element.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
         }
 
         // Mostrar formulario de nodo en modal
@@ -1068,6 +1085,75 @@
             }, 500);
         }
 
+        // Alternar modo de eliminación
+        function toggleDeleteMode() {
+            deleteMode = !deleteMode;
+            
+            if (deleteMode) {
+                deleteNodeBtn.classList.add('node-delete-mode');
+                deleteNodeBtn.textContent = '❌ Cancelar Eliminar';
+                nodeInfo.innerHTML = '<p>🗑️ Modo Eliminación: Haz clic en un nodo para eliminarlo</p>';
+            } else {
+                deleteNodeBtn.classList.remove('node-delete-mode');
+                deleteNodeBtn.textContent = '🗑️ Eliminar Nodo';
+                nodeInfo.innerHTML = '<p>Haz doble click en cualquier nodo para ver sus opciones</p><p>Total de nodos: <span id="nodesCount">' + nodes.length + '</span> | Conexiones: <span id="connectionsCount">' + connections.length + '</span></p>';
+            }
+        }
+
+        // Cargar archivo HTML
+        function loadHTMLFile(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    
+                    // Extraer datos del HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = content;
+                    
+                    // Buscar script con los datos
+                    const scripts = tempDiv.getElementsByTagName('script');
+                    let mapData = null;
+                    
+                    for (let script of scripts) {
+                        if (script.textContent.includes('const nodes =') && script.textContent.includes('const connections =')) {
+                            // Evaluar el script para obtener los datos
+                            try {
+                                // Extraer solo las partes que necesitamos
+                                const nodesMatch = script.textContent.match(/const nodes = (\[.*?\]);/s);
+                                const connectionsMatch = script.textContent.match(/const connections = (\[.*?\]);/s);
+                                
+                                if (nodesMatch && connectionsMatch) {
+                                    nodes = JSON.parse(nodesMatch[1]);
+                                    connections = JSON.parse(connectionsMatch[1]);
+                                    
+                                    // Actualizar contador de nodos
+                                    nodeCounter = nodes.length;
+                                    
+                                    // Renderizar todo
+                                    renderAll();
+                                    updateCounters();
+                                    
+                                    alert('Mapa cargado correctamente');
+                                    return;
+                                }
+                            } catch (error) {
+                                console.error('Error al parsear datos:', error);
+                            }
+                        }
+                    }
+                    
+                    alert('No se pudieron cargar los datos del mapa desde el archivo HTML');
+                } catch (error) {
+                    console.error('Error al cargar archivo:', error);
+                    alert('Error al cargar el archivo HTML');
+                }
+            };
+            reader.readAsText(file);
+        }
+
         // Renderizar nodo en el workspace
         function renderNode(node) {
             const nodeElement = document.createElement('div');
@@ -1088,6 +1174,11 @@
             nodeElement.addEventListener('click', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
+                if (deleteMode) {
+                    deleteNode(node.id);
+                    return;
+                }
+                
                 if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
                     createConnection(sourceNodeId, node.id);
                     setConnectionMode(false);
@@ -1101,7 +1192,7 @@
             nodeElement.addEventListener('dblclick', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
-                if (!connectionMode) {
+                if (!connectionMode && !deleteMode) {
                     showEditForm(node.id);
                 }
             });
@@ -1117,7 +1208,7 @@
             element.addEventListener('mousedown', startDrag);
 
             function startDrag(e) {
-                if (e.target.classList.contains('node-btn')) return;
+                if (e.target.classList.contains('node-btn') || deleteMode) return;
                 
                 e.preventDefault();
                 isDragging = true;
@@ -1179,6 +1270,10 @@
             if (active) {
                 connectionModeDiv.style.display = 'block';
                 connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
+                // Desactivar modo eliminación si está activo
+                if (deleteMode) {
+                    toggleDeleteMode();
+                }
             } else {
                 connectionModeDiv.style.display = 'none';
                 sourceNodeId = null;
@@ -1293,6 +1388,9 @@
             // Re-renderizar
             renderAll();
             updateCounters();
+            
+            // Desactivar modo eliminación después de eliminar
+            toggleDeleteMode();
         }
 
         // Limpiar todo
@@ -1350,7 +1448,7 @@
             text-align: center;
             color: #333;
             margin-bottom: 15px;
-            font-size: 1.8em;
+            font-size: 1.2em;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
@@ -1370,10 +1468,9 @@
 
         .workspace {
             position: relative;
-            width: 100%;
-            height: 100%;
-            min-width: 800px;
-            min-height: 600px;
+            width: 3500px;
+            height: 2400px;
+            background: white;
         }
 
         .node {
@@ -1620,7 +1717,7 @@
             }
             
             h1 {
-                font-size: 1.4em;
+                font-size: 1em;
                 margin-bottom: 12px;
             }
             
@@ -1718,7 +1815,7 @@
             }
             
             h1 {
-                font-size: 1.2em;
+                font-size: 0.9em;
             }
             
             .info-panel {
