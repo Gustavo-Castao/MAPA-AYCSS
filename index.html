@@ -6,6 +6,7 @@
     <title>Mapa Interactivo Arte y Ciencias Sociales</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -32,12 +33,15 @@
             gap: 13px;
         }
 
-        .title-container {
+        .sidebar {
+            width: 160px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 13px;
-            gap: 10px;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .title-container {
+            margin-bottom: 10px;
         }
 
         .title-input {
@@ -45,27 +49,20 @@
             border: none;
             text-align: center;
             color: #e6e6e6;
-            font-size: 1.6em;
+            font-size: 10px;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            padding: 5px 10px;
+            padding: 8px 10px;
             border-radius: 4px;
-            width: 80%;
-            max-width: 600px;
+            width: 100%;
+            background: #4a235a;
         }
 
         .title-input:focus {
-            outline: 2px solid #e94560;
-            background: rgba(233, 69, 96, 0.1);
-        }
-
-        .sidebar {
-            width: 160px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            outline: 2px solid #8e44ad;
+            background: #5b2b6b;
         }
 
         .btn {
@@ -77,25 +74,26 @@
             font-weight: bold;
             transition: all 0.2s ease;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            background: #0f3460;
-            color: #e6e6e6;
+            background: #4a235a;
+            color: #ffffff;
             text-transform: uppercase;
         }
 
         .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
-            background: #1a5089;
+            background: #5b2b6b;
         }
 
-        .btn-primary { background: #0f3460; }
-        .btn-success { background: #1b512d; }
-        .btn-warning { background: #8a5a15; }
-        .btn-info { background: #1a5089; }
-        .btn-export { background: #4a235a; }
-        .btn-preview { background: #14532d; }
-        .btn-danger { background: #7c1a1a; }
-        .btn-bg { background: #2d3748; }
+        .btn-primary { background: #4a235a; }
+        .btn-success { background: #5b2b6b; }
+        .btn-warning { background: #6c3483; }
+        .btn-info { background: #7d3c98; }
+        .btn-export { background: #8e44ad; }
+        .btn-preview { background: #9b59b6; }
+        .btn-danger { background: #a569bd; }
+        .btn-bg { background: #af7ac5; }
+        .btn-png { background: #bb8fce; }
 
         .workspace-container {
             position: relative;
@@ -116,7 +114,7 @@
             width: 1152px; /* 297mm en píxeles a 96 DPI */
             height: 816px; /* 420mm en píxeles a 96 DPI */
             background: white;
-            box-shadow: 0 0 0 2px #e94560;
+            box-shadow: 0 0 0 2px #8e44ad;
             position: relative;
             overflow: hidden;
         }
@@ -163,8 +161,7 @@
         }
 
         .node-main {
-            border-color: #4299e1;
-            background: #2a4365;
+            border-color: #8e44ad;
         }
 
         .node-title {
@@ -376,7 +373,7 @@
             justify-content: center;
             font-size: 16px;
             margin: 2px;
-            background: #0f3460;
+            background: #4a235a;
             color: #e6e6e6;
             border: none;
             border-radius: 3px;
@@ -384,7 +381,7 @@
         }
 
         .zoom-controls button:hover {
-            background: #1a5089;
+            background: #5b2b6b;
         }
 
         .info-panel {
@@ -452,7 +449,7 @@
         }
 
         .color-option.active {
-            border-color: #e94560;
+            border-color: #8e44ad;
             transform: scale(1.1);
         }
 
@@ -489,8 +486,8 @@
         }
 
         .font-size-option.active, .text-color-option.active {
-            border-color: #e94560;
-            background: rgba(233, 69, 96, 0.2);
+            border-color: #8e44ad;
+            background: rgba(142, 68, 173, 0.2);
         }
 
         .node-color-option {
@@ -502,7 +499,16 @@
         }
 
         .node-color-option.active {
-            border-color: #e94560;
+            border-color: #8e44ad;
+        }
+
+        .transparent-bg {
+            background: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                        linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
         }
 
         @media (max-width: 768px) {
@@ -540,16 +546,16 @@
                 width: 95%;
                 padding: 13px;
             }
-            
-            .title-input {
-                font-size: 1.4em;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
+            <div class="title-container">
+                <input type="text" class="title-input" id="mapTitle" value="MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES" onchange="updateMapTitle(this.value)">
+            </div>
+            
             <button class="btn btn-primary" onclick="showNodeModal()">
                 NODO
             </button>
@@ -565,6 +571,9 @@
             <button class="btn btn-export" onclick="showExportModal()">
                 EXPORTAR HTML
             </button>
+            <button class="btn btn-png" onclick="exportToPNG()">
+                EXPORTAR PNG
+            </button>
             <button class="btn btn-bg" onclick="showColorPicker()">
                 COLOR FONDO MAPA
             </button>
@@ -577,10 +586,6 @@
         </div>
 
         <div class="main-content">
-            <div class="title-container">
-                <input type="text" class="title-input" id="mapTitle" value="MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES" onchange="updateMapTitle(this.value)">
-            </div>
-            
             <div class="connection-mode" id="connectionMode">
                 🔗 Modo Conexión: Selecciona el nodo destino
             </div>
@@ -641,11 +646,11 @@
                 <div class="customization-group">
                     <label>COLOR DE FONDO:</label>
                     <div class="customization-row">
-                        <div class="node-color-option active" style="background: #2a4365;" onclick="selectNodeColor('#2a4365', this)" title="Azul oscuro"></div>
-                        <div class="node-color-option" style="background: #1b512d;" onclick="selectNodeColor('#1b512d', this)" title="Verde oscuro"></div>
-                        <div class="node-color-option" style="background: #7c1a1a;" onclick="selectNodeColor('#7c1a1a', this)" title="Rojo oscuro"></div>
-                        <div class="node-color-option" style="background: #4a235a;" onclick="selectNodeColor('#4a235a', this)" title="Púrpura oscuro"></div>
-                        <div class="node-color-option" style="background: #8a5a15;" onclick="selectNodeColor('#8a5a15', this)" title="Marrón oscuro"></div>
+                        <div class="node-color-option active" style="background: #4a235a;" onclick="selectNodeColor('#4a235a', this)" title="Violeta oscuro"></div>
+                        <div class="node-color-option" style="background: #5b2b6b;" onclick="selectNodeColor('#5b2b6b', this)" title="Violeta medio"></div>
+                        <div class="node-color-option" style="background: #6c3483;" onclick="selectNodeColor('#6c3483', this)" title="Violeta"></div>
+                        <div class="node-color-option" style="background: #7d3c98;" onclick="selectNodeColor('#7d3c98', this)" title="Violeta claro"></div>
+                        <div class="node-color-option transparent-bg" onclick="selectNodeColor('transparent', this)" title="Transparente"></div>
                     </div>
                 </div>
                 
@@ -755,7 +760,7 @@
         let translateX = 0, translateY = 0;
         
         // Variables de personalización de nodo
-        let selectedNodeColor = '#2a4365';
+        let selectedNodeColor = '#4a235a';
         let selectedTextColor = 'white';
         let selectedFontSize = 'small';
 
@@ -847,6 +852,42 @@
             element.classList.add('active');
         }
 
+        // Exportar a PNG
+        function exportToPNG() {
+            // Guardar el estado actual del zoom y transformación
+            const originalZoom = zoomLevel;
+            const originalTranslateX = translateX;
+            const originalTranslateY = translateY;
+            
+            // Restablecer el zoom y posición temporalmente
+            zoomLevel = 1;
+            translateX = 0;
+            translateY = 0;
+            updateWorkspaceTransform();
+            
+            // Esperar un momento para que se aplique la transformación
+            setTimeout(() => {
+                html2canvas(a3Container, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: a3Container.style.backgroundColor || '#ffffff'
+                }).then(canvas => {
+                    // Crear un enlace de descarga
+                    const link = document.createElement('a');
+                    link.download = 'mapa-interactivo.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Restaurar el zoom y posición original después de exportar
+                    zoomLevel = originalZoom;
+                    translateX = originalTranslateX;
+                    translateY = originalTranslateY;
+                    updateWorkspaceTransform();
+                });
+            }, 500);
+        }
+
         // Vista previa de imagen
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
@@ -875,7 +916,7 @@
             currentImage = null;
             
             // Resetear personalización a valores por defecto
-            selectedNodeColor = '#2a4365';
+            selectedNodeColor = '#4a235a';
             selectedTextColor = 'white';
             selectedFontSize = 'small';
             
@@ -886,7 +927,8 @@
         function updateCustomizationSelectors() {
             document.querySelectorAll('.node-color-option').forEach(opt => {
                 opt.classList.remove('active');
-                if (opt.style.backgroundColor === selectedNodeColor) {
+                if (opt.style.backgroundColor === selectedNodeColor || 
+                   (selectedNodeColor === 'transparent' && opt.classList.contains('transparent-bg'))) {
                     opt.classList.add('active');
                 }
             });
@@ -996,7 +1038,7 @@
             document.getElementById('nodeDescription').value = node.description || '';
             
             // Configurar personalización
-            selectedNodeColor = node.color || '#2a4365';
+            selectedNodeColor = node.color || '#4a235a';
             selectedTextColor = node.textColor || 'white';
             selectedFontSize = node.fontSize || 'small';
             
@@ -1082,7 +1124,16 @@
             nodeElement.id = node.id;
             nodeElement.style.left = node.x + 'px';
             nodeElement.style.top = node.y + 'px';
-            nodeElement.style.background = node.color || '#2a4365';
+            
+            // Aplicar color de fondo (incluyendo transparente)
+            if (node.color === 'transparent') {
+                nodeElement.style.background = 'transparent';
+                nodeElement.style.border = '1.3px solid #8e44ad';
+            } else {
+                nodeElement.style.background = node.color || '#4a235a';
+                nodeElement.style.border = '1.3px solid #4a5568';
+            }
+            
             nodeElement.style.color = node.textColor || 'white';
             
             nodeElement.innerHTML = `
@@ -1105,7 +1156,7 @@
                 
                 // Seleccionar nuevo nodo
                 selectedNodeId = node.id;
-                nodeElement.style.boxShadow = '0 0 0 2px #e94560';
+                nodeElement.style.boxShadow = '0 0 0 2px #8e44ad';
                 
                 if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
                     createConnection(sourceNodeId, node.id);
@@ -1332,9 +1383,9 @@
         .container { max-width: 1400px; margin: 0 auto; background: #16213e; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #e6e6e6; margin-bottom: 15px; font-size: 1.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .workspace-container { position: relative; width: 100%; height: 800px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
-        .a3-container { width: 1152px; height: 816px; background: ${a3Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #e94560; position: relative; overflow: hidden; }
+        .a3-container { width: 1152px; height: 816px; background: ${a3Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #8e44ad; position: relative; overflow: hidden; }
         .workspace { position: relative; width: 100%; height: 100%; }
-        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #4299e1; user-select: none; transition: all 0.2s ease; z-index: 10; }
+        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #8e44ad; user-select: none; transition: all 0.2s ease; z-index: 10; }
         .node.small { font-size: 12px; }
         .node.medium { font-size: 14px; }
         .node.large { font-size: 16px; }
@@ -1396,7 +1447,15 @@
                 nodeElement.className = 'node ' + (node.fontSize || 'small');
                 nodeElement.style.left = node.x + 'px';
                 nodeElement.style.top = node.y + 'px';
-                nodeElement.style.background = node.color || '#2a4365';
+                
+                // Aplicar color de fondo (incluyendo transparente)
+                if (node.color === 'transparent') {
+                    nodeElement.style.background = 'transparent';
+                    nodeElement.style.border = '1px solid #8e44ad';
+                } else {
+                    nodeElement.style.background = node.color || '#4a235a';
+                }
+                
                 nodeElement.style.color = node.textColor || 'white';
                 nodeElement.innerHTML = 
                     '<div class="node-title">' + node.title + '</div>' + 
@@ -1535,9 +1594,16 @@
                 nodeElement.style.minWidth = '60px';
                 nodeElement.style.maxWidth = '80px';
                 nodeElement.style.padding = '5px';
-                nodeElement.style.background = node.color || '#2a4365';
+                
+                // Aplicar color de fondo (incluyendo transparente)
+                if (node.color === 'transparent') {
+                    nodeElement.style.background = 'transparent';
+                    nodeElement.style.border = '1px solid #8e44ad';
+                } else {
+                    nodeElement.style.background = node.color || '#4a235a';
+                }
+                
                 nodeElement.style.borderRadius = '4px';
-                nodeElement.style.border = '1px solid #4299e1';
                 nodeElement.style.color = node.textColor || 'white';
                 
                 // Aplicar tamaño de fuente
@@ -1598,7 +1664,7 @@
                     <title>Mapa Interactivo - Vista Previa</title>
                     <style>
                         body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                        .node { border: 1px solid #4299e1; background: #f0f8ff; padding: 8px; margin: 5px; border-radius: 4px; display: inline-block; }
+                        .node { border: 1px solid #8e44ad; background: #f0f8ff; padding: 8px; margin: 5px; border-radius: 4px; display: inline-block; }
                         .summary { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
                     </style>
                 </head>
@@ -1650,7 +1716,7 @@
                 type: 'main',
                 x: 100,
                 y: 100,
-                color: '#2a4365',
+                color: '#4a235a',
                 textColor: 'white',
                 fontSize: 'medium'
             };
@@ -1665,8 +1731,8 @@
                 type: 'main',
                 x: 300,
                 y: 200,
-                color: '#1b512d',
-                textColor: 'white',
+                color: 'transparent',
+                textColor: 'black',
                 fontSize: 'small'
             };
 
