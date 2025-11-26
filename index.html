@@ -62,44 +62,30 @@
         }
 
         .sidebar {
-            width: 180px;
+            width: 160px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn {
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
             transition: all 0.2s ease;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             background: #0f3460;
             color: #e6e6e6;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            text-transform: uppercase;
         }
 
         .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
             background: #1a5089;
-        }
-
-        .btn-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #e94560;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
         }
 
         .btn-primary { background: #0f3460; }
@@ -157,9 +143,12 @@
             user-select: none;
             transition: all 0.2s ease;
             z-index: 10;
-            font-size: 0.65em;
             color: #e6e6e6;
         }
+
+        .node.small { font-size: 0.6em; }
+        .node.medium { font-size: 0.75em; }
+        .node.large { font-size: 0.9em; }
 
         .node:hover {
             transform: scale(1.03);
@@ -181,7 +170,6 @@
         .node-title {
             font-family: 'EB Garamond', 'Garamond', 'Times New Roman', serif;
             font-weight: 600;
-            font-size: 9.1px;
             margin-bottom: 1.3px;
             line-height: 1.2;
         }
@@ -189,7 +177,6 @@
         .node-subtitle {
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: 500;
-            font-size: 8.45px;
             margin-bottom: 5.2px;
             font-style: italic;
             line-height: 1.2;
@@ -250,7 +237,7 @@
             max-width: 455px;
             box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.5);
             position: relative;
-            max-height: 55.25vh;
+            max-height: 70vh;
             overflow-y: auto;
             animation: zoomIn 0.3s ease;
             transform-origin: center center;
@@ -469,6 +456,55 @@
             transform: scale(1.1);
         }
 
+        .node-customization {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #2d3748;
+            border-radius: 5px;
+        }
+
+        .customization-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .customization-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .font-size-option, .text-color-option {
+            padding: 5px 8px;
+            border: 1px solid #4a5568;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 9px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .font-size-option.active, .text-color-option.active {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        .node-color-option {
+            width: 25px;
+            height: 25px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .node-color-option.active {
+            border-color: #e94560;
+        }
+
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -499,10 +535,6 @@
                 padding: 4.5px;
             }
             
-            .node-title {
-                font-size: 8.2px;
-            }
-            
             .modal-content {
                 margin: 1.3% auto;
                 width: 95%;
@@ -519,32 +551,28 @@
     <div class="container">
         <div class="sidebar">
             <button class="btn btn-primary" onclick="showNodeModal()">
-                <div class="btn-icon">N</div>
-                Nodo
+                NODO
             </button>
             <button class="btn btn-info" onclick="startConnection()">
-                <div class="btn-icon">C</div>
-                Conectar
+                CONECTAR
+            </button>
+            <button class="btn btn-warning" onclick="editSelectedNode()">
+                EDITAR NODO
             </button>
             <button class="btn btn-preview" onclick="openPreviewModal()">
-                <div class="btn-icon">V</div>
-                Vista Previa
+                VISTA PREVIA
             </button>
             <button class="btn btn-export" onclick="showExportModal()">
-                <div class="btn-icon">E</div>
-                Exportar HTML
+                EXPORTAR HTML
             </button>
             <button class="btn btn-bg" onclick="showColorPicker()">
-                <div class="btn-icon">F</div>
-                Color Fondo Mapa
+                COLOR FONDO MAPA
             </button>
             <button class="btn btn-danger" onclick="deleteSelectedNode()">
-                <div class="btn-icon">B</div>
-                Borrar Nodo
+                BORRAR NODO
             </button>
             <button class="btn btn-danger" onclick="clearAll()">
-                <div class="btn-icon">L</div>
-                Limpiar Todo
+                LIMPIAR TODO
             </button>
         </div>
 
@@ -571,7 +599,7 @@
             </div>
 
             <div class="info-panel">
-                <h3>💡 Información del Mapa</h3>
+                <h3>💡 INFORMACIÓN DEL MAPA</h3>
                 <div id="nodeInfo">
                     <p>Haz doble click en cualquier nodo para ver sus opciones</p>
                     <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
@@ -584,31 +612,64 @@
     <div id="nodeModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeNodeModal()">&times;</button>
-            <h3 class="modal-title" id="nodeModalTitle">Crear Nuevo Nodo</h3>
+            <h3 class="modal-title" id="nodeModalTitle">CREAR NUEVO NODO</h3>
             <div class="form-group">
-                <label for="nodeTitle">Título:</label>
+                <label for="nodeTitle">TÍTULO:</label>
                 <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
             </div>
             <div class="form-group">
-                <label for="nodeSubtitle">Subtítulo:</label>
+                <label for="nodeSubtitle">SUBTÍTULO:</label>
                 <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
             </div>
             <div class="form-group">
-                <label for="nodeAuthor">Texto o Autor:</label>
+                <label for="nodeAuthor">TEXTO O AUTOR:</label>
                 <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
             </div>
             <div class="form-group">
-                <label for="nodeDescription">Descripción:</label>
+                <label for="nodeDescription">DESCRIPCIÓN:</label>
                 <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label for="nodeImage">Imagen (opcional):</label>
+                <label for="nodeImage">IMAGEN (OPCIONAL):</label>
                 <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
                 <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
             </div>
+            
+            <div class="node-customization">
+                <h4 style="font-size: 11px; margin-bottom: 8px;">PERSONALIZACIÓN DEL NODO</h4>
+                
+                <div class="customization-group">
+                    <label>COLOR DE FONDO:</label>
+                    <div class="customization-row">
+                        <div class="node-color-option active" style="background: #2a4365;" onclick="selectNodeColor('#2a4365', this)" title="Azul oscuro"></div>
+                        <div class="node-color-option" style="background: #1b512d;" onclick="selectNodeColor('#1b512d', this)" title="Verde oscuro"></div>
+                        <div class="node-color-option" style="background: #7c1a1a;" onclick="selectNodeColor('#7c1a1a', this)" title="Rojo oscuro"></div>
+                        <div class="node-color-option" style="background: #4a235a;" onclick="selectNodeColor('#4a235a', this)" title="Púrpura oscuro"></div>
+                        <div class="node-color-option" style="background: #8a5a15;" onclick="selectNodeColor('#8a5a15', this)" title="Marrón oscuro"></div>
+                    </div>
+                </div>
+                
+                <div class="customization-group">
+                    <label>COLOR DE TEXTO:</label>
+                    <div class="customization-row">
+                        <div class="text-color-option active" onclick="selectTextColor('white', this)">BLANCO</div>
+                        <div class="text-color-option" onclick="selectTextColor('black', this)">NEGRO</div>
+                    </div>
+                </div>
+                
+                <div class="customization-group">
+                    <label>TAMAÑO DE LETRA:</label>
+                    <div class="customization-row">
+                        <div class="font-size-option active" onclick="selectFontSize('small', this)">PEQUEÑO</div>
+                        <div class="font-size-option" onclick="selectFontSize('medium', this)">MEDIANO</div>
+                        <div class="font-size-option" onclick="selectFontSize('large', this)">GRANDE</div>
+                    </div>
+                </div>
+            </div>
+            
             <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="saveNode()" style="flex: 1;">Guardar Nodo</button>
-                <button class="btn btn-danger" onclick="closeNodeModal()" style="flex: 1;">Cancelar</button>
+                <button class="btn btn-success" onclick="saveNode()" style="flex: 1;">GUARDAR NODO</button>
+                <button class="btn btn-danger" onclick="closeNodeModal()" style="flex: 1;">CANCELAR</button>
             </div>
         </div>
     </div>
@@ -629,13 +690,13 @@
     <div id="exportModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeExportModal()">&times;</button>
-            <h3 class="modal-title">Exportar Mapa</h3>
+            <h3 class="modal-title">EXPORTAR MAPA</h3>
             <p>Guarda este código HTML para alojarlo en cualquier servidor:</p>
             <textarea id="exportCode" rows="6" style="width: 100%; font-family: monospace; font-size: 7.8px; padding: 6.5px; border: 0.65px solid #4a5568; border-radius: 2.6px; background: #2d3748; color: #e6e6e6;"></textarea>
             <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="copyToClipboard()" style="flex: 1;">Copiar Código</button>
-                <button class="btn btn-primary" onclick="downloadHTML()" style="flex: 1;">Descargar HTML</button>
-                <button class="btn btn-danger" onclick="closeExportModal()" style="flex: 1;">Cerrar</button>
+                <button class="btn btn-success" onclick="copyToClipboard()" style="flex: 1;">COPIAR CÓDIGO</button>
+                <button class="btn btn-primary" onclick="downloadHTML()" style="flex: 1;">DESCARGAR HTML</button>
+                <button class="btn btn-danger" onclick="closeExportModal()" style="flex: 1;">CERRAR</button>
             </div>
         </div>
     </div>
@@ -644,14 +705,14 @@
     <div id="previewModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closePreviewModal()">&times;</button>
-            <h3 class="modal-title">Vista Previa del Mapa</h3>
+            <h3 class="modal-title">VISTA PREVIA DEL MAPA</h3>
             <div id="previewContent" style="border: 1px solid #4a5568; border-radius: 5px; padding: 10px; background: #1a1a2e; min-height: 300px; overflow: auto;">
                 <!-- Contenido de la vista previa -->
             </div>
             <div class="preview-actions">
-                <button class="btn-save" onclick="savePreview()">Guardar</button>
-                <button class="btn-print" onclick="printPreview()">Imprimir</button>
-                <button class="btn btn-danger" onclick="closePreviewModal()">Cerrar</button>
+                <button class="btn-save" onclick="savePreview()">GUARDAR</button>
+                <button class="btn-print" onclick="printPreview()">IMPRIMIR</button>
+                <button class="btn btn-danger" onclick="closePreviewModal()">CERRAR</button>
             </div>
         </div>
     </div>
@@ -660,7 +721,7 @@
     <div id="colorPickerModal" class="modal">
         <div class="modal-content color-picker-modal">
             <button class="close-modal" onclick="closeColorPicker()">&times;</button>
-            <h3 class="modal-title">Seleccionar Color de Fondo</h3>
+            <h3 class="modal-title">SELECCIONAR COLOR DE FONDO</h3>
             <p>Elige un color para el fondo del área de trabajo:</p>
             <div class="color-options">
                 <div class="color-option active" style="background: #ffffff;" onclick="changeMapBackground('#ffffff', this)" title="Blanco"></div>
@@ -675,7 +736,7 @@
                 <div class="color-option" style="background: #f0f0f0;" onclick="changeMapBackground('#f0f0f0', this)" title="Gris muy claro"></div>
             </div>
             <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-danger" onclick="closeColorPicker()" style="flex: 1;">Cerrar</button>
+                <button class="btn btn-danger" onclick="closeColorPicker()" style="flex: 1;">CERRAR</button>
             </div>
         </div>
     </div>
@@ -692,6 +753,11 @@
         let selectedNodeId = null;
         let zoomLevel = 1;
         let translateX = 0, translateY = 0;
+        
+        // Variables de personalización de nodo
+        let selectedNodeColor = '#2a4365';
+        let selectedTextColor = 'white';
+        let selectedFontSize = 'small';
 
         // Elementos DOM
         const workspace = document.getElementById('workspace');
@@ -707,7 +773,7 @@
         // Modal functions
         function showNodeModal() {
             document.getElementById('nodeModal').style.display = 'block';
-            document.getElementById('nodeModalTitle').textContent = 'Crear Nuevo Nodo';
+            document.getElementById('nodeModalTitle').textContent = 'CREAR NUEVO NODO';
             clearNodeForm();
             editingNodeId = null;
         }
@@ -756,6 +822,31 @@
             element.classList.add('active');
         }
 
+        // Personalización de nodos
+        function selectNodeColor(color, element) {
+            selectedNodeColor = color;
+            document.querySelectorAll('.node-color-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function selectTextColor(color, element) {
+            selectedTextColor = color;
+            document.querySelectorAll('.text-color-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function selectFontSize(size, element) {
+            selectedFontSize = size;
+            document.querySelectorAll('.font-size-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
         // Vista previa de imagen
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
@@ -782,6 +873,47 @@
             document.getElementById('nodeImage').value = '';
             document.getElementById('imagePreview').style.display = 'none';
             currentImage = null;
+            
+            // Resetear personalización a valores por defecto
+            selectedNodeColor = '#2a4365';
+            selectedTextColor = 'white';
+            selectedFontSize = 'small';
+            
+            updateCustomizationSelectors();
+        }
+
+        // Actualizar selectores de personalización
+        function updateCustomizationSelectors() {
+            document.querySelectorAll('.node-color-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.style.backgroundColor === selectedNodeColor) {
+                    opt.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.text-color-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.textContent === selectedTextColor.toUpperCase()) {
+                    opt.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.font-size-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.textContent === getFontSizeLabel(selectedFontSize)) {
+                    opt.classList.add('active');
+                }
+            });
+        }
+
+        // Obtener etiqueta del tamaño de fuente
+        function getFontSizeLabel(size) {
+            switch(size) {
+                case 'small': return 'PEQUEÑO';
+                case 'medium': return 'MEDIANO';
+                case 'large': return 'GRANDE';
+                default: return 'PEQUEÑO';
+            }
         }
 
         // Guardar nodo (crear o editar)
@@ -805,6 +937,9 @@
                     node.author = author;
                     node.description = description;
                     node.image = currentImage;
+                    node.color = selectedNodeColor;
+                    node.textColor = selectedTextColor;
+                    node.fontSize = selectedFontSize;
                     
                     // Re-renderizar el nodo
                     renderAll();
@@ -827,7 +962,10 @@
                     image: currentImage,
                     type: 'main',
                     x: x,
-                    y: y
+                    y: y,
+                    color: selectedNodeColor,
+                    textColor: selectedTextColor,
+                    fontSize: selectedFontSize
                 };
 
                 nodes.push(node);
@@ -836,6 +974,46 @@
             }
 
             closeNodeModal();
+        }
+
+        // Editar nodo seleccionado
+        function editSelectedNode() {
+            if (!selectedNodeId) {
+                alert('Por favor selecciona un nodo primero haciendo clic en él');
+                return;
+            }
+            
+            const node = nodes.find(n => n.id === selectedNodeId);
+            if (!node) return;
+
+            editingNodeId = node.id;
+            document.getElementById('nodeModalTitle').textContent = 'EDITAR NODO';
+            
+            // Llenar formulario con datos existentes
+            document.getElementById('nodeTitle').value = node.title;
+            document.getElementById('nodeSubtitle').value = node.subtitle || '';
+            document.getElementById('nodeAuthor').value = node.author || '';
+            document.getElementById('nodeDescription').value = node.description || '';
+            
+            // Configurar personalización
+            selectedNodeColor = node.color || '#2a4365';
+            selectedTextColor = node.textColor || 'white';
+            selectedFontSize = node.fontSize || 'small';
+            
+            updateCustomizationSelectors();
+            
+            // Manejar imagen
+            const preview = document.getElementById('imagePreview');
+            if (node.image) {
+                preview.src = node.image;
+                preview.style.display = 'block';
+                currentImage = node.image;
+            } else {
+                preview.style.display = 'none';
+                currentImage = null;
+            }
+            
+            document.getElementById('nodeModal').style.display = 'block';
         }
 
         // Eliminar nodo seleccionado
@@ -900,10 +1078,12 @@
         // Renderizar nodo en el workspace
         function renderNode(node) {
             const nodeElement = document.createElement('div');
-            nodeElement.className = `node node-main`;
+            nodeElement.className = `node node-main ${node.fontSize || 'small'}`;
             nodeElement.id = node.id;
             nodeElement.style.left = node.x + 'px';
             nodeElement.style.top = node.y + 'px';
+            nodeElement.style.background = node.color || '#2a4365';
+            nodeElement.style.color = node.textColor || 'white';
             
             nodeElement.innerHTML = `
                 <div class="node-title">${node.title}</div>
@@ -1154,10 +1334,13 @@
         .workspace-container { position: relative; width: 100%; height: 800px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
         .a3-container { width: 1152px; height: 816px; background: ${a3Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #e94560; position: relative; overflow: hidden; }
         .workspace { position: relative; width: 100%; height: 100%; }
-        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; background: #2a4365; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #4299e1; user-select: none; transition: all 0.2s ease; z-index: 10; font-size: 12px; color: #e6e6e6; }
+        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #4299e1; user-select: none; transition: all 0.2s ease; z-index: 10; }
+        .node.small { font-size: 12px; }
+        .node.medium { font-size: 14px; }
+        .node.large { font-size: 16px; }
         .node:hover { transform: scale(1.03); box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
-        .node-title { font-family: 'EB Garamond', serif; font-weight: 600; font-size: 14px; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
-        .node-subtitle { font-family: 'Calibri', sans-serif; font-weight: 500; font-size: 11px; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
+        .node-title { font-family: 'EB Garamond', serif; font-weight: 600; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
+        .node-subtitle { font-family: 'Calibri', sans-serif; font-weight: 500; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
         .connection { position: absolute; background: #718096; height: 2px; transform-origin: 0 0; pointer-events: none; z-index: 5; }
         .connection-arrow { position: absolute; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #718096; transform-origin: center; pointer-events: none; z-index: 6; }
         .info-panel { background: #2d3748; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
@@ -1171,7 +1354,7 @@
         .modal-author { font-family: 'Calibri', sans-serif; font-size: 13px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
         .modal-image { max-width: 100%; max-height: 200px; margin: 15px 0; border-radius: 6px; display: block; margin-left: auto; margin-right: auto; }
         .modal-description { font-family: 'Calibri', sans-serif; font-size: 14px; line-height: 1.6; color: #e6e6e6; padding: 15px; background: #2d3748; border-radius: 6px; }
-        @media (max-width: 768px) { .workspace-container { height: 500px; } .a3-container { width: 95%; height: 400px; } .node { min-width: 70px; max-width: 100px; padding: 6px; font-size: 11px; } .node-title { font-size: 12px; } .node-subtitle { font-size: 10px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
+        @media (max-width: 768px) { .workspace-container { height: 500px; } .a3-container { width: 95%; height: 400px; } .node { min-width: 70px; max-width: 100px; padding: 6px; } .node.small { font-size: 11px; } .node.medium { font-size: 13px; } .node.large { font-size: 15px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
     </style>
 </head>
 <body>
@@ -1210,9 +1393,11 @@
             // Cargar nodos
             nodes.forEach(node => {
                 const nodeElement = document.createElement('div');
-                nodeElement.className = 'node';
+                nodeElement.className = 'node ' + (node.fontSize || 'small');
                 nodeElement.style.left = node.x + 'px';
                 nodeElement.style.top = node.y + 'px';
+                nodeElement.style.background = node.color || '#2a4365';
+                nodeElement.style.color = node.textColor || 'white';
                 nodeElement.innerHTML = 
                     '<div class="node-title">' + node.title + '</div>' + 
                     (node.subtitle ? '<div class="node-subtitle">' + node.subtitle + '</div>' : '');
@@ -1350,16 +1535,22 @@
                 nodeElement.style.minWidth = '60px';
                 nodeElement.style.maxWidth = '80px';
                 nodeElement.style.padding = '5px';
-                nodeElement.style.background = '#2a4365';
+                nodeElement.style.background = node.color || '#2a4365';
                 nodeElement.style.borderRadius = '4px';
                 nodeElement.style.border = '1px solid #4299e1';
-                nodeElement.style.fontSize = '10px';
-                nodeElement.style.color = '#e6e6e6';
+                nodeElement.style.color = node.textColor || 'white';
+                
+                // Aplicar tamaño de fuente
+                let fontSize = '10px';
+                if (node.fontSize === 'medium') fontSize = '12px';
+                if (node.fontSize === 'large') fontSize = '14px';
+                nodeElement.style.fontSize = fontSize;
+                
                 nodeElement.style.textAlign = 'center';
                 
                 nodeElement.innerHTML = `
                     <div style="font-weight: bold; font-family: 'EB Garamond', serif;">${node.title}</div>
-                    ${node.subtitle ? `<div style="font-style: italic; font-size: 9px;">${node.subtitle}</div>` : ''}
+                    ${node.subtitle ? `<div style="font-style: italic; font-size: ${parseInt(fontSize) - 1}px;">${node.subtitle}</div>` : ''}
                 `;
                 
                 previewWorkspace.appendChild(nodeElement);
@@ -1374,7 +1565,7 @@
             summary.style.background = '#2d3748';
             summary.style.borderRadius = '5px';
             summary.innerHTML = `
-                <h4 style="margin-bottom: 8px; color: #e6e6e6;">Resumen del Mapa</h4>
+                <h4 style="margin-bottom: 8px; color: #e6e6e6;">RESUMEN DEL MAPA</h4>
                 <p>Total de nodos: ${nodes.length}</p>
                 <p>Conexiones: ${connections.length}</p>
                 <p>Fecha de generación: ${new Date().toLocaleString()}</p>
@@ -1458,7 +1649,10 @@
                 image: null,
                 type: 'main',
                 x: 100,
-                y: 100
+                y: 100,
+                color: '#2a4365',
+                textColor: 'white',
+                fontSize: 'medium'
             };
 
             const node2 = {
@@ -1470,7 +1664,10 @@
                 image: null,
                 type: 'main',
                 x: 300,
-                y: 200
+                y: 200,
+                color: '#1b512d',
+                textColor: 'white',
+                fontSize: 'small'
             };
 
             nodes.push(node1, node2);
