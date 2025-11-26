@@ -6,7 +6,6 @@
     <title>Mapa Interactivo Arte y Ciencias Sociales</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,127 +15,101 @@
 
         body {
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            background: #f5f5f5;
+            background: #1a1a2e;
             min-height: 100vh;
             padding: 13px;
+            color: #e6e6e6;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: #16213e;
             border-radius: 6.5px;
             padding: 13px;
-            box-shadow: 0 1.3px 6.5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .title-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 13px;
-            position: relative;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 1.2em; /* 50% más pequeño */
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 5px 10px;
-            border: 1px dashed transparent;
-            transition: border-color 0.3s;
-        }
-
-        h1:hover {
-            border-color: #ccc;
-        }
-
-        .edit-title-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
-            color: #666;
-            transition: color 0.3s;
-        }
-
-        .edit-title-btn:hover {
-            color: #333;
-        }
-
-        .main-content {
+            box-shadow: 0 1.3px 6.5px rgba(0,0,0,0.3);
             display: flex;
             gap: 13px;
         }
 
-        .left-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 5.2px;
-            width: 150px;
+        h1 {
+            text-align: center;
+            color: #e6e6e6;
+            margin-bottom: 13px;
+            font-size: 1.6em;
+            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        button {
-            padding: 6.5px 10.4px;
+        .sidebar {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 12px;
             border: none;
-            border-radius: 3.9px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 8.45px;
+            font-size: 12px;
             font-weight: bold;
             transition: all 0.2s ease;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            width: 100%;
+            background: #0f3460;
+            color: #e6e6e6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-primary { background: #007bff; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-warning { background: #ffc107; color: black; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-info { background: #17a2b8; color: white; }
-        .btn-export { background: #6f42c1; color: white; }
-        .btn-preview { background: #20c997; color: white; }
-        .btn-png { background: #e74c3c; color: white; }
-        .btn-bg { 
-            background: #6c757d; 
-            color: white; 
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
+            background: #1a5089;
+        }
+
+        .btn-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e94560;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            font-weight: bold;
+            font-size: 12px;
         }
 
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.15);
-        }
+        .btn-primary { background: #0f3460; }
+        .btn-success { background: #1b512d; }
+        .btn-warning { background: #8a5a15; }
+        .btn-info { background: #1a5089; }
+        .btn-export { background: #4a235a; }
+        .btn-preview { background: #14532d; }
+        .btn-danger { background: #7c1a1a; }
 
         .workspace-container {
             position: relative;
-            width: 100%;
-            height: 1000px;
-            overflow: auto;
-            border: 1.3px solid #e0e0e0;
+            flex: 1;
+            height: 800px;
+            overflow: hidden;
+            border: 1.3px solid #2d3748;
             border-radius: 5.2px;
             margin-bottom: 13px;
-            background: white;
+            background: #1a1a2e;
             transition: background-color 0.3s ease;
-            flex: 1;
         }
 
         .workspace {
             position: relative;
-            width: 3500px; /* Nuevo ancho */
-            height: 2400px; /* Nuevo alto */
+            width: 100%;
+            height: 100%;
             transform-origin: 0 0;
             transition: transform 0.3s ease;
-            background: white;
         }
 
         .node {
@@ -144,43 +117,34 @@
             min-width: 73px;
             max-width: 100px;
             padding: 5.5px;
-            background: white;
+            background: #1e293b;
             border-radius: 5.2px;
             cursor: pointer;
             text-align: center;
-            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.15);
-            border: 1.3px solid #e0e0e0;
+            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
+            border: 1.3px solid #4a5568;
             user-select: none;
             transition: all 0.2s ease;
             z-index: 10;
             font-size: 0.65em;
+            color: #e6e6e6;
         }
 
         .node:hover {
             transform: scale(1.03);
-            box-shadow: 0 2.6px 7.8px rgba(0,0,0,0.2);
+            box-shadow: 0 2.6px 7.8px rgba(0,0,0,0.4);
         }
 
         .node.dragging {
             transform: scale(1.05);
-            box-shadow: 0 3.9px 13px rgba(0,0,0,0.25);
+            box-shadow: 0 3.9px 13px rgba(0,0,0,0.5);
             z-index: 1000;
             cursor: grabbing;
         }
 
         .node-main {
-            border-color: #2196F3;
-            background: #f8fdff;
-        }
-
-        .node-topic {
-            border-color: #FF9800;
-            background: #fffbf5;
-        }
-
-        .node-subtopic {
-            border-color: #9C27B0;
-            background: #fcf5ff;
+            border-color: #4299e1;
+            background: #2a4365;
         }
 
         .node-title {
@@ -201,31 +165,9 @@
             opacity: 0.8;
         }
 
-        .node-author {
-            display: none;
-        }
-
-        .text-black { color: #000000 !important; }
-        .text-gray { color: #666666 !important; }
-        .text-white { color: #ffffff !important; }
-
-        .bg-white { background: #ffffff !important; }
-        .bg-light { background: #f8f9fa !important; }
-        .bg-dark { 
-            background: #2c3e50 !important; 
-            border-color: #34495e !important;
-        }
-
-        .border-none { border-color: transparent !important; }
-        .border-red { border-color: #dc3545 !important; }
-        .border-blue { border-color: #007bff !important; }
-        .border-green { border-color: #28a745 !important; }
-        .border-purple { border-color: #6f42c1 !important; }
-        .border-orange { border-color: #fd7e14 !important; }
-
         .connection {
             position: absolute;
-            background: #95a5a6;
+            background: #718096;
             height: 1.95px;
             transform-origin: 0 0;
             pointer-events: none;
@@ -238,15 +180,15 @@
             height: 0;
             border-left: 5.2px solid transparent;
             border-right: 5.2px solid transparent;
-            border-top: 7.8px solid #95a5a6;
+            border-top: 7.8px solid #718096;
             transform-origin: center;
             pointer-events: none;
             z-index: 6;
         }
 
         .connection-mode {
-            background: #fff3cd;
-            color: #856404;
+            background: #744210;
+            color: #fef3c7;
             padding: 5.2px;
             border-radius: 2.6px;
             text-align: center;
@@ -264,147 +206,25 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.7);
             animation: fadeIn 0.3s ease;
         }
 
         .modal-content {
-            background-color: white;
+            background-color: #1a1a2e;
             margin: 3.25% auto;
             padding: 19.5px;
             border-radius: 6.5px;
             width: 90%;
             max-width: 455px;
-            box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.3);
+            box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.5);
             position: relative;
             max-height: 55.25vh;
             overflow-y: auto;
             animation: zoomIn 0.3s ease;
             transform-origin: center center;
-        }
-
-        .node-form {
-            background: #f8f9fa;
-            padding: 10.4px;
-            border-radius: 5.2px;
-            margin-bottom: 10.4px;
-            display: none;
-            font-size: 0.65em;
-        }
-
-        .form-group {
-            margin-bottom: 7.8px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 2.6px;
-            font-weight: bold;
-            color: #333;
-            font-size: 8.45px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 5.2px;
-            border: 0.65px solid #ddd;
-            border-radius: 2.6px;
-            font-size: 8.45px;
-            background: white;
-        }
-
-        .color-options {
-            display: flex;
-            gap: 6.5px;
-            margin-top: 6.5px;
-        }
-
-        .color-option {
-            width: 19.5px;
-            height: 19.5px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 1.3px solid transparent;
-            transition: all 0.2s ease;
-        }
-
-        .color-option.active {
-            border-color: #333;
-            transform: scale(1.1);
-        }
-
-        .bg-color-options .color-option.bg-white { background: #ffffff; border: 0.65px solid #ddd; }
-        .bg-color-options .color-option.bg-light { background: #f8f9fa; border: 0.65px solid #ddd; }
-        .bg-color-options .color-option.bg-dark { background: #2c3e50; }
-
-        .text-color-options .color-option.text-black { background: #000000; }
-        .text-color-options .color-option.text-gray { background: #666666; }
-        .text-color-options .color-option.text-white { background: #ffffff; border: 0.65px solid #ddd; }
-
-        .border-color-options .color-option.border-none { 
-            background: #ffffff; 
-            border: 1.3px solid #ddd;
-            position: relative;
-        }
-        .border-color-options .color-option.border-none::after {
-            content: "X";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 10px;
-            color: #dc3545;
-            font-weight: bold;
-        }
-        .border-color-options .color-option.border-red { background: #dc3545; }
-        .border-color-options .color-option.border-blue { background: #007bff; }
-        .border-color-options .color-option.border-green { background: #28a745; }
-        .border-color-options .color-option.border-purple { background: #6f42c1; }
-        .border-color-options .color-option.border-orange { background: #fd7e14; }
-
-        .info-panel {
-            background: #f8f9fa;
-            padding: 10.4px;
-            border-radius: 5.2px;
-            margin-bottom: 10.4px;
-            font-size: 0.65em;
-        }
-
-        .info-panel h3 {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 600;
-        }
-
-        .node-actions {
-            margin-top: 5.2px;
-            display: flex;
-            gap: 2.6px;
-            justify-content: center;
-        }
-
-        .node-btn {
-            padding: 2.6px 5.2px;
-            font-size: 7.15px;
-            border-radius: 7.8px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s ease;
-        }
-
-        .node-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-warning { background: #ffc107; color: black; }
-        .btn-danger { background: #dc3545; color: white; }
-
-        .export-panel {
-            background: #e8f5e8;
-            padding: 10.4px;
-            border-radius: 5.2px;
-            margin-top: 10.4px;
-            display: none;
-            font-size: 0.65em;
+            border: 1px solid #2d3748;
+            color: #e6e6e6;
         }
 
         @keyframes fadeIn {
@@ -430,7 +250,7 @@
             font-size: 15.6px;
             font-weight: bold;
             cursor: pointer;
-            color: #999;
+            color: #a0aec0;
             background: none;
             border: none;
             padding: 0;
@@ -442,21 +262,21 @@
         }
 
         .close-modal:hover {
-            color: #333;
+            color: #e6e6e6;
         }
 
         .modal-title {
             font-family: 'EB Garamond', serif;
             font-size: 18.2px;
             margin-bottom: 6.5px;
-            color: #333;
+            color: #e6e6e6;
         }
 
         .modal-subtitle {
             font-family: 'EB Garamond', serif;
             font-size: 9.1px;
             margin-bottom: 10.4px;
-            color: #666;
+            color: #a0aec0;
             font-style: italic;
         }
 
@@ -464,7 +284,7 @@
             font-family: 'Calibri', sans-serif;
             font-size: 7.8px;
             margin-bottom: 13px;
-            color: #888;
+            color: #a0aec0;
             font-style: italic;
         }
 
@@ -482,10 +302,32 @@
             font-family: 'Calibri', sans-serif;
             font-size: 10.4px;
             line-height: 1.6;
-            color: #333;
+            color: #e6e6e6;
             padding: 13px;
-            background: #f8f9fa;
+            background: #2d3748;
             border-radius: 3.25px;
+        }
+
+        .form-group {
+            margin-bottom: 7.8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 2.6px;
+            font-weight: bold;
+            color: #e6e6e6;
+            font-size: 8.45px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 5.2px;
+            border: 0.65px solid #4a5568;
+            border-radius: 2.6px;
+            font-size: 8.45px;
+            background: #2d3748;
+            color: #e6e6e6;
         }
 
         .image-preview {
@@ -500,11 +342,12 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: white;
+            background: #1a1a2e;
             border-radius: 5px;
             padding: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             z-index: 20;
+            border: 1px solid #2d3748;
         }
 
         .zoom-controls button {
@@ -515,74 +358,74 @@
             justify-content: center;
             font-size: 16px;
             margin: 2px;
-        }
-
-        .node-highlight {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-        }
-
-        .map-bg-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-
-        .bg-color-option {
-            width: 25px;
-            height: 25px;
+            background: #0f3460;
+            color: #e6e6e6;
+            border: none;
             border-radius: 3px;
             cursor: pointer;
-            border: 1px solid #ddd;
-            transition: all 0.2s ease;
         }
 
-        .bg-color-option.active {
-            border-color: #333;
-            transform: scale(1.1);
+        .zoom-controls button:hover {
+            background: #1a5089;
         }
 
-        .bg-label {
-            font-size: 9px;
+        .info-panel {
+            background: #2d3748;
+            padding: 10.4px;
+            border-radius: 5.2px;
+            margin-bottom: 10.4px;
+            font-size: 0.65em;
+        }
+
+        .info-panel h3 {
+            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
+            font-weight: 600;
+            color: #e6e6e6;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .preview-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             font-weight: bold;
-            margin-bottom: 5px;
-            text-align: center;
         }
 
-        .node-delete-mode {
-            background: #dc3545;
+        .btn-print {
+            background: #1a5089;
             color: white;
         }
 
-        .file-input {
-            display: none;
+        .btn-save {
+            background: #1b512d;
+            color: white;
         }
 
         @media (max-width: 768px) {
-            .workspace-container {
-                height: 500px;
-            }
-            
-            .main-content {
+            .container {
                 flex-direction: column;
             }
             
-            .left-controls {
+            .sidebar {
                 width: 100%;
                 flex-direction: row;
                 flex-wrap: wrap;
             }
             
-            button {
-                width: auto;
+            .workspace-container {
+                height: 500px;
+            }
+            
+            .btn {
                 flex: 1;
+                min-width: 120px;
             }
             
             .node {
@@ -601,39 +444,49 @@
             }
             
             h1 {
-                font-size: 1em;
+                font-size: 1.4em;
             }
-        }
-
-        .pdf-export-area {
-            background: white;
-            padding: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="title-container">
-            <h1 id="mapTitle" contenteditable="true">MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
-            <button class="edit-title-btn" title="Editar título">✏️</button>
-        </div>
-        
-        <div class="connection-mode" id="connectionMode">
-            🔗 Modo Conexión: Selecciona el nodo destino
+        <div class="sidebar">
+            <button class="btn btn-primary" onclick="showNodeModal()">
+                <div class="btn-icon">N</div>
+                Nodo
+            </button>
+            <button class="btn btn-info" onclick="startConnection()">
+                <div class="btn-icon">C</div>
+                Conectar
+            </button>
+            <button class="btn btn-preview" onclick="openPreviewModal()">
+                <div class="btn-icon">V</div>
+                Vista Previa
+            </button>
+            <button class="btn btn-export" onclick="showExportModal()">
+                <div class="btn-icon">E</div>
+                Exportar HTML
+            </button>
+            <button class="btn btn-warning" onclick="editSelectedNode()">
+                <div class="btn-icon">E</div>
+                Editar Título
+            </button>
+            <button class="btn btn-danger" onclick="deleteSelectedNode()">
+                <div class="btn-icon">B</div>
+                Borrar Nodo
+            </button>
+            <button class="btn btn-danger" onclick="clearAll()">
+                <div class="btn-icon">L</div>
+                Limpiar Todo
+            </button>
         </div>
 
         <div class="main-content">
-            <div class="left-controls">
-                <button class="btn-primary" onclick="showNodeFormModal('main')">➕ Tema Principal</button>
-                <button class="btn-info" onclick="startConnection()">🔗 Conectar Nodos</button>
-                <button class="btn-danger" id="deleteNodeBtn" onclick="toggleDeleteMode()">🗑️ Eliminar Nodo</button>
-                <button class="btn-bg" onclick="document.getElementById('fileInput').click()">📂 Abrir HTML</button>
-                <button class="btn-preview" onclick="openPreviewInNewWindow()">👁️ Vista Previa</button>
-                <button class="btn-export" onclick="showExportPanel()">💾 Exportar HTML</button>
-                <button class="btn-png" onclick="exportToPNG()">🖼️ Exportar PNG</button>
-                <button class="btn-warning" onclick="changeMapBackground('#ffffff', this)">🎨 Color de Fondo</button>
-                
-                <input type="file" id="fileInput" class="file-input" accept=".html" onchange="loadHTMLFile(this.files[0])">
+            <h1>MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
+            
+            <div class="connection-mode" id="connectionMode">
+                🔗 Modo Conexión: Selecciona el nodo destino
             </div>
 
             <div class="workspace-container" id="workspaceContainer">
@@ -641,111 +494,94 @@
                     <!-- Los nodos y conexiones se crearán aquí -->
                 </div>
                 <div class="zoom-controls">
-                    <button class="btn-info" onclick="zoomIn()">+</button>
-                    <button class="btn-info" onclick="zoomOut()">-</button>
-                    <button class="btn-info" onclick="resetZoom()">⟳</button>
+                    <button onclick="zoomIn()">+</button>
+                    <button onclick="zoomOut()">-</button>
+                    <button onclick="resetZoom()">⟳</button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>💡 Información del Mapa</h3>
+                <div id="nodeInfo">
+                    <p>Haz doble click en cualquier nodo para ver sus opciones</p>
+                    <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal para formulario de nodo -->
-        <div id="nodeFormModal" class="modal">
-            <div class="modal-content">
-                <button class="close-modal" onclick="hideNodeFormModal()">&times;</button>
-                <h3 style="font-family: 'EB Garamond', serif; font-size: 10.4px;" id="formTitle">Crear Nuevo Nodo</h3>
-                <div class="form-group">
-                    <label for="nodeTitle">Título:</label>
-                    <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
-                </div>
-                <div class="form-group">
-                    <label for="nodeSubtitle">Subtítulo:</label>
-                    <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
-                </div>
-                <div class="form-group">
-                    <label for="nodeAuthor">Texto o Autor:</label>
-                    <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
-                </div>
-                <div class="form-group">
-                    <label for="nodeDescription">Descripción:</label>
-                    <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="nodeImage">Imagen (opcional):</label>
-                    <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
-                    <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
-                </div>
-                <div class="form-group">
-                    <label for="nodeType">Tipo:</label>
-                    <select id="nodeType">
-                        <option value="main">Tema Principal</option>
-                        <option value="topic">Subtema</option>
-                        <option value="subtopic">Detalle</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Color de fondo:</label>
-                    <div class="color-options bg-color-options">
-                        <div class="color-option bg-white active" onclick="selectBgColor('white', this)"></div>
-                        <div class="color-option bg-light" onclick="selectBgColor('light', this)"></div>
-                        <div class="color-option bg-dark" onclick="selectBgColor('dark', this)"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Color de texto:</label>
-                    <div class="color-options text-color-options">
-                        <div class="color-option text-black active" onclick="selectTextColor('black', this)"></div>
-                        <div class="color-option text-gray" onclick="selectTextColor('gray', this)"></div>
-                        <div class="color-option text-white" onclick="selectTextColor('white', this)"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Color del borde:</label>
-                    <div class="color-options border-color-options">
-                        <div class="color-option border-none" onclick="selectBorderColor('none', this)"></div>
-                        <div class="color-option border-blue active" onclick="selectBorderColor('blue', this)"></div>
-                        <div class="color-option border-red" onclick="selectBorderColor('red', this)"></div>
-                        <div class="color-option border-green" onclick="selectBorderColor('green', this)"></div>
-                        <div class="color-option border-purple" onclick="selectBorderColor('purple', this)"></div>
-                        <div class="color-option border-orange" onclick="selectBorderColor('orange', this)"></div>
-                    </div>
-                </div>
-
-                <button class="btn-success" onclick="saveNode()">✅ Guardar Nodo</button>
-                <button class="btn-danger" onclick="hideNodeFormModal()">❌ Cancelar</button>
+    <!-- Modal para crear/editar nodo -->
+    <div id="nodeModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeNodeModal()">&times;</button>
+            <h3 class="modal-title" id="nodeModalTitle">Crear Nuevo Nodo</h3>
+            <div class="form-group">
+                <label for="nodeTitle">Título:</label>
+                <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
+            </div>
+            <div class="form-group">
+                <label for="nodeSubtitle">Subtítulo:</label>
+                <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
+            </div>
+            <div class="form-group">
+                <label for="nodeAuthor">Texto o Autor:</label>
+                <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
+            </div>
+            <div class="form-group">
+                <label for="nodeDescription">Descripción:</label>
+                <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="nodeImage">Imagen (opcional):</label>
+                <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
+                <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="saveNode()" style="flex: 1;">Guardar Nodo</button>
+                <button class="btn btn-danger" onclick="closeNodeModal()" style="flex: 1;">Cancelar</button>
             </div>
         </div>
+    </div>
 
-        <!-- Modal para descripción -->
-        <div id="descriptionModal" class="modal">
-            <div class="modal-content">
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-                <h2 class="modal-title" id="modalTitle"></h2>
-                <h3 class="modal-subtitle" id="modalSubtitle"></h3>
-                <div class="modal-author" id="modalAuthor"></div>
-                <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
-                <div class="modal-description" id="modalDescription"></div>
-            </div>
+    <!-- Modal para descripción -->
+    <div id="descriptionModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <h3 class="modal-subtitle" id="modalSubtitle"></h3>
+            <div class="modal-author" id="modalAuthor"></div>
+            <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
+            <div class="modal-description" id="modalDescription"></div>
         </div>
+    </div>
 
-        <div class="export-panel" id="exportPanel">
-            <h3>💾 Exportar Mapa</h3>
+    <!-- Modal para exportar -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeExportModal()">&times;</button>
+            <h3 class="modal-title">Exportar Mapa</h3>
             <p>Guarda este código HTML para alojarlo en cualquier servidor:</p>
-            <textarea id="exportCode" rows="6" style="width: 100%; font-family: monospace; font-size: 7.8px; padding: 6.5px; border: 0.65px solid #ddd; border-radius: 2.6px;"></textarea>
-            <div style="margin-top: 6.5px;">
-                <button class="btn-success" onclick="copyToClipboard()">📋 Copiar Código</button>
-                <button class="btn-primary" onclick="downloadHTML()">⬇️ Descargar HTML</button>
-                <button class="btn-danger" onclick="hideExportPanel()">❌ Cerrar</button>
+            <textarea id="exportCode" rows="6" style="width: 100%; font-family: monospace; font-size: 7.8px; padding: 6.5px; border: 0.65px solid #4a5568; border-radius: 2.6px; background: #2d3748; color: #e6e6e6;"></textarea>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="copyToClipboard()" style="flex: 1;">Copiar Código</button>
+                <button class="btn btn-primary" onclick="downloadHTML()" style="flex: 1;">Descargar HTML</button>
+                <button class="btn btn-danger" onclick="closeExportModal()" style="flex: 1;">Cerrar</button>
             </div>
         </div>
+    </div>
 
-        <div class="info-panel">
-            <h3>💡 Información del Mapa</h3>
-            <div id="nodeInfo">
-                <p>Haz doble click en cualquier nodo para ver sus opciones</p>
-                <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
+    <!-- Modal para vista previa -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePreviewModal()">&times;</button>
+            <h3 class="modal-title">Vista Previa del Mapa</h3>
+            <div id="previewContent" style="border: 1px solid #4a5568; border-radius: 5px; padding: 10px; background: #1a1a2e; min-height: 300px; overflow: auto;">
+                <!-- Contenido de la vista previa -->
+            </div>
+            <div class="preview-actions">
+                <button class="btn-save" onclick="savePreview()">Guardar</button>
+                <button class="btn-print" onclick="printPreview()">Imprimir</button>
+                <button class="btn btn-danger" onclick="closePreviewModal()">Cerrar</button>
             </div>
         </div>
     </div>
@@ -755,31 +591,54 @@
         let nodes = [];
         let connections = [];
         let connectionMode = false;
-        let deleteMode = false;
         let sourceNodeId = null;
         let nodeCounter = 0;
-        let selectedBgColor = 'white';
-        let selectedTextColor = 'black';
-        let selectedBorderColor = 'blue';
         let currentImage = null;
         let editingNodeId = null;
-        let isViewMode = false;
+        let selectedNodeId = null;
         let zoomLevel = 1;
-        let isPanning = false;
-        let startPanX, startPanY, initialTranslateX = 0, initialTranslateY = 0;
         let translateX = 0, translateY = 0;
 
         // Elementos DOM
         const workspace = document.getElementById('workspace');
         const workspaceContainer = document.getElementById('workspaceContainer');
-        const nodeFormModal = document.getElementById('nodeFormModal');
-        const formTitle = document.getElementById('formTitle');
         const connectionModeDiv = document.getElementById('connectionMode');
         const nodeInfo = document.getElementById('nodeInfo');
-        const exportPanel = document.getElementById('exportPanel');
-        const descriptionModal = document.getElementById('descriptionModal');
-        const mapTitle = document.getElementById('mapTitle');
-        const deleteNodeBtn = document.getElementById('deleteNodeBtn');
+
+        // Modal functions
+        function showNodeModal() {
+            document.getElementById('nodeModal').style.display = 'block';
+            document.getElementById('nodeModalTitle').textContent = 'Crear Nuevo Nodo';
+            clearNodeForm();
+            editingNodeId = null;
+        }
+
+        function closeNodeModal() {
+            document.getElementById('nodeModal').style.display = 'none';
+            editingNodeId = null;
+        }
+
+        function showExportModal() {
+            generateExportCode();
+            document.getElementById('exportModal').style.display = 'block';
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        function openPreviewModal() {
+            document.getElementById('previewModal').style.display = 'block';
+            updatePreviewContent();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('descriptionModal').style.display = 'none';
+        }
 
         // Vista previa de imagen
         function previewImage(input) {
@@ -798,125 +657,8 @@
             }
         }
 
-        // Seleccionar color de fondo
-        function selectBgColor(color, element) {
-            selectedBgColor = color;
-            document.querySelectorAll('.bg-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        // Seleccionar color de texto
-        function selectTextColor(color, element) {
-            selectedTextColor = color;
-            document.querySelectorAll('.text-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        // Seleccionar color del borde
-        function selectBorderColor(color, element) {
-            selectedBorderColor = color;
-            document.querySelectorAll('.border-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        // Cambiar color de fondo del mapa
-        function changeMapBackground(color, element) {
-            workspaceContainer.style.backgroundColor = color;
-            // Actualizar todos los botones de color de fondo
-            document.querySelectorAll('.btn-bg').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            if (element) {
-                element.classList.add('active');
-            }
-        }
-
-        // Mostrar formulario de nodo en modal
-        function showNodeFormModal(type) {
-            editingNodeId = null;
-            formTitle.textContent = 'Crear Nuevo Nodo';
-            document.getElementById('nodeType').value = type;
-            clearForm();
-            nodeFormModal.style.display = 'block';
-            isViewMode = false;
-        }
-
-        // Ocultar formulario de nodo en modal
-        function hideNodeFormModal() {
-            nodeFormModal.style.display = 'none';
-            editingNodeId = null;
-        }
-
-        // Mostrar formulario de nodo para edición
-        function showEditForm(nodeId) {
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node) return;
-
-            editingNodeId = nodeId;
-            formTitle.textContent = 'Editar Nodo';
-            
-            // Llenar formulario con datos existentes
-            document.getElementById('nodeTitle').value = node.title;
-            document.getElementById('nodeSubtitle').value = node.subtitle || '';
-            document.getElementById('nodeAuthor').value = node.author || '';
-            document.getElementById('nodeDescription').value = node.description || '';
-            document.getElementById('nodeType').value = node.type;
-            
-            // Seleccionar colores
-            selectedBgColor = node.bgColor;
-            selectedTextColor = node.textColor;
-            selectedBorderColor = node.borderColor || 'blue';
-            
-            // Actualizar selectores de color
-            updateColorSelectors();
-            
-            // Manejar imagen
-            const preview = document.getElementById('imagePreview');
-            if (node.image) {
-                preview.src = node.image;
-                preview.style.display = 'block';
-                currentImage = node.image;
-            } else {
-                preview.style.display = 'none';
-                currentImage = null;
-            }
-            
-            nodeFormModal.style.display = 'block';
-            isViewMode = false;
-        }
-
-        // Actualizar selectores de color
-        function updateColorSelectors() {
-            document.querySelectorAll('.bg-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.classList.contains('bg-' + selectedBgColor)) {
-                    opt.classList.add('active');
-                }
-            });
-            
-            document.querySelectorAll('.text-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.classList.contains('text-' + selectedTextColor)) {
-                    opt.classList.add('active');
-                }
-            });
-            
-            document.querySelectorAll('.border-color-options .color-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.classList.contains('border-' + selectedBorderColor)) {
-                    opt.classList.add('active');
-                }
-            });
-        }
-
         // Limpiar formulario
-        function clearForm() {
+        function clearNodeForm() {
             document.getElementById('nodeTitle').value = '';
             document.getElementById('nodeSubtitle').value = '';
             document.getElementById('nodeAuthor').value = '';
@@ -924,12 +666,6 @@
             document.getElementById('nodeImage').value = '';
             document.getElementById('imagePreview').style.display = 'none';
             currentImage = null;
-            
-            // Resetear colores a valores por defecto
-            selectedBgColor = 'white';
-            selectedTextColor = 'black';
-            selectedBorderColor = 'blue';
-            updateColorSelectors();
         }
 
         // Guardar nodo (crear o editar)
@@ -938,7 +674,6 @@
             const subtitle = document.getElementById('nodeSubtitle').value.trim();
             const author = document.getElementById('nodeAuthor').value.trim();
             const description = document.getElementById('nodeDescription').value.trim();
-            const type = document.getElementById('nodeType').value;
 
             if (!title) {
                 alert('Por favor ingresa un título');
@@ -953,10 +688,6 @@
                     node.subtitle = subtitle;
                     node.author = author;
                     node.description = description;
-                    node.type = type;
-                    node.bgColor = selectedBgColor;
-                    node.textColor = selectedTextColor;
-                    node.borderColor = selectedBorderColor;
                     node.image = currentImage;
                     
                     // Re-renderizar el nodo
@@ -978,12 +709,9 @@
                     author: author,
                     description: description,
                     image: currentImage,
-                    type: type,
+                    type: 'main',
                     x: x,
-                    y: y,
-                    bgColor: selectedBgColor,
-                    textColor: selectedTextColor,
-                    borderColor: selectedBorderColor
+                    y: y
                 };
 
                 nodes.push(node);
@@ -991,28 +719,63 @@
                 updateCounters();
             }
 
-            hideNodeFormModal();
+            closeNodeModal();
         }
 
-        // Mostrar panel de exportación
-        function showExportPanel() {
-            generateExportCode();
-            exportPanel.style.display = 'block';
-        }
-
-        // Ocultar panel de exportación
-        function hideExportPanel() {
-            exportPanel.style.display = 'none';
-        }
-
-        // Abrir vista previa en nueva ventana
-        function openPreviewInNewWindow() {
-            generateExportCode();
-            const exportCode = document.getElementById('exportCode').value;
-            const newWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+        // Editar nodo seleccionado
+        function editSelectedNode() {
+            if (!selectedNodeId) {
+                alert('Por favor selecciona un nodo primero haciendo clic en él');
+                return;
+            }
             
-            newWindow.document.write(exportCode);
-            newWindow.document.close();
+            const node = nodes.find(n => n.id === selectedNodeId);
+            if (!node) return;
+
+            editingNodeId = node.id;
+            document.getElementById('nodeModalTitle').textContent = 'Editar Nodo';
+            
+            // Llenar formulario con datos existentes
+            document.getElementById('nodeTitle').value = node.title;
+            document.getElementById('nodeSubtitle').value = node.subtitle || '';
+            document.getElementById('nodeAuthor').value = node.author || '';
+            document.getElementById('nodeDescription').value = node.description || '';
+            
+            // Manejar imagen
+            const preview = document.getElementById('imagePreview');
+            if (node.image) {
+                preview.src = node.image;
+                preview.style.display = 'block';
+                currentImage = node.image;
+            } else {
+                preview.style.display = 'none';
+                currentImage = null;
+            }
+            
+            document.getElementById('nodeModal').style.display = 'block';
+        }
+
+        // Eliminar nodo seleccionado
+        function deleteSelectedNode() {
+            if (!selectedNodeId) {
+                alert('Por favor selecciona un nodo primero haciendo clic en él');
+                return;
+            }
+
+            if (!confirm('¿Estás seguro de que quieres eliminar este nodo?')) return;
+
+            // Eliminar conexiones relacionadas
+            connections = connections.filter(conn => 
+                conn.from !== selectedNodeId && conn.to !== selectedNodeId
+            );
+
+            // Eliminar nodo
+            nodes = nodes.filter(n => n.id !== selectedNodeId);
+            selectedNodeId = null;
+            
+            // Re-renderizar
+            renderAll();
+            updateCounters();
         }
 
         // Mostrar modal de descripción
@@ -1033,131 +796,27 @@
                 modalImage.style.display = 'none';
             }
             
-            descriptionModal.style.display = 'block';
-        }
-
-        // Cerrar modal
-        function closeModal() {
-            descriptionModal.style.display = 'none';
+            document.getElementById('descriptionModal').style.display = 'block';
         }
 
         // Cerrar modal al hacer click fuera
         window.addEventListener('click', function(event) {
-            if (event.target === descriptionModal || event.target === nodeFormModal) {
-                descriptionModal.style.display = 'none';
-                nodeFormModal.style.display = 'none';
-            }
-        });
-
-        // Exportar a PNG
-        function exportToPNG() {
-            // Guardar el estado actual del zoom y transformación
-            const originalZoom = zoomLevel;
-            const originalTranslateX = translateX;
-            const originalTranslateY = translateY;
-            
-            // Restablecer el zoom y posición temporalmente
-            zoomLevel = 1;
-            translateX = 0;
-            translateY = 0;
-            updateWorkspaceTransform();
-            
-            // Esperar un momento para que se aplique la transformación
-            setTimeout(() => {
-                html2canvas(document.getElementById('workspace'), {
-                    backgroundColor: workspaceContainer.style.backgroundColor || '#ffffff',
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                }).then(canvas => {
-                    // Crear enlace de descarga
-                    const link = document.createElement('a');
-                    link.download = 'mapa-interactivo.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    
-                    // Restaurar el zoom y posición original después de exportar
-                    zoomLevel = originalZoom;
-                    translateX = originalTranslateX;
-                    translateY = originalTranslateY;
-                    updateWorkspaceTransform();
-                });
-            }, 500);
-        }
-
-        // Alternar modo de eliminación
-        function toggleDeleteMode() {
-            deleteMode = !deleteMode;
-            
-            if (deleteMode) {
-                deleteNodeBtn.classList.add('node-delete-mode');
-                deleteNodeBtn.textContent = '❌ Cancelar Eliminar';
-                nodeInfo.innerHTML = '<p>🗑️ Modo Eliminación: Haz clic en un nodo para eliminarlo</p>';
-            } else {
-                deleteNodeBtn.classList.remove('node-delete-mode');
-                deleteNodeBtn.textContent = '🗑️ Eliminar Nodo';
-                nodeInfo.innerHTML = '<p>Haz doble click en cualquier nodo para ver sus opciones</p><p>Total de nodos: <span id="nodesCount">' + nodes.length + '</span> | Conexiones: <span id="connectionsCount">' + connections.length + '</span></p>';
-            }
-        }
-
-        // Cargar archivo HTML
-        function loadHTMLFile(file) {
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    
-                    // Extraer datos del HTML
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = content;
-                    
-                    // Buscar script con los datos
-                    const scripts = tempDiv.getElementsByTagName('script');
-                    let mapData = null;
-                    
-                    for (let script of scripts) {
-                        if (script.textContent.includes('const nodes =') && script.textContent.includes('const connections =')) {
-                            // Evaluar el script para obtener los datos
-                            try {
-                                // Extraer solo las partes que necesitamos
-                                const nodesMatch = script.textContent.match(/const nodes = (\[.*?\]);/s);
-                                const connectionsMatch = script.textContent.match(/const connections = (\[.*?\]);/s);
-                                
-                                if (nodesMatch && connectionsMatch) {
-                                    nodes = JSON.parse(nodesMatch[1]);
-                                    connections = JSON.parse(connectionsMatch[1]);
-                                    
-                                    // Actualizar contador de nodos
-                                    nodeCounter = nodes.length;
-                                    
-                                    // Renderizar todo
-                                    renderAll();
-                                    updateCounters();
-                                    
-                                    alert('Mapa cargado correctamente');
-                                    return;
-                                }
-                            } catch (error) {
-                                console.error('Error al parsear datos:', error);
-                            }
-                        }
-                    }
-                    
-                    alert('No se pudieron cargar los datos del mapa desde el archivo HTML');
-                } catch (error) {
-                    console.error('Error al cargar archivo:', error);
-                    alert('Error al cargar el archivo HTML');
+            const modals = ['nodeModal', 'descriptionModal', 'exportModal', 'previewModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'nodeModal') closeNodeModal();
+                    else if (modalId === 'descriptionModal') closeModal();
+                    else if (modalId === 'exportModal') closeExportModal();
+                    else if (modalId === 'previewModal') closePreviewModal();
                 }
-            };
-            reader.readAsText(file);
-        }
+            });
+        });
 
         // Renderizar nodo en el workspace
         function renderNode(node) {
             const nodeElement = document.createElement('div');
-            nodeElement.className = `node node-${node.type} bg-${node.bgColor} text-${node.textColor} border-${node.borderColor}`;
+            nodeElement.className = `node node-main`;
             nodeElement.id = node.id;
             nodeElement.style.left = node.x + 'px';
             nodeElement.style.top = node.y + 'px';
@@ -1174,10 +833,15 @@
             nodeElement.addEventListener('click', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
-                if (deleteMode) {
-                    deleteNode(node.id);
-                    return;
+                // Deseleccionar nodo anterior
+                if (selectedNodeId) {
+                    const prevNode = document.getElementById(selectedNodeId);
+                    if (prevNode) prevNode.style.boxShadow = '0 1.3px 5.2px rgba(0,0,0,0.3)';
                 }
+                
+                // Seleccionar nuevo nodo
+                selectedNodeId = node.id;
+                nodeElement.style.boxShadow = '0 0 0 2px #e94560';
                 
                 if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
                     createConnection(sourceNodeId, node.id);
@@ -1188,12 +852,12 @@
                 }
             });
 
-            // Evento doble click para mostrar opciones
+            // Evento doble click para mostrar descripción
             nodeElement.addEventListener('dblclick', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
-                if (!connectionMode && !deleteMode) {
-                    showEditForm(node.id);
+                if (!connectionMode) {
+                    showDescriptionModal(node.id);
                 }
             });
 
@@ -1208,7 +872,7 @@
             element.addEventListener('mousedown', startDrag);
 
             function startDrag(e) {
-                if (e.target.classList.contains('node-btn') || deleteMode) return;
+                if (e.target.classList.contains('node-btn')) return;
                 
                 e.preventDefault();
                 isDragging = true;
@@ -1270,10 +934,6 @@
             if (active) {
                 connectionModeDiv.style.display = 'block';
                 connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
-                // Desactivar modo eliminación si está activo
-                if (deleteMode) {
-                    toggleDeleteMode();
-                }
             } else {
                 connectionModeDiv.style.display = 'none';
                 sourceNodeId = null;
@@ -1373,32 +1033,13 @@
             document.getElementById('connectionsCount').textContent = connections.length;
         }
 
-        // Eliminar nodo
-        function deleteNode(nodeId) {
-            if (!confirm('¿Estás seguro de que quieres eliminar este nodo?')) return;
-
-            // Eliminar conexiones relacionadas
-            connections = connections.filter(conn => 
-                conn.from !== nodeId && conn.to !== nodeId
-            );
-
-            // Eliminar nodo
-            nodes = nodes.filter(n => n.id !== nodeId);
-            
-            // Re-renderizar
-            renderAll();
-            updateCounters();
-            
-            // Desactivar modo eliminación después de eliminar
-            toggleDeleteMode();
-        }
-
         // Limpiar todo
         function clearAll() {
             if (!confirm('¿Estás seguro de que quieres eliminar todo?')) return;
             
             nodes = [];
             connections = [];
+            selectedNodeId = null;
             renderAll();
             updateCounters();
         }
@@ -1411,460 +1052,48 @@
             updateWorkspaceTransform();
         }
 
-        // Generar código para exportar - COMPLETAMENTE RESPONSIVO
+        // Generar código para exportar
         function generateExportCode() {
             const exportHTML = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${mapTitle.textContent}</title>
+    <title>Mapa Interactivo Arte y Ciencias Sociales</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .workspace-container {
-            position: relative;
-            width: 100%;
-            height: 800px;
-            overflow: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background: white;
-        }
-
-        .workspace {
-            position: relative;
-            width: 3500px;
-            height: 2400px;
-            background: white;
-        }
-
-        .node {
-            position: absolute;
-            min-width: 80px;
-            max-width: 120px;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border: 1px solid #e0e0e0;
-            user-select: none;
-            transition: all 0.2s ease;
-            z-index: 10;
-            font-size: 12px;
-        }
-
-        .node:hover {
-            transform: scale(1.03);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
-        }
-
-        .node-main {
-            border-color: #2196F3;
-            background: #f8fdff;
-        }
-
-        .node-topic {
-            border-color: #FF9800;
-            background: #fffbf5;
-        }
-
-        .node-subtopic {
-            border-color: #9C27B0;
-            background: #fcf5ff;
-        }
-
-        .node-title {
-            font-family: 'EB Garamond', 'Garamond', 'Times New Roman', serif;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 2px;
-            line-height: 1.2;
-            word-wrap: break-word;
-        }
-
-        .node-subtitle {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 500;
-            font-size: 11px;
-            margin-bottom: 6px;
-            font-style: italic;
-            line-height: 1.2;
-            opacity: 0.8;
-            word-wrap: break-word;
-        }
-
-        .text-black { color: #000000 !important; }
-        .text-gray { color: #666666 !important; }
-        .text-white { color: #ffffff !important; }
-
-        .bg-white { background: #ffffff !important; }
-        .bg-light { background: #f8f9fa !important; }
-        .bg-dark { 
-            background: #2c3e50 !important; 
-            border-color: #34495e !important;
-        }
-
-        .border-none { border-color: transparent !important; }
-        .border-red { border-color: #dc3545 !important; }
-        .border-blue { border-color: #007bff !important; }
-        .border-green { border-color: #28a745 !important; }
-        .border-purple { border-color: #6f42c1 !important; }
-        .border-orange { border-color: #fd7e14 !important; }
-
-        .connection {
-            position: absolute;
-            background: #95a5a6;
-            height: 2px;
-            transform-origin: 0 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .connection-arrow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid #95a5a6;
-            transform-origin: center;
-            pointer-events: none;
-            z-index: 6;
-        }
-
-        .info-panel {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .info-panel h3 {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        /* Modal para descripción */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 25px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .close-modal {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-modal:hover {
-            color: #333;
-        }
-
-        .modal-title {
-            font-family: 'EB Garamond', serif;
-            font-size: 22px;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .modal-subtitle {
-            font-family: 'EB Garamond', serif;
-            font-size: 14px;
-            margin-bottom: 15px;
-            color: #666;
-            font-style: italic;
-        }
-
-        .modal-author {
-            font-family: 'Calibri', sans-serif;
-            font-size: 13px;
-            margin-bottom: 15px;
-            color: #888;
-            font-style: italic;
-        }
-
-        .modal-image {
-            max-width: 100%;
-            max-height: 200px;
-            margin: 15px 0;
-            border-radius: 6px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .modal-description {
-            font-family: 'Calibri', sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        /* MEDIA QUERIES PARA RESPONSIVIDAD */
-        @media (max-width: 1200px) {
-            .container {
-                max-width: 95%;
-                padding: 12px;
-            }
-            
-            .workspace-container {
-                height: 600px;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .workspace-container {
-                height: 500px;
-            }
-            
-            .node {
-                min-width: 70px;
-                max-width: 100px;
-                padding: 6px;
-                font-size: 11px;
-            }
-            
-            .node-title {
-                font-size: 12px;
-            }
-            
-            .node-subtitle {
-                font-size: 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-            
-            .container {
-                padding: 10px;
-                border-radius: 6px;
-            }
-            
-            h1 {
-                font-size: 1em;
-                margin-bottom: 12px;
-            }
-            
-            .workspace-container {
-                height: 400px;
-                min-height: 400px;
-            }
-            
-            .workspace {
-                min-width: 600px;
-                min-height: 400px;
-            }
-            
-            .node {
-                min-width: 60px;
-                max-width: 90px;
-                padding: 5px;
-                font-size: 10px;
-            }
-            
-            .node-title {
-                font-size: 11px;
-            }
-            
-            .node-subtitle {
-                font-size: 9px;
-            }
-            
-            .info-panel {
-                padding: 12px;
-                font-size: 13px;
-            }
-            
-            .modal-content {
-                margin: 10% auto;
-                padding: 20px;
-                width: 95%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .workspace-container {
-                height: 350px;
-                min-height: 350px;
-            }
-            
-            .workspace {
-                min-width: 500px;
-                min-height: 350px;
-            }
-            
-            .node {
-                min-width: 55px;
-                max-width: 80px;
-                padding: 4px;
-                font-size: 9px;
-            }
-            
-            .node-title {
-                font-size: 10px;
-            }
-            
-            .node-subtitle {
-                font-size: 8px;
-            }
-            
-            .modal-content {
-                margin: 5% auto;
-                padding: 15px;
-            }
-            
-            .modal-title {
-                font-size: 18px;
-            }
-            
-            .modal-subtitle {
-                font-size: 12px;
-            }
-            
-            .modal-description {
-                font-size: 12px;
-                padding: 12px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .workspace-container {
-                height: 300px;
-                min-height: 300px;
-            }
-            
-            .workspace {
-                min-width: 400px;
-                min-height: 300px;
-            }
-            
-            h1 {
-                font-size: 0.9em;
-            }
-            
-            .info-panel {
-                font-size: 12px;
-                padding: 10px;
-            }
-        }
-
-        /* Scrollbar personalizado para el workspace */
-        .workspace-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .workspace-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .workspace-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-
-        .workspace-container::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-    <\/style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Calibri', sans-serif; background: #1a1a2e; min-height: 100vh; padding: 10px; color: #e6e6e6; }
+        .container { max-width: 1400px; margin: 0 auto; background: #16213e; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #e6e6e6; margin-bottom: 15px; font-size: 1.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .workspace-container { position: relative; width: 100%; height: 800px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; }
+        .workspace { position: relative; width: 100%; height: 100%; min-width: 800px; min-height: 600px; }
+        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; background: #2a4365; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #4299e1; user-select: none; transition: all 0.2s ease; z-index: 10; font-size: 12px; color: #e6e6e6; }
+        .node:hover { transform: scale(1.03); box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
+        .node-title { font-family: 'EB Garamond', serif; font-weight: 600; font-size: 14px; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
+        .node-subtitle { font-family: 'Calibri', sans-serif; font-weight: 500; font-size: 11px; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
+        .connection { position: absolute; background: #718096; height: 2px; transform-origin: 0 0; pointer-events: none; z-index: 5; }
+        .connection-arrow { position: absolute; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #718096; transform-origin: center; pointer-events: none; z-index: 6; }
+        .info-panel { background: #2d3748; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .info-panel h3 { font-family: 'Calibri', sans-serif; font-weight: 600; margin-bottom: 10px; color: #e6e6e6; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
+        .modal-content { background-color: #1a1a2e; margin: 5% auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; max-height: 80vh; overflow-y: auto; border: 1px solid #2d3748; color: #e6e6e6; }
+        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 20px; font-weight: bold; cursor: pointer; color: #a0aec0; background: none; border: none; padding: 0; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; }
+        .close-modal:hover { color: #e6e6e6; }
+        .modal-title { font-family: 'EB Garamond', serif; font-size: 22px; margin-bottom: 8px; color: #e6e6e6; }
+        .modal-subtitle { font-family: 'EB Garamond', serif; font-size: 14px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
+        .modal-author { font-family: 'Calibri', sans-serif; font-size: 13px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
+        .modal-image { max-width: 100%; max-height: 200px; margin: 15px 0; border-radius: 6px; display: block; margin-left: auto; margin-right: auto; }
+        .modal-description { font-family: 'Calibri', sans-serif; font-size: 14px; line-height: 1.6; color: #e6e6e6; padding: 15px; background: #2d3748; border-radius: 6px; }
+        @media (max-width: 768px) { .workspace-container { height: 500px; } .node { min-width: 70px; max-width: 100px; padding: 6px; font-size: 11px; } .node-title { font-size: 12px; } .node-subtitle { font-size: 10px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>${mapTitle.textContent}</h1>
-        
+        <h1>MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
         <div class="workspace-container">
             <div class="workspace" id="workspace"></div>
         </div>
-
-        <!-- Modal para descripción -->
-        <div id="descriptionModal" class="modal">
-            <div class="modal-content">
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-                <h2 class="modal-title" id="modalTitle"></h2>
-                <h3 class="modal-subtitle" id="modalSubtitle"></h3>
-                <div class="modal-author" id="modalAuthor"></div>
-                <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
-                <div class="modal-description" id="modalDescription"></div>
-            </div>
-        </div>
-
         <div class="info-panel">
             <h3>INFORMACIÓN DEL MAPA</h3>
             <p>Total de nodos: ${nodes.length} | Conexiones: ${connections.length}</p>
@@ -1872,8 +1101,18 @@
         </div>
     </div>
 
+    <div id="descriptionModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <h3 class="modal-subtitle" id="modalSubtitle"></h3>
+            <div class="modal-author" id="modalAuthor"></div>
+            <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
+            <div class="modal-description" id="modalDescription"></div>
+        </div>
+    </div>
+
     <script>
-        // Datos del mapa
         const nodes = ${JSON.stringify(nodes)};
         const connections = ${JSON.stringify(connections)};
         
@@ -1883,14 +1122,13 @@
             // Cargar nodos
             nodes.forEach(node => {
                 const nodeElement = document.createElement('div');
-                nodeElement.className = 'node node-' + node.type + ' bg-' + node.bgColor + ' text-' + node.textColor + ' border-' + (node.borderColor || 'blue');
+                nodeElement.className = 'node';
                 nodeElement.style.left = node.x + 'px';
                 nodeElement.style.top = node.y + 'px';
                 nodeElement.innerHTML = 
                     '<div class="node-title">' + node.title + '</div>' + 
                     (node.subtitle ? '<div class="node-subtitle">' + node.subtitle + '</div>' : '');
                 
-                // Hacer clickable para abrir modal
                 nodeElement.addEventListener('click', function() {
                     showDescriptionModal(node.id);
                 });
@@ -1956,7 +1194,6 @@
             document.getElementById('descriptionModal').style.display = 'none';
         }
 
-        // Cerrar modal al hacer click fuera
         window.addEventListener('click', function(event) {
             const modal = document.getElementById('descriptionModal');
             if (event.target === modal) {
@@ -1964,7 +1201,6 @@
             }
         });
         
-        // Cargar el mapa cuando la página esté lista
         document.addEventListener('DOMContentLoaded', loadMap);
     <\/script>
 </body>
@@ -1998,6 +1234,103 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             alert('✅ Archivo HTML descargado correctamente');
+        }
+
+        // Actualizar contenido de vista previa
+        function updatePreviewContent() {
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = '';
+            
+            // Crear una representación simplificada del mapa
+            const previewWorkspace = document.createElement('div');
+            previewWorkspace.style.position = 'relative';
+            previewWorkspace.style.width = '100%';
+            previewWorkspace.style.height = '400px';
+            previewWorkspace.style.overflow = 'auto';
+            previewWorkspace.style.border = '1px solid #4a5568';
+            previewWorkspace.style.borderRadius = '5px';
+            previewWorkspace.style.padding = '10px';
+            previewWorkspace.style.background = '#1a1a2e';
+            
+            // Agregar nodos a la vista previa
+            nodes.forEach(node => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.style.position = 'absolute';
+                nodeElement.style.left = (node.x / 2) + 'px';
+                nodeElement.style.top = (node.y / 2) + 'px';
+                nodeElement.style.minWidth = '60px';
+                nodeElement.style.maxWidth = '80px';
+                nodeElement.style.padding = '5px';
+                nodeElement.style.background = '#2a4365';
+                nodeElement.style.borderRadius = '4px';
+                nodeElement.style.border = '1px solid #4299e1';
+                nodeElement.style.fontSize = '10px';
+                nodeElement.style.color = '#e6e6e6';
+                nodeElement.style.textAlign = 'center';
+                
+                nodeElement.innerHTML = `
+                    <div style="font-weight: bold; font-family: 'EB Garamond', serif;">${node.title}</div>
+                    ${node.subtitle ? `<div style="font-style: italic; font-size: 9px;">${node.subtitle}</div>` : ''}
+                `;
+                
+                previewWorkspace.appendChild(nodeElement);
+            });
+            
+            previewContent.appendChild(previewWorkspace);
+            
+            // Agregar información de resumen
+            const summary = document.createElement('div');
+            summary.style.marginTop = '15px';
+            summary.style.padding = '10px';
+            summary.style.background = '#2d3748';
+            summary.style.borderRadius = '5px';
+            summary.innerHTML = `
+                <h4 style="margin-bottom: 8px; color: #e6e6e6;">Resumen del Mapa</h4>
+                <p>Total de nodos: ${nodes.length}</p>
+                <p>Conexiones: ${connections.length}</p>
+                <p>Fecha de generación: ${new Date().toLocaleString()}</p>
+            `;
+            
+            previewContent.appendChild(summary);
+        }
+
+        // Guardar vista previa
+        function savePreview() {
+            const element = document.getElementById('previewContent');
+            const opt = {
+                margin: 10,
+                filename: 'mapa-preview.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#1a1a2e' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Imprimir vista previa
+        function printPreview() {
+            const previewContent = document.getElementById('previewContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Mapa Interactivo - Vista Previa</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                        .node { border: 1px solid #4299e1; background: #f0f8ff; padding: 8px; margin: 5px; border-radius: 4px; display: inline-block; }
+                        .summary { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Mapa Interactivo - Vista Previa</h1>
+                    <div>${previewContent}</div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
         }
 
         // Funciones de zoom
@@ -2037,10 +1370,7 @@
                 image: null,
                 type: 'main',
                 x: 100,
-                y: 100,
-                bgColor: 'white',
-                textColor: 'black',
-                borderColor: 'blue'
+                y: 100
             };
 
             const node2 = {
@@ -2050,12 +1380,9 @@
                 author: 'Margaret Mead',
                 description: 'La antropología visual estudia cómo las sociedades humanas producen, interpretan y utilizan las imágenes visuales.',
                 image: null,
-                type: 'topic',
+                type: 'main',
                 x: 300,
-                y: 200,
-                bgColor: 'white',
-                textColor: 'black',
-                borderColor: 'orange'
+                y: 200
             };
 
             nodes.push(node1, node2);
