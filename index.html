@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa Interactivo Arte y Ciencias Sociales</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
@@ -23,12 +26,46 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: #16213e;
             border-radius: 6.5px;
             padding: 13px;
             box-shadow: 0 1.3px 6.5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .title-input {
+            background: transparent;
+            border: none;
+            text-align: center;
+            color: #e6e6e6;
+            font-size: 18px;
+            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            width: 80%;
+            max-width: 800px;
+            background: #4a235a;
+        }
+
+        .title-input:focus {
+            outline: 2px solid #8e44ad;
+            background: #5b2b6b;
+        }
+
+        .content {
             display: flex;
             gap: 13px;
         }
@@ -38,31 +75,6 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-        }
-
-        .title-container {
-            margin-bottom: 10px;
-        }
-
-        .title-input {
-            background: transparent;
-            border: none;
-            text-align: center;
-            color: #e6e6e6;
-            font-size: 10px;
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 8px 10px;
-            border-radius: 4px;
-            width: 100%;
-            background: #4a235a;
-        }
-
-        .title-input:focus {
-            outline: 2px solid #8e44ad;
-            background: #5b2b6b;
         }
 
         .btn {
@@ -98,7 +110,7 @@
         .workspace-container {
             position: relative;
             flex: 1;
-            height: 800px;
+            height: 600px;
             overflow: hidden;
             border: 1.3px solid #2d3748;
             border-radius: 5.2px;
@@ -110,9 +122,9 @@
             justify-content: center;
         }
 
-        .a3-container {
-            width: 1152px; /* 297mm en píxeles a 96 DPI */
-            height: 816px; /* 420mm en píxeles a 96 DPI */
+        .a4-container {
+            width: 1123px; /* 297mm en píxeles a 96 DPI para A4 horizontal */
+            height: 794px; /* 210mm en píxeles a 96 DPI para A4 horizontal */
             background: white;
             box-shadow: 0 0 0 2px #8e44ad;
             position: relative;
@@ -129,9 +141,9 @@
 
         .node {
             position: absolute;
-            min-width: 73px;
-            max-width: 100px;
-            padding: 5.5px;
+            min-width: 80px;
+            max-width: 120px;
+            padding: 8px;
             background: #1e293b;
             border-radius: 5.2px;
             cursor: pointer;
@@ -144,9 +156,9 @@
             color: #e6e6e6;
         }
 
-        .node.small { font-size: 0.6em; }
-        .node.medium { font-size: 0.75em; }
-        .node.large { font-size: 0.9em; }
+        .node.small { font-size: 0.7em; }
+        .node.medium { font-size: 0.85em; }
+        .node.large { font-size: 1em; }
 
         .node:hover {
             transform: scale(1.03);
@@ -165,14 +177,12 @@
         }
 
         .node-title {
-            font-family: 'EB Garamond', 'Garamond', 'Times New Roman', serif;
             font-weight: 600;
             margin-bottom: 1.3px;
             line-height: 1.2;
         }
 
         .node-subtitle {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: 500;
             margin-bottom: 5.2px;
             font-style: italic;
@@ -183,7 +193,7 @@
         .connection {
             position: absolute;
             background: #718096;
-            height: 1.95px;
+            height: 2px;
             transform-origin: 0 0;
             pointer-events: none;
             z-index: 5;
@@ -193,9 +203,9 @@
             position: absolute;
             width: 0;
             height: 0;
-            border-left: 5.2px solid transparent;
-            border-right: 5.2px solid transparent;
-            border-top: 7.8px solid #718096;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #718096;
             transform-origin: center;
             pointer-events: none;
             z-index: 6;
@@ -231,10 +241,10 @@
             padding: 19.5px;
             border-radius: 6.5px;
             width: 90%;
-            max-width: 455px;
+            max-width: 500px;
             box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.5);
             position: relative;
-            max-height: 70vh;
+            max-height: 80vh;
             overflow-y: auto;
             animation: zoomIn 0.3s ease;
             transform-origin: center center;
@@ -473,9 +483,10 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .font-size-option, .text-color-option {
+        .font-size-option, .text-color-option, .font-family-option, .border-option {
             padding: 5px 8px;
             border: 1px solid #4a5568;
             border-radius: 3px;
@@ -483,9 +494,10 @@
             font-size: 9px;
             text-align: center;
             flex: 1;
+            min-width: 60px;
         }
 
-        .font-size-option.active, .text-color-option.active {
+        .font-size-option.active, .text-color-option.active, .font-family-option.active, .border-option.active {
             border-color: #8e44ad;
             background: rgba(142, 68, 173, 0.2);
         }
@@ -512,7 +524,7 @@
         }
 
         @media (max-width: 768px) {
-            .container {
+            .content {
                 flex-direction: column;
             }
             
@@ -526,7 +538,7 @@
                 height: 500px;
             }
             
-            .a3-container {
+            .a4-container {
                 width: 95%;
                 height: 400px;
             }
@@ -537,8 +549,8 @@
             }
             
             .node {
-                min-width: 64px;
-                padding: 4.5px;
+                min-width: 70px;
+                padding: 6px;
             }
             
             .modal-content {
@@ -551,63 +563,65 @@
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
-            <div class="title-container">
-                <input type="text" class="title-input" id="mapTitle" value="MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES" onchange="updateMapTitle(this.value)">
-            </div>
-            
-            <button class="btn btn-primary" onclick="showNodeModal()">
-                NODO
-            </button>
-            <button class="btn btn-info" onclick="startConnection()">
-                CONECTAR
-            </button>
-            <button class="btn btn-warning" onclick="editSelectedNode()">
-                EDITAR NODO
-            </button>
-            <button class="btn btn-preview" onclick="openPreviewModal()">
-                VISTA PREVIA
-            </button>
-            <button class="btn btn-export" onclick="showExportModal()">
-                EXPORTAR HTML
-            </button>
-            <button class="btn btn-png" onclick="exportToPNG()">
-                EXPORTAR PNG
-            </button>
-            <button class="btn btn-bg" onclick="showColorPicker()">
-                COLOR FONDO MAPA
-            </button>
-            <button class="btn btn-danger" onclick="deleteSelectedNode()">
-                BORRAR NODO
-            </button>
-            <button class="btn btn-danger" onclick="clearAll()">
-                LIMPIAR TODO
-            </button>
+        <div class="header">
+            <input type="text" class="title-input" id="mapTitle" value="MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES" onchange="updateMapTitle(this.value)">
         </div>
-
-        <div class="main-content">
-            <div class="connection-mode" id="connectionMode">
-                🔗 Modo Conexión: Selecciona el nodo destino
+        
+        <div class="content">
+            <div class="sidebar">
+                <button class="btn btn-primary" onclick="showNodeModal()">
+                    NODO
+                </button>
+                <button class="btn btn-info" onclick="startConnection()">
+                    CONECTAR
+                </button>
+                <button class="btn btn-warning" onclick="editSelectedNode()">
+                    EDITAR NODO
+                </button>
+                <button class="btn btn-preview" onclick="openPreviewModal()">
+                    VISTA PREVIA
+                </button>
+                <button class="btn btn-export" onclick="showExportModal()">
+                    EXPORTAR HTML
+                </button>
+                <button class="btn btn-png" onclick="exportToPNG()">
+                    EXPORTAR PNG
+                </button>
+                <button class="btn btn-bg" onclick="showColorPicker()">
+                    COLOR FONDO MAPA
+                </button>
+                <button class="btn btn-danger" onclick="deleteSelectedNode()">
+                    BORRAR NODO
+                </button>
+                <button class="btn btn-danger" onclick="clearAll()">
+                    LIMPIAR TODO
+                </button>
             </div>
 
-            <div class="workspace-container" id="workspaceContainer">
-                <div class="a3-container" id="a3Container">
-                    <div class="workspace" id="workspace">
-                        <!-- Los nodos y conexiones se crearán aquí -->
+            <div class="main-content">
+                <div class="connection-mode" id="connectionMode">
+                    🔗 Modo Conexión: Selecciona el nodo destino
+                </div>
+
+                <div class="workspace-container" id="workspaceContainer">
+                    <div class="a4-container" id="a4Container">
+                        <div class="workspace" id="workspace">
+                            <!-- Los nodos y conexiones se crearán aquí -->
+                        </div>
+                    </div>
+                    <div class="zoom-controls">
+                        <button onclick="zoomIn()">+</button>
+                        <button onclick="zoomOut()">-</button>
+                        <button onclick="resetZoom()">⟳</button>
                     </div>
                 </div>
-                <div class="zoom-controls">
-                    <button onclick="zoomIn()">+</button>
-                    <button onclick="zoomOut()">-</button>
-                    <button onclick="resetZoom()">⟳</button>
-                </div>
-            </div>
 
-            <div class="info-panel">
-                <h3>💡 INFORMACIÓN DEL MAPA</h3>
-                <div id="nodeInfo">
-                    <p>Haz doble click en cualquier nodo para ver sus opciones</p>
-                    <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
+                <div class="info-panel">
+                    <h3>💡 INFORMACIÓN DEL MAPA</h3>
+                    <div id="nodeInfo">
+                        <p>Haz doble click en cualquier nodo para ver sus opciones</p>
+                        <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -650,7 +664,16 @@
                         <div class="node-color-option" style="background: #5b2b6b;" onclick="selectNodeColor('#5b2b6b', this)" title="Violeta medio"></div>
                         <div class="node-color-option" style="background: #6c3483;" onclick="selectNodeColor('#6c3483', this)" title="Violeta"></div>
                         <div class="node-color-option" style="background: #7d3c98;" onclick="selectNodeColor('#7d3c98', this)" title="Violeta claro"></div>
+                        <div class="node-color-option" style="background: #ffffff;" onclick="selectNodeColor('#ffffff', this)" title="Blanco"></div>
                         <div class="node-color-option transparent-bg" onclick="selectNodeColor('transparent', this)" title="Transparente"></div>
+                    </div>
+                </div>
+                
+                <div class="customization-group">
+                    <label>BORDE:</label>
+                    <div class="customization-row">
+                        <div class="border-option active" onclick="selectBorder('solid', this)">CON BORDE</div>
+                        <div class="border-option" onclick="selectBorder('none', this)">SIN BORDE</div>
                     </div>
                 </div>
                 
@@ -668,6 +691,16 @@
                         <div class="font-size-option active" onclick="selectFontSize('small', this)">PEQUEÑO</div>
                         <div class="font-size-option" onclick="selectFontSize('medium', this)">MEDIANO</div>
                         <div class="font-size-option" onclick="selectFontSize('large', this)">GRANDE</div>
+                    </div>
+                </div>
+                
+                <div class="customization-group">
+                    <label>TIPOGRAFÍA:</label>
+                    <div class="customization-row">
+                        <div class="font-family-option active" onclick="selectFontFamily('EB Garamond', this)" style="font-family: 'EB Garamond'">GARAMOND</div>
+                        <div class="font-family-option" onclick="selectFontFamily('Roboto', this)" style="font-family: 'Roboto'">ROBOTO</div>
+                        <div class="font-family-option" onclick="selectFontFamily('Open Sans', this)" style="font-family: 'Open Sans'">OPEN SANS</div>
+                        <div class="font-family-option" onclick="selectFontFamily('Montserrat', this)" style="font-family: 'Montserrat'">MONTSERRAT</div>
                     </div>
                 </div>
             </div>
@@ -711,7 +744,7 @@
         <div class="modal-content">
             <button class="close-modal" onclick="closePreviewModal()">&times;</button>
             <h3 class="modal-title">VISTA PREVIA DEL MAPA</h3>
-            <div id="previewContent" style="border: 1px solid #4a5568; border-radius: 5px; padding: 10px; background: #1a1a2e; min-height: 300px; overflow: auto;">
+            <div id="previewContent" style="border: 1px solid #4a5568; border-radius: 5px; padding: 10px; background: #1a1a2e; min-height: 400px; overflow: auto;">
                 <!-- Contenido de la vista previa -->
             </div>
             <div class="preview-actions">
@@ -763,10 +796,12 @@
         let selectedNodeColor = '#4a235a';
         let selectedTextColor = 'white';
         let selectedFontSize = 'small';
+        let selectedFontFamily = 'EB Garamond';
+        let selectedBorder = 'solid';
 
         // Elementos DOM
         const workspace = document.getElementById('workspace');
-        const a3Container = document.getElementById('a3Container');
+        const a4Container = document.getElementById('a4Container');
         const connectionModeDiv = document.getElementById('connectionMode');
         const nodeInfo = document.getElementById('nodeInfo');
 
@@ -820,7 +855,7 @@
 
         // Cambiar color de fondo del mapa
         function changeMapBackground(color, element) {
-            a3Container.style.backgroundColor = color;
+            a4Container.style.backgroundColor = color;
             document.querySelectorAll('.color-option').forEach(opt => {
                 opt.classList.remove('active');
             });
@@ -831,6 +866,14 @@
         function selectNodeColor(color, element) {
             selectedNodeColor = color;
             document.querySelectorAll('.node-color-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function selectBorder(border, element) {
+            selectedBorder = border;
+            document.querySelectorAll('.border-option').forEach(opt => {
                 opt.classList.remove('active');
             });
             element.classList.add('active');
@@ -852,6 +895,14 @@
             element.classList.add('active');
         }
 
+        function selectFontFamily(font, element) {
+            selectedFontFamily = font;
+            document.querySelectorAll('.font-family-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
         // Exportar a PNG
         function exportToPNG() {
             // Guardar el estado actual del zoom y transformación
@@ -867,11 +918,11 @@
             
             // Esperar un momento para que se aplique la transformación
             setTimeout(() => {
-                html2canvas(a3Container, {
+                html2canvas(a4Container, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    backgroundColor: a3Container.style.backgroundColor || '#ffffff'
+                    backgroundColor: a4Container.style.backgroundColor || '#ffffff'
                 }).then(canvas => {
                     // Crear un enlace de descarga
                     const link = document.createElement('a');
@@ -919,6 +970,8 @@
             selectedNodeColor = '#4a235a';
             selectedTextColor = 'white';
             selectedFontSize = 'small';
+            selectedFontFamily = 'EB Garamond';
+            selectedBorder = 'solid';
             
             updateCustomizationSelectors();
         }
@@ -929,6 +982,14 @@
                 opt.classList.remove('active');
                 if (opt.style.backgroundColor === selectedNodeColor || 
                    (selectedNodeColor === 'transparent' && opt.classList.contains('transparent-bg'))) {
+                    opt.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.border-option').forEach(opt => {
+                opt.classList.remove('active');
+                if ((selectedBorder === 'solid' && opt.textContent === 'CON BORDE') ||
+                    (selectedBorder === 'none' && opt.textContent === 'SIN BORDE')) {
                     opt.classList.add('active');
                 }
             });
@@ -946,6 +1007,13 @@
                     opt.classList.add('active');
                 }
             });
+            
+            document.querySelectorAll('.font-family-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.textContent === getFontFamilyLabel(selectedFontFamily)) {
+                    opt.classList.add('active');
+                }
+            });
         }
 
         // Obtener etiqueta del tamaño de fuente
@@ -955,6 +1023,17 @@
                 case 'medium': return 'MEDIANO';
                 case 'large': return 'GRANDE';
                 default: return 'PEQUEÑO';
+            }
+        }
+
+        // Obtener etiqueta de la familia de fuentes
+        function getFontFamilyLabel(font) {
+            switch(font) {
+                case 'EB Garamond': return 'GARAMOND';
+                case 'Roboto': return 'ROBOTO';
+                case 'Open Sans': return 'OPEN SANS';
+                case 'Montserrat': return 'MONTSERRAT';
+                default: return 'GARAMOND';
             }
         }
 
@@ -982,6 +1061,8 @@
                     node.color = selectedNodeColor;
                     node.textColor = selectedTextColor;
                     node.fontSize = selectedFontSize;
+                    node.fontFamily = selectedFontFamily;
+                    node.border = selectedBorder;
                     
                     // Re-renderizar el nodo
                     renderAll();
@@ -991,9 +1072,9 @@
                 nodeCounter++;
                 const nodeId = 'node-' + nodeCounter;
 
-                // Posición aleatoria en el workspace A3
-                const x = Math.random() * (a3Container.offsetWidth - 80) + 20;
-                const y = Math.random() * (a3Container.offsetHeight - 45) + 15;
+                // Posición aleatoria en el workspace A4
+                const x = Math.random() * (a4Container.offsetWidth - 100) + 20;
+                const y = Math.random() * (a4Container.offsetHeight - 60) + 20;
 
                 const node = {
                     id: nodeId,
@@ -1007,7 +1088,9 @@
                     y: y,
                     color: selectedNodeColor,
                     textColor: selectedTextColor,
-                    fontSize: selectedFontSize
+                    fontSize: selectedFontSize,
+                    fontFamily: selectedFontFamily,
+                    border: selectedBorder
                 };
 
                 nodes.push(node);
@@ -1041,6 +1124,8 @@
             selectedNodeColor = node.color || '#4a235a';
             selectedTextColor = node.textColor || 'white';
             selectedFontSize = node.fontSize || 'small';
+            selectedFontFamily = node.fontFamily || 'EB Garamond';
+            selectedBorder = node.border || 'solid';
             
             updateCustomizationSelectors();
             
@@ -1124,14 +1209,20 @@
             nodeElement.id = node.id;
             nodeElement.style.left = node.x + 'px';
             nodeElement.style.top = node.y + 'px';
+            nodeElement.style.fontFamily = node.fontFamily || 'EB Garamond';
             
             // Aplicar color de fondo (incluyendo transparente)
             if (node.color === 'transparent') {
                 nodeElement.style.background = 'transparent';
-                nodeElement.style.border = '1.3px solid #8e44ad';
             } else {
                 nodeElement.style.background = node.color || '#4a235a';
-                nodeElement.style.border = '1.3px solid #4a5568';
+            }
+            
+            // Aplicar borde
+            if (node.border === 'none') {
+                nodeElement.style.border = 'none';
+            } else {
+                nodeElement.style.border = '1.3px solid #8e44ad';
             }
             
             nodeElement.style.color = node.textColor || 'white';
@@ -1211,9 +1302,9 @@
                 let newX = initialX + dx;
                 let newY = initialY + dy;
 
-                // Mantener dentro de los límites del A3
-                newX = Math.max(6.5, Math.min(newX, a3Container.offsetWidth - element.offsetWidth - 6.5));
-                newY = Math.max(6.5, Math.min(newY, a3Container.offsetHeight - element.offsetHeight - 6.5));
+                // Mantener dentro de los límites del A4
+                newX = Math.max(6.5, Math.min(newX, a4Container.offsetWidth - element.offsetWidth - 6.5));
+                newY = Math.max(6.5, Math.min(newY, a4Container.offsetHeight - element.offsetHeight - 6.5));
 
                 element.style.left = newX + 'px';
                 element.style.top = newY + 'px';
@@ -1377,21 +1468,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${mapTitle}</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Calibri', sans-serif; background: #1a1a2e; min-height: 100vh; padding: 10px; color: #e6e6e6; }
-        .container { max-width: 1400px; margin: 0 auto; background: #16213e; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .container { max-width: 1200px; margin: 0 auto; background: #16213e; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #e6e6e6; margin-bottom: 15px; font-size: 1.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .workspace-container { position: relative; width: 100%; height: 800px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
-        .a3-container { width: 1152px; height: 816px; background: ${a3Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #8e44ad; position: relative; overflow: hidden; }
+        .workspace-container { position: relative; width: 100%; height: 600px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
+        .a4-container { width: 1123px; height: 794px; background: ${a4Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #8e44ad; position: relative; overflow: hidden; }
         .workspace { position: relative; width: 100%; height: 100%; }
-        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #8e44ad; user-select: none; transition: all 0.2s ease; z-index: 10; }
+        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); user-select: none; transition: all 0.2s ease; z-index: 10; }
         .node.small { font-size: 12px; }
         .node.medium { font-size: 14px; }
         .node.large { font-size: 16px; }
         .node:hover { transform: scale(1.03); box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
-        .node-title { font-family: 'EB Garamond', serif; font-weight: 600; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
-        .node-subtitle { font-family: 'Calibri', sans-serif; font-weight: 500; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
+        .node-title { font-weight: 600; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
+        .node-subtitle { font-weight: 500; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
         .connection { position: absolute; background: #718096; height: 2px; transform-origin: 0 0; pointer-events: none; z-index: 5; }
         .connection-arrow { position: absolute; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #718096; transform-origin: center; pointer-events: none; z-index: 6; }
         .info-panel { background: #2d3748; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
@@ -1405,14 +1499,14 @@
         .modal-author { font-family: 'Calibri', sans-serif; font-size: 13px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
         .modal-image { max-width: 100%; max-height: 200px; margin: 15px 0; border-radius: 6px; display: block; margin-left: auto; margin-right: auto; }
         .modal-description { font-family: 'Calibri', sans-serif; font-size: 14px; line-height: 1.6; color: #e6e6e6; padding: 15px; background: #2d3748; border-radius: 6px; }
-        @media (max-width: 768px) { .workspace-container { height: 500px; } .a3-container { width: 95%; height: 400px; } .node { min-width: 70px; max-width: 100px; padding: 6px; } .node.small { font-size: 11px; } .node.medium { font-size: 13px; } .node.large { font-size: 15px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
+        @media (max-width: 768px) { .workspace-container { height: 500px; } .a4-container { width: 95%; height: 400px; } .node { min-width: 70px; max-width: 100px; padding: 6px; } .node.small { font-size: 11px; } .node.medium { font-size: 13px; } .node.large { font-size: 15px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>${mapTitle}</h1>
         <div class="workspace-container">
-            <div class="a3-container">
+            <div class="a4-container">
                 <div class="workspace" id="workspace"></div>
             </div>
         </div>
@@ -1447,13 +1541,20 @@
                 nodeElement.className = 'node ' + (node.fontSize || 'small');
                 nodeElement.style.left = node.x + 'px';
                 nodeElement.style.top = node.y + 'px';
+                nodeElement.style.fontFamily = node.fontFamily || 'EB Garamond';
                 
                 // Aplicar color de fondo (incluyendo transparente)
                 if (node.color === 'transparent') {
                     nodeElement.style.background = 'transparent';
-                    nodeElement.style.border = '1px solid #8e44ad';
                 } else {
                     nodeElement.style.background = node.color || '#4a235a';
+                }
+                
+                // Aplicar borde
+                if (node.border === 'none') {
+                    nodeElement.style.border = 'none';
+                } else {
+                    nodeElement.style.border = '1px solid #8e44ad';
                 }
                 
                 nodeElement.style.color = node.textColor || 'white';
@@ -1582,25 +1683,32 @@
             previewWorkspace.style.border = '1px solid #4a5568';
             previewWorkspace.style.borderRadius = '5px';
             previewWorkspace.style.padding = '10px';
-            previewWorkspace.style.background = a3Container.style.backgroundColor || '#ffffff';
+            previewWorkspace.style.background = a4Container.style.backgroundColor || '#ffffff';
             
             // Agregar nodos a la vista previa
             nodes.forEach(node => {
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'node';
                 nodeElement.style.position = 'absolute';
-                nodeElement.style.left = (node.x / 2) + 'px';
-                nodeElement.style.top = (node.y / 2) + 'px';
+                nodeElement.style.left = (node.x / 1.5) + 'px';
+                nodeElement.style.top = (node.y / 1.5) + 'px';
                 nodeElement.style.minWidth = '60px';
                 nodeElement.style.maxWidth = '80px';
                 nodeElement.style.padding = '5px';
+                nodeElement.style.fontFamily = node.fontFamily || 'EB Garamond';
                 
                 // Aplicar color de fondo (incluyendo transparente)
                 if (node.color === 'transparent') {
                     nodeElement.style.background = 'transparent';
-                    nodeElement.style.border = '1px solid #8e44ad';
                 } else {
                     nodeElement.style.background = node.color || '#4a235a';
+                }
+                
+                // Aplicar borde
+                if (node.border === 'none') {
+                    nodeElement.style.border = 'none';
+                } else {
+                    nodeElement.style.border = '1px solid #8e44ad';
                 }
                 
                 nodeElement.style.borderRadius = '4px';
@@ -1615,11 +1723,55 @@
                 nodeElement.style.textAlign = 'center';
                 
                 nodeElement.innerHTML = `
-                    <div style="font-weight: bold; font-family: 'EB Garamond', serif;">${node.title}</div>
+                    <div style="font-weight: bold;">${node.title}</div>
                     ${node.subtitle ? `<div style="font-style: italic; font-size: ${parseInt(fontSize) - 1}px;">${node.subtitle}</div>` : ''}
                 `;
                 
                 previewWorkspace.appendChild(nodeElement);
+            });
+            
+            // Agregar conexiones a la vista previa
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+                if (fromNode && toNode) {
+                    const fromX = (fromNode.x / 1.5) + 30;
+                    const fromY = (fromNode.y / 1.5) + 15;
+                    const toX = (toNode.x / 1.5) + 30;
+                    const toY = (toNode.y / 1.5) + 15;
+                    
+                    const dx = toX - fromX;
+                    const dy = toY - fromY;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                    const line = document.createElement('div');
+                    line.style.position = 'absolute';
+                    line.style.background = '#718096';
+                    line.style.height = '2px';
+                    line.style.width = length + 'px';
+                    line.style.left = fromX + 'px';
+                    line.style.top = fromY + 'px';
+                    line.style.transform = 'rotate(' + angle + 'deg)';
+                    line.style.transformOrigin = '0 0';
+                    line.style.zIndex = '5';
+                    
+                    const arrow = document.createElement('div');
+                    arrow.style.position = 'absolute';
+                    arrow.style.width = '0';
+                    arrow.style.height = '0';
+                    arrow.style.borderLeft = '4px solid transparent';
+                    arrow.style.borderRight = '4px solid transparent';
+                    arrow.style.borderTop = '6px solid #718096';
+                    arrow.style.left = toX + 'px';
+                    arrow.style.top = toY + 'px';
+                    arrow.style.transform = 'rotate(' + angle + 'deg)';
+                    arrow.style.transformOrigin = 'center';
+                    arrow.style.zIndex = '6';
+                    
+                    previewWorkspace.appendChild(line);
+                    previewWorkspace.appendChild(arrow);
+                }
             });
             
             previewContent.appendChild(previewWorkspace);
@@ -1718,7 +1870,9 @@
                 y: 100,
                 color: '#4a235a',
                 textColor: 'white',
-                fontSize: 'medium'
+                fontSize: 'medium',
+                fontFamily: 'EB Garamond',
+                border: 'solid'
             };
 
             const node2 = {
@@ -1733,7 +1887,9 @@
                 y: 200,
                 color: 'transparent',
                 textColor: 'black',
-                fontSize: 'small'
+                fontSize: 'small',
+                fontFamily: 'Roboto',
+                border: 'none'
             };
 
             nodes.push(node1, node2);
