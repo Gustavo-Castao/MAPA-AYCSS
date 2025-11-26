@@ -3,560 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mapa Interactivo Arte y Ciencias Sociales - Visualiza conexiones entre conceptos">
     <title>Mapa Interactivo Arte y Ciencias Sociales</title>
+    
+    <!-- Preload de fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CDN para html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .workspace-container {
-            position: relative;
-            width: 100%;
-            height: 800px;
-            overflow: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background: white;
-        }
-
-        .workspace {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            min-width: 800px;
-            min-height: 600px;
-        }
-
-        .node {
-            position: absolute;
-            min-width: 80px;
-            max-width: 120px;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border: 1px solid #e0e0e0;
-            user-select: none;
-            transition: all 0.2s ease;
-            z-index: 10;
-            font-size: 12px;
-        }
-
-        .node:hover {
-            transform: scale(1.03);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
-        }
-
-        .node-main {
-            border-color: #2196F3;
-            background: #f8fdff;
-        }
-
-        .node-topic {
-            border-color: #FF9800;
-            background: #fffbf5;
-        }
-
-        .node-subtopic {
-            border-color: #9C27B0;
-            background: #fcf5ff;
-        }
-
-        .node-title {
-            font-family: 'EB Garamond', 'Garamond', 'Times New Roman', serif;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 2px;
-            line-height: 1.2;
-            word-wrap: break-word;
-        }
-
-        .node-subtitle {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 500;
-            font-size: 11px;
-            margin-bottom: 6px;
-            font-style: italic;
-            line-height: 1.2;
-            opacity: 0.8;
-            word-wrap: break-word;
-        }
-
-        .text-black { color: #000000 !important; }
-        .text-gray { color: #666666 !important; }
-        .text-white { color: #ffffff !important; }
-
-        .bg-white { background: #ffffff !important; }
-        .bg-light { background: #f8f9fa !important; }
-        .bg-dark { 
-            background: #2c3e50 !important; 
-            border-color: #34495e !important;
-        }
-
-        .border-none { border-color: transparent !important; }
-        .border-red { border-color: #dc3545 !important; }
-        .border-blue { border-color: #007bff !important; }
-        .border-green { border-color: #28a745 !important; }
-        .border-purple { border-color: #6f42c1 !important; }
-        .border-orange { border-color: #fd7e14 !important; }
-
-        .connection {
-            position: absolute;
-            background: #95a5a6;
-            height: 2px;
-            transform-origin: 0 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .connection-arrow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid #95a5a6;
-            transform-origin: center;
-            pointer-events: none;
-            z-index: 6;
-        }
-
-        .info-panel {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .info-panel h3 {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        /* Modal para descripción */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 25px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .close-modal {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-modal:hover {
-            color: #333;
-        }
-
-        .modal-title {
-            font-family: 'EB Garamond', serif;
-            font-size: 22px;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .modal-subtitle {
-            font-family: 'EB Garamond', serif;
-            font-size: 14px;
-            margin-bottom: 15px;
-            color: #666;
-            font-style: italic;
-        }
-
-        .modal-author {
-            font-family: 'Calibri', sans-serif;
-            font-size: 13px;
-            margin-bottom: 15px;
-            color: #888;
-            font-style: italic;
-        }
-
-        .modal-image {
-            max-width: 100%;
-            max-height: 200px;
-            margin: 15px 0;
-            border-radius: 6px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .modal-description {
-            font-family: 'Calibri', sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        /* MEDIA QUERIES PARA RESPONSIVIDAD */
-        @media (max-width: 1200px) {
-            .container {
-                max-width: 95%;
-                padding: 12px;
-            }
-            
-            .workspace-container {
-                height: 600px;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .workspace-container {
-                height: 500px;
-            }
-            
-            .node {
-                min-width: 70px;
-                max-width: 100px;
-                padding: 6px;
-                font-size: 11px;
-            }
-            
-            .node-title {
-                font-size: 12px;
-            }
-            
-            .node-subtitle {
-                font-size: 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-            
-            .container {
-                padding: 10px;
-                border-radius: 6px;
-            }
-            
-            h1 {
-                font-size: 1.4em;
-                margin-bottom: 12px;
-            }
-            
-            .workspace-container {
-                height: 400px;
-                min-height: 400px;
-            }
-            
-            .workspace {
-                min-width: 600px;
-                min-height: 400px;
-            }
-            
-            .node {
-                min-width: 60px;
-                max-width: 90px;
-                padding: 5px;
-                font-size: 10px;
-            }
-            
-            .node-title {
-                font-size: 11px;
-            }
-            
-            .node-subtitle {
-                font-size: 9px;
-            }
-            
-            .info-panel {
-                padding: 12px;
-                font-size: 13px;
-            }
-            
-            .modal-content {
-                margin: 10% auto;
-                padding: 20px;
-                width: 95%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .workspace-container {
-                height: 350px;
-                min-height: 350px;
-            }
-            
-            .workspace {
-                min-width: 500px;
-                min-height: 350px;
-            }
-            
-            .node {
-                min-width: 55px;
-                max-width: 80px;
-                padding: 4px;
-                font-size: 9px;
-            }
-            
-            .node-title {
-                font-size: 10px;
-            }
-            
-            .node-subtitle {
-                font-size: 8px;
-            }
-            
-            .modal-content {
-                margin: 5% auto;
-                padding: 15px;
-            }
-            
-            .modal-title {
-                font-size: 18px;
-            }
-            
-            .modal-subtitle {
-                font-size: 12px;
-            }
-            
-            .modal-description {
-                font-size: 12px;
-                padding: 12px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .workspace-container {
-                height: 300px;
-                min-height: 300px;
-            }
-            
-            .workspace {
-                min-width: 400px;
-                min-height: 300px;
-            }
-            
-            h1 {
-                font-size: 1.2em;
-            }
-            
-            .info-panel {
-                font-size: 12px;
-                padding: 10px;
-            }
-        }
-
-        /* Scrollbar personalizado para el workspace */
-        .workspace-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .workspace-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .workspace-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-
-        .workspace-container::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
+        /* TODO TU CÓDIGO CSS AQUÍ (copiar completo) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Calibri', sans-serif; background: #f5f5f5; }
+        /* ... resto del CSS ... */
     </style>
 </head>
 <body>
     <div class="container">
         <h1>MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
         
-        <div class="workspace-container">
+        <!-- TODO TU CÓDIGO HTML AQUÍ (copiar completo) -->
+        <div class="workspace-container" id="workspaceContainer">
             <div class="workspace" id="workspace"></div>
-        </div>
-
-        <!-- Modal para descripción -->
-        <div id="descriptionModal" class="modal">
-            <div class="modal-content">
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-                <h2 class="modal-title" id="modalTitle"></h2>
-                <h3 class="modal-subtitle" id="modalSubtitle"></h3>
-                <div class="modal-author" id="modalAuthor"></div>
-                <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
-                <div class="modal-description" id="modalDescription"></div>
+            <div class="zoom-controls">
+                <button class="btn-info" onclick="zoomIn()">+</button>
+                <button class="btn-info" onclick="zoomOut()">-</button>
+                <button class="btn-info" onclick="resetZoom()">⟳</button>
             </div>
         </div>
-
-        <div class="info-panel">
-            <h3>INFORMACIÓN DEL MAPA</h3>
-            <p>Total de nodos: 2 | Conexiones: 0</p>
-            <p>Haz click en cualquier nodo para ver más información</p>
-        </div>
+        
+        <!-- Controles, formularios, modales, etc. -->
     </div>
 
     <script>
-        // Datos del mapa
-        const nodes = [{"id":"node-1","title":"Arte y Ciencias Sociales","subtitle":"Intersecciones disciplinares","author":"Varios autores","description":"Este mapa explora las conexiones entre el arte y las ciencias sociales, examinando cómo se influyen mutuamente.","image":null,"type":"main","x":409,"y":32,"bgColor":"white","textColor":"black","borderColor":"blue"},{"id":"node-2","title":"Antropología Visual","subtitle":"Estudio cultural de las imágenes","author":"Margaret Mead","description":"La antropología visual estudia cómo las sociedades humanas producen, interpretan y utilizan las imágenes visuales.","image":null,"type":"topic","x":429,"y":133,"bgColor":"white","textColor":"black","borderColor":"orange"}];
-        const connections = [];
+        // TODO TU CÓDIGO JAVASCRIPT AQUÍ (copiar completo)
+        let nodes = [];
+        let connections = [];
+        // ... resto del JavaScript ...
         
-        function loadMap() {
-            const workspace = document.getElementById('workspace');
-            
-            // Cargar nodos
-            nodes.forEach(node => {
-                const nodeElement = document.createElement('div');
-                nodeElement.className = 'node node-' + node.type + ' bg-' + node.bgColor + ' text-' + node.textColor + ' border-' + (node.borderColor || 'blue');
-                nodeElement.style.left = node.x + 'px';
-                nodeElement.style.top = node.y + 'px';
-                nodeElement.innerHTML = 
-                    '<div class="node-title">' + node.title + '</div>' + 
-                    (node.subtitle ? '<div class="node-subtitle">' + node.subtitle + '</div>' : '');
-                
-                // Hacer clickable para abrir modal
-                nodeElement.addEventListener('click', function() {
-                    showDescriptionModal(node.id);
-                });
-                
-                workspace.appendChild(nodeElement);
-            });
-
-            // Cargar conexiones
-            connections.forEach(conn => {
-                const fromNode = nodes.find(n => n.id === conn.from);
-                const toNode = nodes.find(n => n.id === conn.to);
-                if (fromNode && toNode) {
-                    const fromX = fromNode.x + 40;
-                    const fromY = fromNode.y + 20;
-                    const toX = toNode.x + 40;
-                    const toY = toNode.y + 20;
-                    
-                    const dx = toX - fromX;
-                    const dy = toY - fromY;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-                    const line = document.createElement('div');
-                    line.className = 'connection';
-                    line.style.width = length + 'px';
-                    line.style.left = fromX + 'px';
-                    line.style.top = fromY + 'px';
-                    line.style.transform = 'rotate(' + angle + 'deg)';
-                    
-                    const arrow = document.createElement('div');
-                    arrow.className = 'connection-arrow';
-                    arrow.style.left = toX + 'px';
-                    arrow.style.top = toY + 'px';
-                    arrow.style.transform = 'rotate(' + angle + 'deg)';
-                    
-                    workspace.appendChild(line);
-                    workspace.appendChild(arrow);
-                }
-            });
+        // Función para detectar si estamos en GitHub Pages
+        function isGitHubPages() {
+            return window.location.hostname.includes('github.io');
         }
-
-        function showDescriptionModal(nodeId) {
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node) return;
-
-            document.getElementById('modalTitle').textContent = node.title;
-            document.getElementById('modalSubtitle').textContent = node.subtitle || 'Sin subtítulo';
-            document.getElementById('modalAuthor').textContent = node.author ? 'Autor: ' + node.author : 'Autor no especificado';
-            document.getElementById('modalDescription').textContent = node.description || 'Sin descripción disponible.';
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAll();
+            updateCounters();
             
-            const modalImage = document.getElementById('modalImage');
-            if (node.image) {
-                modalImage.src = node.image;
-                modalImage.style.display = 'block';
-            } else {
-                modalImage.style.display = 'none';
-            }
-            
-            document.getElementById('descriptionModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('descriptionModal').style.display = 'none';
-        }
-
-        // Cerrar modal al hacer click fuera
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('descriptionModal');
-            if (event.target === modal) {
-                closeModal();
+            // Mensaje de bienvenida solo en GitHub Pages
+            if (isGitHubPages()) {
+                console.log('Mapa interactivo cargado en GitHub Pages');
             }
         });
-        
-        // Redimensionar el workspace cuando cambie el tamaño de la ventana
-        window.addEventListener('resize', function() {
-            // Aquí puedes agregar lógica de redimensionamiento si es necesario
-            console.log('Ventana redimensionada');
-        });
-        
-        // Cargar el mapa cuando la página esté lista
-        document.addEventListener('DOMContentLoaded', loadMap);
     </script>
 </body>
 </html>
