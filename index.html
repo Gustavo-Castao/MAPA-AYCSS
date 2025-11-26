@@ -6,6 +6,7 @@
     <title>Mapa Interactivo Arte y Ciencias Sociales</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -31,15 +32,43 @@
             flex-direction: column;
         }
 
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 13px;
+            position: relative;
+        }
+
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 13px;
             font-size: 1.8em;
             font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
+            padding: 5px 10px;
+            border: 1px dashed transparent;
+            transition: border-color 0.3s;
+        }
+
+        h1:hover {
+            border-color: #ccc;
+        }
+
+        .edit-title-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .edit-title-btn:hover {
+            color: #333;
         }
 
         .main-content {
@@ -73,7 +102,7 @@
         .btn-info { background: #17a2b8; color: white; }
         .btn-export { background: #6f42c1; color: white; }
         .btn-preview { background: #20c997; color: white; }
-        .btn-pdf { background: #e74c3c; color: white; }
+        .btn-png { background: #e74c3c; color: white; }
         .btn-bg { background: #6c757d; color: white; }
 
         button:hover {
@@ -219,6 +248,33 @@
             font-size: 8.45px;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 3.25% auto;
+            padding: 19.5px;
+            border-radius: 6.5px;
+            width: 90%;
+            max-width: 455px;
+            box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.3);
+            position: relative;
+            max-height: 55.25vh;
+            overflow-y: auto;
+            animation: zoomIn 0.3s ease;
+            transform-origin: center center;
+        }
+
         .node-form {
             background: #f8f9fa;
             padding: 10.4px;
@@ -343,33 +399,6 @@
             font-size: 0.65em;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 3.25% auto;
-            padding: 19.5px;
-            border-radius: 6.5px;
-            width: 90%;
-            max-width: 455px;
-            box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 55.25vh;
-            overflow-y: auto;
-            animation: zoomIn 0.3s ease;
-            transform-origin: center center;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -492,9 +521,9 @@
 
         .map-bg-controls {
             display: flex;
+            flex-direction: column;
             gap: 5px;
             margin-bottom: 10px;
-            justify-content: center;
             align-items: center;
         }
 
@@ -510,6 +539,13 @@
         .bg-color-option.active {
             border-color: #333;
             transform: scale(1.1);
+        }
+
+        .bg-label {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -560,29 +596,32 @@
 </head>
 <body>
     <div class="container">
-        <h1>MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
+        <div class="title-container">
+            <h1 id="mapTitle" contenteditable="true">MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
+            <button class="edit-title-btn" title="Editar título">✏️</button>
+        </div>
         
         <div class="connection-mode" id="connectionMode">
             🔗 Modo Conexión: Selecciona el nodo destino
         </div>
 
-        <div class="map-bg-controls">
-            <span style="font-size: 10px; font-weight: bold; margin-right: 5px;">Color de fondo del mapa:</span>
-            <div class="bg-color-option active" style="background: #ffffff;" onclick="changeMapBackground('#ffffff', this)" title="Blanco"></div>
-            <div class="bg-color-option" style="background: #f8f9fa;" onclick="changeMapBackground('#f8f9fa', this)" title="Gris claro"></div>
-            <div class="bg-color-option" style="background: #e8f5e8;" onclick="changeMapBackground('#e8f5e8', this)" title="Verde claro"></div>
-            <div class="bg-color-option" style="background: #e8f4fd;" onclick="changeMapBackground('#e8f4fd', this)" title="Azul claro"></div>
-            <div class="bg-color-option" style="background: #fff3cd;" onclick="changeMapBackground('#fff3cd', this)" title="Amarillo claro"></div>
-        </div>
-
         <div class="main-content">
             <div class="left-controls">
-                <button class="btn-primary" onclick="showNodeForm('main')">➕ Tema Principal</button>
+                <button class="btn-primary" onclick="showNodeFormModal('main')">➕ Tema Principal</button>
                 <button class="btn-info" onclick="startConnection()">🔗 Conectar Nodos</button>
                 <button class="btn-preview" onclick="openPreviewInNewWindow()">👁️ Vista Previa</button>
                 <button class="btn-export" onclick="showExportPanel()">💾 Exportar HTML</button>
-                <button class="btn-pdf" onclick="exportToPDF()">📄 Exportar PDF</button>
+                <button class="btn-png" onclick="exportToPNG()">🖼️ Exportar PNG</button>
                 <button class="btn-danger" onclick="clearAll()">🗑️ Limpiar Todo</button>
+                
+                <div class="map-bg-controls">
+                    <div class="bg-label">Color de fondo:</div>
+                    <div class="bg-color-option active" style="background: #ffffff;" onclick="changeMapBackground('#ffffff', this)" title="Blanco"></div>
+                    <div class="bg-color-option" style="background: #f8f9fa;" onclick="changeMapBackground('#f8f9fa', this)" title="Gris claro"></div>
+                    <div class="bg-color-option" style="background: #e8f5e8;" onclick="changeMapBackground('#e8f5e8', this)" title="Verde claro"></div>
+                    <div class="bg-color-option" style="background: #e8f4fd;" onclick="changeMapBackground('#e8f4fd', this)" title="Azul claro"></div>
+                    <div class="bg-color-option" style="background: #fff3cd;" onclick="changeMapBackground('#fff3cd', this)" title="Amarillo claro"></div>
+                </div>
             </div>
 
             <div class="workspace-container" id="workspaceContainer">
@@ -597,70 +636,74 @@
             </div>
         </div>
 
-        <div class="node-form" id="nodeForm">
-            <h3 style="font-family: 'EB Garamond', serif; font-size: 10.4px;" id="formTitle">Crear Nuevo Nodo</h3>
-            <div class="form-group">
-                <label for="nodeTitle">Título:</label>
-                <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
-            </div>
-            <div class="form-group">
-                <label for="nodeSubtitle">Subtítulo:</label>
-                <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
-            </div>
-            <div class="form-group">
-                <label for="nodeAuthor">Texto o Autor:</label>
-                <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
-            </div>
-            <div class="form-group">
-                <label for="nodeDescription">Descripción:</label>
-                <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="nodeImage">Imagen (opcional):</label>
-                <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
-                <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
-            </div>
-            <div class="form-group">
-                <label for="nodeType">Tipo:</label>
-                <select id="nodeType">
-                    <option value="main">Tema Principal</option>
-                    <option value="topic">Subtema</option>
-                    <option value="subtopic">Detalle</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Color de fondo:</label>
-                <div class="color-options bg-color-options">
-                    <div class="color-option bg-white active" onclick="selectBgColor('white', this)"></div>
-                    <div class="color-option bg-light" onclick="selectBgColor('light', this)"></div>
-                    <div class="color-option bg-dark" onclick="selectBgColor('dark', this)"></div>
+        <!-- Modal para formulario de nodo -->
+        <div id="nodeFormModal" class="modal">
+            <div class="modal-content">
+                <button class="close-modal" onclick="hideNodeFormModal()">&times;</button>
+                <h3 style="font-family: 'EB Garamond', serif; font-size: 10.4px;" id="formTitle">Crear Nuevo Nodo</h3>
+                <div class="form-group">
+                    <label for="nodeTitle">Título:</label>
+                    <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label>Color de texto:</label>
-                <div class="color-options text-color-options">
-                    <div class="color-option text-black active" onclick="selectTextColor('black', this)"></div>
-                    <div class="color-option text-gray" onclick="selectTextColor('gray', this)"></div>
-                    <div class="color-option text-white" onclick="selectTextColor('white', this)"></div>
+                <div class="form-group">
+                    <label for="nodeSubtitle">Subtítulo:</label>
+                    <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label>Color del borde:</label>
-                <div class="color-options border-color-options">
-                    <div class="color-option border-none" onclick="selectBorderColor('none', this)"></div>
-                    <div class="color-option border-blue active" onclick="selectBorderColor('blue', this)"></div>
-                    <div class="color-option border-red" onclick="selectBorderColor('red', this)"></div>
-                    <div class="color-option border-green" onclick="selectBorderColor('green', this)"></div>
-                    <div class="color-option border-purple" onclick="selectBorderColor('purple', this)"></div>
-                    <div class="color-option border-orange" onclick="selectBorderColor('orange', this)"></div>
+                <div class="form-group">
+                    <label for="nodeAuthor">Texto o Autor:</label>
+                    <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
                 </div>
-            </div>
+                <div class="form-group">
+                    <label for="nodeDescription">Descripción:</label>
+                    <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="nodeImage">Imagen (opcional):</label>
+                    <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
+                    <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
+                </div>
+                <div class="form-group">
+                    <label for="nodeType">Tipo:</label>
+                    <select id="nodeType">
+                        <option value="main">Tema Principal</option>
+                        <option value="topic">Subtema</option>
+                        <option value="subtopic">Detalle</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Color de fondo:</label>
+                    <div class="color-options bg-color-options">
+                        <div class="color-option bg-white active" onclick="selectBgColor('white', this)"></div>
+                        <div class="color-option bg-light" onclick="selectBgColor('light', this)"></div>
+                        <div class="color-option bg-dark" onclick="selectBgColor('dark', this)"></div>
+                    </div>
+                </div>
 
-            <button class="btn-success" onclick="saveNode()">✅ Guardar Nodo</button>
-            <button class="btn-danger" onclick="hideNodeForm()">❌ Cancelar</button>
+                <div class="form-group">
+                    <label>Color de texto:</label>
+                    <div class="color-options text-color-options">
+                        <div class="color-option text-black active" onclick="selectTextColor('black', this)"></div>
+                        <div class="color-option text-gray" onclick="selectTextColor('gray', this)"></div>
+                        <div class="color-option text-white" onclick="selectTextColor('white', this)"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Color del borde:</label>
+                    <div class="color-options border-color-options">
+                        <div class="color-option border-none" onclick="selectBorderColor('none', this)"></div>
+                        <div class="color-option border-blue active" onclick="selectBorderColor('blue', this)"></div>
+                        <div class="color-option border-red" onclick="selectBorderColor('red', this)"></div>
+                        <div class="color-option border-green" onclick="selectBorderColor('green', this)"></div>
+                        <div class="color-option border-purple" onclick="selectBorderColor('purple', this)"></div>
+                        <div class="color-option border-orange" onclick="selectBorderColor('orange', this)"></div>
+                    </div>
+                </div>
+
+                <button class="btn-success" onclick="saveNode()">✅ Guardar Nodo</button>
+                <button class="btn-danger" onclick="hideNodeFormModal()">❌ Cancelar</button>
+            </div>
         </div>
 
         <!-- Modal para descripción -->
@@ -716,12 +759,13 @@
         // Elementos DOM
         const workspace = document.getElementById('workspace');
         const workspaceContainer = document.getElementById('workspaceContainer');
-        const nodeForm = document.getElementById('nodeForm');
+        const nodeFormModal = document.getElementById('nodeFormModal');
         const formTitle = document.getElementById('formTitle');
         const connectionModeDiv = document.getElementById('connectionMode');
         const nodeInfo = document.getElementById('nodeInfo');
         const exportPanel = document.getElementById('exportPanel');
         const descriptionModal = document.getElementById('descriptionModal');
+        const mapTitle = document.getElementById('mapTitle');
 
         // Vista previa de imagen
         function previewImage(input) {
@@ -776,14 +820,20 @@
             element.classList.add('active');
         }
 
-        // Mostrar formulario de nodo para creación
-        function showNodeForm(type) {
+        // Mostrar formulario de nodo en modal
+        function showNodeFormModal(type) {
             editingNodeId = null;
             formTitle.textContent = 'Crear Nuevo Nodo';
             document.getElementById('nodeType').value = type;
             clearForm();
-            nodeForm.style.display = 'block';
+            nodeFormModal.style.display = 'block';
             isViewMode = false;
+        }
+
+        // Ocultar formulario de nodo en modal
+        function hideNodeFormModal() {
+            nodeFormModal.style.display = 'none';
+            editingNodeId = null;
         }
 
         // Mostrar formulario de nodo para edición
@@ -820,7 +870,7 @@
                 currentImage = null;
             }
             
-            nodeForm.style.display = 'block';
+            nodeFormModal.style.display = 'block';
             isViewMode = false;
         }
 
@@ -863,12 +913,6 @@
             selectedTextColor = 'black';
             selectedBorderColor = 'blue';
             updateColorSelectors();
-        }
-
-        // Ocultar formulario
-        function hideNodeForm() {
-            nodeForm.style.display = 'none';
-            editingNodeId = null;
         }
 
         // Guardar nodo (crear o editar)
@@ -930,7 +974,7 @@
                 updateCounters();
             }
 
-            hideNodeForm();
+            hideNodeFormModal();
         }
 
         // Mostrar panel de exportación
@@ -982,10 +1026,47 @@
 
         // Cerrar modal al hacer click fuera
         window.addEventListener('click', function(event) {
-            if (event.target === descriptionModal) {
-                closeModal();
+            if (event.target === descriptionModal || event.target === nodeFormModal) {
+                descriptionModal.style.display = 'none';
+                nodeFormModal.style.display = 'none';
             }
         });
+
+        // Exportar a PNG
+        function exportToPNG() {
+            // Guardar el estado actual del zoom y transformación
+            const originalZoom = zoomLevel;
+            const originalTranslateX = translateX;
+            const originalTranslateY = translateY;
+            
+            // Restablecer el zoom y posición temporalmente
+            zoomLevel = 1;
+            translateX = 0;
+            translateY = 0;
+            updateWorkspaceTransform();
+            
+            // Esperar un momento para que se aplique la transformación
+            setTimeout(() => {
+                html2canvas(document.getElementById('workspace'), {
+                    backgroundColor: workspaceContainer.style.backgroundColor || '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    // Crear enlace de descarga
+                    const link = document.createElement('a');
+                    link.download = 'mapa-interactivo.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Restaurar el zoom y posición original después de exportar
+                    zoomLevel = originalZoom;
+                    translateX = originalTranslateX;
+                    translateY = originalTranslateY;
+                    updateWorkspaceTransform();
+                });
+            }, 500);
+        }
 
         // Renderizar nodo en el workspace
         function renderNode(node) {
@@ -1232,52 +1313,6 @@
             updateWorkspaceTransform();
         }
 
-        // Exportar a PDF - VERSIÓN CORREGIDA
-        function exportToPDF() {
-            // Guardar el estado actual del zoom y transformación
-            const originalZoom = zoomLevel;
-            const originalTranslateX = translateX;
-            const originalTranslateY = translateY;
-            
-            // Restablecer el zoom y posición temporalmente
-            zoomLevel = 1;
-            translateX = 0;
-            translateY = 0;
-            updateWorkspaceTransform();
-            
-            // Esperar un momento para que se aplique la transformación
-            setTimeout(() => {
-                const element = document.getElementById('workspace');
-                const opt = {
-                    margin: 10,
-                    filename: 'mapa-interactivo.pdf',
-                    image: { 
-                        type: 'jpeg', 
-                        quality: 0.98 
-                    },
-                    html2canvas: { 
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff'
-                    },
-                    jsPDF: { 
-                        unit: 'mm', 
-                        format: 'a4', 
-                        orientation: 'landscape' 
-                    }
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    // Restaurar el zoom y posición original después de exportar
-                    zoomLevel = originalZoom;
-                    translateX = originalTranslateX;
-                    translateY = originalTranslateY;
-                    updateWorkspaceTransform();
-                });
-            }, 500);
-        }
-
         // Generar código para exportar - COMPLETAMENTE RESPONSIVO
         function generateExportCode() {
             const exportHTML = `<!DOCTYPE html>
@@ -1285,7 +1320,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo Arte y Ciencias Sociales</title>
+    <title>${mapTitle.textContent}</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
     <style>
@@ -1715,7 +1750,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES</h1>
+        <h1>${mapTitle.textContent}</h1>
         
         <div class="workspace-container">
             <div class="workspace" id="workspace"></div>
@@ -1822,32 +1857,6 @@
 
         function closeModal() {
             document.getElementById('descriptionModal').style.display = 'none';
-        }
-
-        // Exportar a PDF - VERSIÓN CORREGIDA PARA EXPORT
-        function exportToPDF() {
-            const element = document.getElementById('workspace');
-            const opt = {
-                margin: 10,
-                filename: 'mapa-interactivo.pdf',
-                image: { 
-                    type: 'jpeg', 
-                    quality: 0.98 
-                },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'landscape' 
-                }
-            };
-
-            html2pdf().set(opt).from(element).save();
         }
 
         // Cerrar modal al hacer click fuera
