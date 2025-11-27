@@ -106,6 +106,9 @@
         .btn-danger { background: #a569bd; }
         .btn-bg { background: #af7ac5; }
         .btn-png { background: #bb8fce; }
+        .btn-undo { background: #d35400; }
+        .btn-disconnect { background: #c0392b; }
+        .btn-open { background: #16a085; }
 
         .workspace-container {
             position: relative;
@@ -123,8 +126,8 @@
         }
 
         .a4-container {
-            width: 1123px; /* 297mm en píxeles a 96 DPI para A4 horizontal */
-            height: 794px; /* 210mm en píxeles a 96 DPI para A4 horizontal */
+            width: 1123px;
+            height: 794px;
             background: white;
             box-shadow: 0 0 0 2px #8e44ad;
             position: relative;
@@ -172,6 +175,10 @@
             cursor: grabbing;
         }
 
+        .node.selected {
+            box-shadow: 0 0 0 2px #8e44ad;
+        }
+
         .node-main {
             border-color: #8e44ad;
         }
@@ -199,6 +206,11 @@
             z-index: 5;
         }
 
+        .connection.selected {
+            background: #e74c3c;
+            height: 3px;
+        }
+
         .connection-arrow {
             position: absolute;
             width: 0;
@@ -211,9 +223,25 @@
             z-index: 6;
         }
 
+        .connection-arrow.selected {
+            border-top-color: #e74c3c;
+        }
+
         .connection-mode {
             background: #744210;
             color: #fef3c7;
+            padding: 5.2px;
+            border-radius: 2.6px;
+            text-align: center;
+            margin-bottom: 5.2px;
+            display: none;
+            font-weight: bold;
+            font-size: 8.45px;
+        }
+
+        .disconnect-mode {
+            background: #7b241c;
+            color: #fadbd8;
             padding: 5.2px;
             border-radius: 2.6px;
             text-align: center;
@@ -559,6 +587,10 @@
                 padding: 13px;
             }
         }
+
+        .file-input-hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -578,6 +610,12 @@
                 <button class="btn btn-warning" onclick="editSelectedNode()">
                     EDITAR NODO
                 </button>
+                <button class="btn btn-disconnect" onclick="startDisconnect()">
+                    DESCONECTAR
+                </button>
+                <button class="btn btn-undo" onclick="undoAction()">
+                    DESHACER
+                </button>
                 <button class="btn btn-preview" onclick="openPreviewModal()">
                     VISTA PREVIA
                 </button>
@@ -587,8 +625,11 @@
                 <button class="btn btn-png" onclick="exportToPNG()">
                     EXPORTAR PNG
                 </button>
+                <button class="btn btn-open" onclick="document.getElementById('fileInput').click()">
+                    ABRIR HTML
+                </button>
                 <button class="btn btn-bg" onclick="showColorPicker()">
-                    COLOR FONDO MAPA
+                    FONDO
                 </button>
                 <button class="btn btn-danger" onclick="deleteSelectedNode()">
                     BORRAR NODO
@@ -598,9 +639,16 @@
                 </button>
             </div>
 
+            <!-- Input oculto para abrir archivos -->
+            <input type="file" id="fileInput" class="file-input-hidden" accept=".html" onchange="loadFromHTML(this.files[0])">
+
             <div class="main-content">
                 <div class="connection-mode" id="connectionMode">
                     🔗 Modo Conexión: Selecciona el nodo destino
+                </div>
+                
+                <div class="disconnect-mode" id="disconnectMode">
+                    ❌ Modo Desconexión: Selecciona una conexión para eliminar
                 </div>
 
                 <div class="workspace-container" id="workspaceContainer">
@@ -621,6 +669,7 @@
                     <div id="nodeInfo">
                         <p>Haz doble click en cualquier nodo para ver sus opciones</p>
                         <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
+                        <p>Acciones disponibles para deshacer: <span id="undoCount">0</span></p>
                     </div>
                 </div>
             </div>
@@ -784,11 +833,13 @@
         let nodes = [];
         let connections = [];
         let connectionMode = false;
+        let disconnectMode = false;
         let sourceNodeId = null;
         let nodeCounter = 0;
         let currentImage = null;
         let editingNodeId = null;
         let selectedNodeId = null;
+        let selectedConnection = null;
         let zoomLevel = 1;
         let translateX = 0, translateY = 0;
         
@@ -798,16 +849,70 @@
         let selectedFontSize = 'small';
         let selectedFontFamily = 'EB Garamond';
         let selectedBorder = 'solid';
+        
+        // Historial para deshacer acciones
+        let history = [];
+        let historyIndex = -1;
 
         // Elementos DOM
         const workspace = document.getElementById('workspace');
         const a4Container = document.getElementById('a4Container');
         const connectionModeDiv = document.getElementById('connectionMode');
+        const disconnectModeDiv = document.getElementById('disconnectMode');
         const nodeInfo = document.getElementById('nodeInfo');
 
         // Actualizar título del mapa
         function updateMapTitle(title) {
             document.title = title + " - Mapa Interactivo";
+        }
+
+        // Guardar estado actual en el historial
+        function saveState() {
+            // Eliminar estados futuros si estamos en medio del historial
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            
+            // Guardar estado actual
+            history.push({
+                nodes: JSON.parse(JSON.stringify(nodes)),
+                connections: JSON.parse(JSON.stringify(connections))
+            });
+            
+            historyIndex = history.length - 1;
+            
+            // Limitar el historial a 50 estados para evitar uso excesivo de memoria
+            if (history.length > 50) {
+                history.shift();
+                historyIndex--;
+            }
+            
+            updateUndoCount();
+        }
+
+        // Deshacer última acción
+        function undoAction() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const state = history[historyIndex];
+                nodes = JSON.parse(JSON.stringify(state.nodes));
+                connections = JSON.parse(JSON.stringify(state.connections));
+                
+                renderAll();
+                updateCounters();
+                updateUndoCount();
+                
+                // Deseleccionar cualquier elemento seleccionado
+                selectedNodeId = null;
+                selectedConnection = null;
+            } else {
+                alert("No hay más acciones para deshacer");
+            }
+        }
+
+        // Actualizar contador de acciones deshacer
+        function updateUndoCount() {
+            document.getElementById('undoCount').textContent = historyIndex;
         }
 
         // Modal functions
@@ -1049,6 +1154,9 @@
                 return;
             }
 
+            // Guardar estado actual antes de realizar cambios
+            saveState();
+
             if (editingNodeId) {
                 // Editar nodo existente
                 const node = nodes.find(n => n.id === editingNodeId);
@@ -1152,6 +1260,9 @@
 
             if (!confirm('¿Estás seguro de que quieres eliminar este nodo?')) return;
 
+            // Guardar estado actual antes de eliminar
+            saveState();
+
             // Eliminar conexiones relacionadas
             connections = connections.filter(conn => 
                 conn.from !== selectedNodeId && conn.to !== selectedNodeId
@@ -1185,6 +1296,49 @@
             }
             
             document.getElementById('descriptionModal').style.display = 'block';
+        }
+
+        // Cargar desde archivo HTML
+        function loadFromHTML(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    
+                    // Extraer datos del HTML
+                    const nodesMatch = content.match(/const nodes = (\[.*?\]);/s);
+                    const connectionsMatch = content.match(/const connections = (\[.*?\]);/s);
+                    
+                    if (nodesMatch && connectionsMatch) {
+                        // Parsear los datos
+                        const newNodes = JSON.parse(nodesMatch[1]);
+                        const newConnections = JSON.parse(connectionsMatch[1]);
+                        
+                        // Guardar estado actual antes de cargar
+                        saveState();
+                        
+                        // Actualizar datos
+                        nodes = newNodes;
+                        connections = newConnections;
+                        
+                        // Actualizar contador de nodos
+                        nodeCounter = nodes.length;
+                        
+                        // Re-renderizar
+                        renderAll();
+                        updateCounters();
+                        
+                        alert('✅ Mapa cargado correctamente');
+                    } else {
+                        alert('❌ El archivo no contiene datos válidos del mapa');
+                    }
+                } catch (error) {
+                    alert('❌ Error al cargar el archivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
         }
 
         // Cerrar modal al hacer click fuera
@@ -1239,15 +1393,27 @@
             nodeElement.addEventListener('click', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
+                // Si estamos en modo desconexión, no seleccionar nodos
+                if (disconnectMode) return;
+                
                 // Deseleccionar nodo anterior
                 if (selectedNodeId) {
                     const prevNode = document.getElementById(selectedNodeId);
-                    if (prevNode) prevNode.style.boxShadow = '0 1.3px 5.2px rgba(0,0,0,0.3)';
+                    if (prevNode) prevNode.classList.remove('selected');
+                }
+                
+                // Deseleccionar conexión si había una seleccionada
+                if (selectedConnection) {
+                    const line = document.getElementById('conn-' + selectedConnection.from + '-' + selectedConnection.to);
+                    const arrow = document.getElementById('arrow-' + selectedConnection.from + '-' + selectedConnection.to);
+                    if (line) line.classList.remove('selected');
+                    if (arrow) arrow.classList.remove('selected');
+                    selectedConnection = null;
                 }
                 
                 // Seleccionar nuevo nodo
                 selectedNodeId = node.id;
-                nodeElement.style.boxShadow = '0 0 0 2px #8e44ad';
+                nodeElement.classList.add('selected');
                 
                 if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
                     createConnection(sourceNodeId, node.id);
@@ -1262,7 +1428,7 @@
             nodeElement.addEventListener('dblclick', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
-                if (!connectionMode) {
+                if (!connectionMode && !disconnectMode) {
                     showDescriptionModal(node.id);
                 }
             });
@@ -1320,6 +1486,9 @@
                 element.classList.remove('dragging');
                 document.removeEventListener('mousemove', onDrag);
                 document.removeEventListener('mouseup', stopDrag);
+                
+                // Guardar estado después de mover un nodo
+                saveState();
             }
         }
 
@@ -1330,8 +1499,9 @@
                 return;
             }
             setConnectionMode(true);
+            setDisconnectMode(false);
             sourceNodeId = null;
-            nodeInfo.innerHTML = '<p>🔗 Selecciona el primer nodo para conectar</p>';
+            connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
         }
 
         // Activar/desactivar modo conexión
@@ -1343,6 +1513,113 @@
             } else {
                 connectionModeDiv.style.display = 'none';
                 sourceNodeId = null;
+            }
+        }
+
+        // Iniciar modo desconexión
+        function startDisconnect() {
+            if (connections.length === 0) {
+                alert('No hay conexiones para eliminar');
+                return;
+            }
+            setDisconnectMode(true);
+            setConnectionMode(false);
+            disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
+        }
+
+        // Activar/desactivar modo desconexión
+        function setDisconnectMode(active) {
+            disconnectMode = active;
+            if (active) {
+                disconnectModeDiv.style.display = 'block';
+                disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
+                
+                // Hacer las conexiones clickeables
+                connections.forEach(conn => {
+                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
+                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
+                    
+                    if (line && arrow) {
+                        line.style.pointerEvents = 'auto';
+                        arrow.style.pointerEvents = 'auto';
+                        
+                        line.addEventListener('click', function() {
+                            selectConnection(conn);
+                        });
+                        
+                        arrow.addEventListener('click', function() {
+                            selectConnection(conn);
+                        });
+                    }
+                });
+            } else {
+                disconnectModeDiv.style.display = 'none';
+                
+                // Restaurar conexiones a no clickeables
+                connections.forEach(conn => {
+                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
+                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
+                    
+                    if (line && arrow) {
+                        line.style.pointerEvents = 'none';
+                        arrow.style.pointerEvents = 'none';
+                    }
+                });
+            }
+        }
+
+        // Seleccionar una conexión
+        function selectConnection(conn) {
+            if (!disconnectMode) return;
+            
+            // Deseleccionar conexión anterior si existe
+            if (selectedConnection) {
+                const prevLine = document.getElementById('conn-' + selectedConnection.from + '-' + selectedConnection.to);
+                const prevArrow = document.getElementById('arrow-' + selectedConnection.from + '-' + selectedConnection.to);
+                if (prevLine) prevLine.classList.remove('selected');
+                if (prevArrow) prevArrow.classList.remove('selected');
+            }
+            
+            // Deseleccionar nodo si estaba seleccionado
+            if (selectedNodeId) {
+                const prevNode = document.getElementById(selectedNodeId);
+                if (prevNode) prevNode.classList.remove('selected');
+                selectedNodeId = null;
+            }
+            
+            // Seleccionar nueva conexión
+            selectedConnection = conn;
+            const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
+            const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
+            
+            if (line && arrow) {
+                line.classList.add('selected');
+                arrow.classList.add('selected');
+                
+                // Preguntar si desea eliminar la conexión
+                if (confirm('¿Estás seguro de que quieres eliminar esta conexión?')) {
+                    // Guardar estado antes de eliminar
+                    saveState();
+                    
+                    // Eliminar conexión
+                    connections = connections.filter(c => 
+                        !(c.from === conn.from && c.to === conn.to)
+                    );
+                    
+                    // Re-renderizar
+                    renderAll();
+                    updateCounters();
+                    
+                    // Salir del modo desconexión si no hay más conexiones
+                    if (connections.length === 0) {
+                        setDisconnectMode(false);
+                    }
+                } else {
+                    // Deseleccionar si el usuario cancela
+                    line.classList.remove('selected');
+                    arrow.classList.remove('selected');
+                    selectedConnection = null;
+                }
             }
         }
 
@@ -1363,6 +1640,9 @@
                 alert('No puedes conectar un nodo consigo mismo');
                 return;
             }
+
+            // Guardar estado antes de crear conexión
+            saveState();
 
             connections.push({ from: fromId, to: toId });
             renderConnection(fromId, toId);
@@ -1443,9 +1723,13 @@
         function clearAll() {
             if (!confirm('¿Estás seguro de que quieres eliminar todo?')) return;
             
+            // Guardar estado antes de limpiar
+            saveState();
+            
             nodes = [];
             connections = [];
             selectedNodeId = null;
+            selectedConnection = null;
             renderAll();
             updateCounters();
         }
@@ -1456,6 +1740,11 @@
             nodes.forEach(node => renderNode(node));
             connections.forEach(conn => renderConnection(conn.from, conn.to));
             updateWorkspaceTransform();
+            
+            // Si estamos en modo desconexión, reactivar el modo
+            if (disconnectMode) {
+                setDisconnectMode(true);
+            }
         }
 
         // Generar código para exportar
@@ -1855,6 +2144,7 @@
         // Inicializar
         renderAll();
         updateCounters();
+        saveState(); // Guardar estado inicial
 
         // Agregar algunos nodos de ejemplo al inicio
         setTimeout(() => {
@@ -1895,6 +2185,7 @@
             nodes.push(node1, node2);
             renderAll();
             updateCounters();
+            saveState(); // Guardar estado con nodos de ejemplo
         }, 500);
     </script>
 </body>
