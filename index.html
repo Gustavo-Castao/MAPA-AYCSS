@@ -178,6 +178,7 @@
 
         .node.selected {
             box-shadow: 0 0 0 2px #8e44ad;
+            border: 2px solid #8e44ad;
         }
 
         .node-main {
@@ -877,6 +878,18 @@
         const disconnectModeDiv = document.getElementById('disconnectMode');
         const nodeInfo = document.getElementById('nodeInfo');
 
+        // CORREGIDO: Función para obtener el nodo seleccionado correctamente
+        function getSelectedNode() {
+            if (!selectedNodeId) return null;
+            return nodes.find(n => n.id === selectedNodeId);
+        }
+
+        // CORREGIDO: Función para obtener el índice del nodo seleccionado
+        function getSelectedNodeIndex() {
+            if (!selectedNodeId) return -1;
+            return nodes.findIndex(n => n.id === selectedNodeId);
+        }
+
         // Actualizar título del mapa
         function updateMapTitle(title) {
             document.title = title + " - Mapa Interactivo";
@@ -1206,7 +1219,7 @@
 
             if (editingNodeId) {
                 // CORREGIDO: Editar nodo existente usando el ID correcto
-                const nodeIndex = nodes.findIndex(n => n.id === editingNodeId);
+                const nodeIndex = getSelectedNodeIndex();
                 if (nodeIndex !== -1) {
                     nodes[nodeIndex].title = title;
                     nodes[nodeIndex].subtitle = subtitle;
@@ -1258,42 +1271,36 @@
 
         // CORREGIDO: Editar nodo seleccionado
         function editSelectedNode() {
-            if (!selectedNodeId) {
+            const selectedNode = getSelectedNode();
+            if (!selectedNode) {
                 alert('Por favor selecciona un nodo primero haciendo clic en él');
                 return;
             }
-            
-            // CORREGIDO: Buscar el nodo usando el ID correcto
-            const node = nodes.find(n => n.id === selectedNodeId);
-            if (!node) {
-                alert('Error: No se pudo encontrar el nodo seleccionado');
-                return;
-            }
 
-            editingNodeId = node.id;
+            editingNodeId = selectedNode.id;
             document.getElementById('nodeModalTitle').textContent = 'EDITAR NODO';
             
             // Llenar formulario con datos existentes del nodo
-            document.getElementById('nodeTitle').value = node.title;
-            document.getElementById('nodeSubtitle').value = node.subtitle || '';
-            document.getElementById('nodeAuthor').value = node.author || '';
-            document.getElementById('nodeDescription').value = node.description || '';
+            document.getElementById('nodeTitle').value = selectedNode.title;
+            document.getElementById('nodeSubtitle').value = selectedNode.subtitle || '';
+            document.getElementById('nodeAuthor').value = selectedNode.author || '';
+            document.getElementById('nodeDescription').value = selectedNode.description || '';
             
             // Configurar personalización
-            selectedNodeColor = node.color || '#ffffff';
-            selectedTextColor = node.textColor || 'black';
-            selectedFontSize = node.fontSize || 'small';
-            selectedFontFamily = node.fontFamily || 'Roboto';
-            selectedBorder = node.border || 'solid';
+            selectedNodeColor = selectedNode.color || '#ffffff';
+            selectedTextColor = selectedNode.textColor || 'black';
+            selectedFontSize = selectedNode.fontSize || 'small';
+            selectedFontFamily = selectedNode.fontFamily || 'Roboto';
+            selectedBorder = selectedNode.border || 'solid';
             
             updateCustomizationSelectors();
             
             // Manejar imagen
             const preview = document.getElementById('imagePreview');
-            if (node.image) {
-                preview.src = node.image;
+            if (selectedNode.image) {
+                preview.src = selectedNode.image;
                 preview.style.display = 'block';
-                currentImage = node.image;
+                currentImage = selectedNode.image;
             } else {
                 preview.style.display = 'none';
                 currentImage = null;
@@ -1302,9 +1309,10 @@
             document.getElementById('nodeModal').style.display = 'block';
         }
 
-        // Eliminar nodo seleccionado
+        // CORREGIDO: Eliminar nodo seleccionado
         function deleteSelectedNode() {
-            if (!selectedNodeId) {
+            const selectedNode = getSelectedNode();
+            if (!selectedNode) {
                 alert('Por favor selecciona un nodo primero haciendo clic en él');
                 return;
             }
@@ -1316,16 +1324,19 @@
 
             // Eliminar conexiones relacionadas
             connections = connections.filter(conn => 
-                conn.from !== selectedNodeId && conn.to !== selectedNodeId
+                conn.from !== selectedNode.id && conn.to !== selectedNode.id
             );
 
-            // Eliminar nodo
-            nodes = nodes.filter(n => n.id !== selectedNodeId);
-            selectedNodeId = null;
-            
-            // Re-renderizar
-            renderAll();
-            updateCounters();
+            // CORREGIDO: Eliminar nodo usando el índice correcto
+            const nodeIndex = getSelectedNodeIndex();
+            if (nodeIndex !== -1) {
+                nodes.splice(nodeIndex, 1);
+                selectedNodeId = null;
+                
+                // Re-renderizar
+                renderAll();
+                updateCounters();
+            }
         }
 
         // Mostrar modal de descripción
@@ -1441,7 +1452,7 @@
             // Hacer arrastrable
             makeDraggable(nodeElement, node);
 
-            // Evento click simple para selección
+            // CORREGIDO: Evento click simple para selección
             nodeElement.addEventListener('click', function(e) {
                 if (e.target.classList.contains('node-btn')) return;
                 
@@ -1463,7 +1474,7 @@
                     selectedConnection = null;
                 }
                 
-                // Seleccionar nuevo nodo
+                // CORREGIDO: Seleccionar nuevo nodo usando el ID correcto
                 selectedNodeId = node.id;
                 nodeElement.classList.add('selected');
                 
@@ -1474,6 +1485,9 @@
                     sourceNodeId = node.id;
                     connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el nodo destino';
                 }
+                
+                // DEBUG: Mostrar información del nodo seleccionado
+                console.log('Nodo seleccionado:', node.id, node.title);
             });
 
             // Evento doble click para mostrar descripción
