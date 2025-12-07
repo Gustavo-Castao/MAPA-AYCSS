@@ -3,2229 +3,1055 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo Arte y Ciencias Sociales</title>
+    <title>Mapa Conceptual Interactivo Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ESTILOS GENERALES Y DE DISEÑO */
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         body {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
             background: #1a1a2e;
             min-height: 100vh;
-            padding: 13px;
+            padding: 15px;
             color: #e6e6e6;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: #16213e;
-            border-radius: 6.5px;
-            padding: 13px;
-            box-shadow: 0 1.3px 6.5px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            gap: 13px;
+            gap: 15px;
+            height: calc(100vh - 30px);
         }
 
-        .header {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-
+        /* CABECERA */
+        .header { display: flex; justify-content: center; margin-bottom: 5px; }
         .title-input {
-            background: transparent;
+            background: #4a235a;
             border: none;
             text-align: center;
-            color: #e6e6e6;
-            font-size: 18px;
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: bold;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 10px 20px;
-            border-radius: 4px;
-            width: 80%;
+            letter-spacing: 1.5px;
+            padding: 10px 30px;
+            border-radius: 6px;
+            width: 100%;
             max-width: 800px;
-            background: #4a235a;
+            transition: 0.3s;
         }
+        .title-input:focus { background: #5b2b6b; box-shadow: 0 0 0 2px #8e44ad; }
 
-        .title-input:focus {
-            outline: 2px solid #8e44ad;
-            background: #5b2b6b;
-        }
+        /* LAYOUT PRINCIPAL */
+        .content { display: flex; gap: 15px; flex: 1; overflow: hidden; }
 
-        .content {
-            display: flex;
-            gap: 13px;
-        }
-
+        /* BARRA LATERAL */
         .sidebar {
-            width: 160px;
+            width: 180px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
+        
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
 
         .btn {
-            padding: 8px 10px;
+            padding: 10px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 10px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 700;
             transition: all 0.2s ease;
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            background: #4a235a;
-            color: #ffffff;
+            color: white;
             text-transform: uppercase;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
-            background: #5b2b6b;
-        }
-
-        .btn-primary { background: #4a235a; }
-        .btn-success { background: #5b2b6b; }
-        .btn-warning { background: #6c3483; }
-        .btn-info { background: #7d3c98; }
-        .btn-export { background: #8e44ad; }
-        .btn-preview { background: #9b59b6; }
-        .btn-danger { background: #a569bd; }
-        .btn-bg { background: #af7ac5; }
-        .btn-png { background: #bb8fce; }
-        .btn-undo { background: #d35400; }
-        .btn-disconnect { background: #c0392b; }
-        .btn-open { background: #16a085; }
-        .btn-save { background: #27ae60; }
-
-        .workspace-container {
-            position: relative;
-            flex: 1;
-            height: 600px;
-            overflow: hidden;
-            border: 1.3px solid #2d3748;
-            border-radius: 5.2px;
-            margin-bottom: 13px;
-            background: #1a1a2e;
-            transition: background-color 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
-        }
-
-        .a4-container {
-            width: 1123px;
-            height: 794px;
-            background: white;
-            box-shadow: 0 0 0 2px #8e44ad;
+            gap: 8px;
+            width: 100%;
             position: relative;
             overflow: hidden;
         }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn:active { transform: translateY(1px); }
+        .btn i { font-size: 14px; width: 20px; text-align: center; }
 
-        .workspace {
+        /* Colores de botones */
+        .btn-primary { background: linear-gradient(135deg, #4a235a, #8e44ad); }
+        .btn-warning { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .btn-danger { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .btn-info { background: linear-gradient(135deg, #2980b9, #3498db); }
+        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .btn-dark { background: #2c3e50; }
+
+        /* ESPACIO DE TRABAJO */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+        
+        .status-bar {
+            background: #2d3748;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 35px;
+        }
+        .mode-indicator { font-weight: bold; color: #f1c40f; display: none; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+        .workspace-wrapper {
+            flex: 1;
             position: relative;
-            width: 100%;
-            height: 100%;
+            overflow: hidden;
+            border: 2px solid #2d3748;
+            border-radius: 6px;
+            background: #0f1526;
+            cursor: grab;
+        }
+        .workspace-wrapper:active { cursor: grabbing; }
+
+        /* CONTENEDOR A4 ESCALABLE */
+        .canvas-container {
+            width: 1123px; /* A4 landscape 96dpi approx */
+            height: 794px;
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: absolute;
             transform-origin: 0 0;
-            transition: transform 0.3s ease;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: box-shadow 0.3s;
         }
 
+        /* NODOS */
         .node {
             position: absolute;
-            min-width: 80px;
-            max-width: 120px;
-            padding: 8px;
+            min-width: 100px;
+            max-width: 200px;
+            padding: 10px;
             background: white;
-            border-radius: 5.2px;
+            border-radius: 6px;
             cursor: pointer;
-            text-align: center;
-            box-shadow: 0 1.3px 5.2px rgba(0,0,0,0.3);
-            border: 1.3px solid #4a5568;
-            user-select: none;
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            border: 2px solid transparent; /* Para evitar salto al seleccionar */
+            user-select: none; /* Crucial para evitar selección de texto al arrastrar */
             z-index: 10;
-            color: #000000;
+            transition: transform 0.1s, box-shadow 0.2s;
             font-family: 'Roboto', sans-serif;
-            font-size: 0.7em;
+            overflow: hidden;
         }
 
-        .node.small { font-size: 0.7em; }
-        .node.medium { font-size: 0.85em; }
-        .node.large { font-size: 1em; }
-
-        .node:hover {
-            transform: scale(1.03);
-            box-shadow: 0 2.6px 7.8px rgba(0,0,0,0.4);
-        }
-
-        .node.dragging {
-            transform: scale(1.05);
-            box-shadow: 0 3.9px 13px rgba(0,0,0,0.5);
-            z-index: 1000;
-            cursor: grabbing;
-        }
-
+        .node:hover { z-index: 100; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+        
+        /* Estados del nodo */
         .node.selected {
-            box-shadow: 0 0 0 2px #8e44ad;
-            border: 2px solid #8e44ad;
-        }
-
-        .node-main {
             border-color: #8e44ad;
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.4);
+            z-index: 90;
+        }
+        
+        .node.dragging {
+            opacity: 0.9;
+            transform: scale(1.02);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+            cursor: grabbing;
+            z-index: 1000;
         }
 
-        .node-title {
-            font-weight: 600;
-            margin-bottom: 1.3px;
-            line-height: 1.2;
-        }
+        .node-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.2; pointer-events: none; }
+        .node-subtitle { font-weight: 400; font-size: 11px; color: #555; font-style: italic; pointer-events: none; }
+        .node-img { width: 100%; height: auto; margin-bottom: 5px; border-radius: 3px; pointer-events: none; display: block; }
 
-        .node-subtitle {
-            font-weight: 500;
-            margin-bottom: 5.2px;
-            font-style: italic;
-            line-height: 1.2;
-            opacity: 0.8;
-        }
-
+        /* CONEXIONES */
         .connection {
             position: absolute;
             background: #718096;
             height: 2px;
-            transform-origin: 0 0;
-            pointer-events: none;
-            z-index: 5;
+            transform-origin: 0 50%; /* Pivot a la izquierda centro */
+            pointer-events: none; /* Clics pasan a través */
+            z-index: 1;
+            transition: background 0.2s, height 0.2s;
         }
-
-        .connection.selected {
-            background: #e74c3c;
-            height: 3px;
+        
+        .connection.interactive { pointer-events: auto; cursor: pointer; height: 6px; background: transparent; }
+        .connection.interactive:hover + .connection-visible { background: #e74c3c; height: 3px; }
+        
+        .connection-visible {
+            position: absolute;
+            background: #718096;
+            height: 2px;
+            transform-origin: 0 50%;
+            pointer-events: none;
+            z-index: 2;
         }
 
         .connection-arrow {
             position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid #718096;
+            width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #718096;
             transform-origin: center;
             pointer-events: none;
-            z-index: 6;
+            z-index: 3;
         }
 
-        .connection-arrow.selected {
-            border-top-color: #e74c3c;
+        /* CONTROLES DE ZOOM */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            background: rgba(26, 26, 46, 0.8);
+            padding: 5px;
+            border-radius: 8px;
+            z-index: 50;
         }
-
-        .connection-mode {
-            background: #744210;
-            color: #fef3c7;
-            padding: 5.2px;
-            border-radius: 2.6px;
-            text-align: center;
-            margin-bottom: 5.2px;
-            display: none;
-            font-weight: bold;
-            font-size: 8.45px;
+        .zoom-btn {
+            width: 30px; height: 30px;
+            border: none;
+            background: #4a235a;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
         }
+        .zoom-btn:hover { background: #5b2b6b; }
 
-        .disconnect-mode {
-            background: #7b241c;
-            color: #fadbd8;
-            padding: 5.2px;
-            border-radius: 2.6px;
-            text-align: center;
-            margin-bottom: 5.2px;
-            display: none;
-            font-weight: bold;
-            font-size: 8.45px;
-        }
-
+        /* MODALES */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            animation: fadeIn 0.3s ease;
+            z-index: 2000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
         }
-
         .modal-content {
             background-color: #1a1a2e;
-            margin: 3.25% auto;
-            padding: 19.5px;
-            border-radius: 6.5px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 3.25px 16.25px rgba(0,0,0,0.5);
-            position: relative;
-            max-height: 80vh;
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid #4a5568;
+            border-radius: 10px;
+            width: 90%; max-width: 550px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-height: 90vh;
             overflow-y: auto;
-            animation: zoomIn 0.3s ease;
-            transform-origin: center center;
-            border: 1px solid #2d3748;
-            color: #e6e6e6;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes zoomIn {
-            from { 
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to { 
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .close-modal {
-            position: absolute;
-            right: 10.4px;
-            top: 10.4px;
-            font-size: 15.6px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #a0aec0;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 19.5px;
-            height: 19.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-modal:hover {
-            color: #e6e6e6;
-        }
-
-        .modal-title {
-            font-family: 'EB Garamond', serif;
-            font-size: 18.2px;
-            margin-bottom: 6.5px;
-            color: #e6e6e6;
-        }
-
-        .modal-subtitle {
-            font-family: 'EB Garamond', serif;
-            font-size: 9.1px;
-            margin-bottom: 10.4px;
-            color: #a0aec0;
-            font-style: italic;
-        }
-
-        .modal-author {
-            font-family: 'Calibri', sans-serif;
-            font-size: 7.8px;
-            margin-bottom: 13px;
-            color: #a0aec0;
-            font-style: italic;
-        }
-
-        .modal-image {
-            max-width: 100%;
-            max-height: 195px;
-            margin: 10.4px 0;
-            border-radius: 5.2px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .modal-description {
-            font-family: 'Calibri', sans-serif;
-            font-size: 10.4px;
-            line-height: 1.6;
-            color: #e6e6e6;
-            padding: 13px;
-            background: #2d3748;
-            border-radius: 3.25px;
-        }
-
-        .form-group {
-            margin-bottom: 7.8px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 2.6px;
-            font-weight: bold;
-            color: #e6e6e6;
-            font-size: 8.45px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 5.2px;
-            border: 0.65px solid #4a5568;
-            border-radius: 2.6px;
-            font-size: 8.45px;
-            background: #2d3748;
-            color: #e6e6e6;
-        }
-
-        .image-preview {
-            max-width: 100%;
-            max-height: 97.5px;
-            margin-top: 6.5px;
-            border-radius: 2.6px;
-            display: none;
-        }
-
-        .zoom-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #1a1a2e;
-            border-radius: 5px;
-            padding: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            z-index: 20;
-            border: 1px solid #2d3748;
-        }
-
-        .zoom-controls button {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            margin: 2px;
-            background: #4a235a;
-            color: #e6e6e6;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .zoom-controls button:hover {
-            background: #5b2b6b;
-        }
-
-        .info-panel {
-            background: #2d3748;
-            padding: 10.4px;
-            border-radius: 5.2px;
-            margin-bottom: 10.4px;
-            font-size: 0.65em;
-        }
-
-        .info-panel h3 {
-            font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif;
-            font-weight: 600;
-            color: #e6e6e6;
-        }
-
-        .preview-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
-        }
-
-        .preview-actions button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-print {
-            background: #1a5089;
             color: white;
+            animation: slideIn 0.3s ease;
         }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .color-picker-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .color-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .color-input-group label {
-            min-width: 60px;
-            margin-bottom: 0;
-        }
-
-        .color-input-group input {
-            flex: 1;
-        }
-
-        .color-preview {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            border: 1px solid #2d3748;
-        }
-
-        .node-customization {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #a0aec0; }
+        .form-control {
+            width: 100%;
             padding: 10px;
             background: #2d3748;
-            border-radius: 5px;
-        }
-
-        .customization-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .customization-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .font-size-option, .text-color-option, .font-family-option, .border-option {
-            padding: 5px 8px;
             border: 1px solid #4a5568;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 9px;
-            text-align: center;
-            flex: 1;
-            min-width: 60px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
         }
+        .form-control:focus { border-color: #8e44ad; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #2d3748; padding-top: 15px; }
 
-        .font-size-option.active, .text-color-option.active, .font-family-option.active, .border-option.active {
-            border-color: #8e44ad;
-            background: rgba(142, 68, 173, 0.2);
-        }
+        /* UTILIDADES VISUALES */
+        .color-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
+        .color-opt { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-opt.active { border-color: white; transform: scale(1.1); }
 
-        .transparent-bg {
-            background: linear-gradient(45deg, #ccc 25%, transparent 25%), 
-                        linear-gradient(-45deg, #ccc 25%, transparent 25%), 
-                        linear-gradient(45deg, transparent 75%, #ccc 75%), 
-                        linear-gradient(-45deg, transparent 75%, #ccc 75%);
-            background-size: 10px 10px;
-            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
-        }
-
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .workspace-container {
-                height: 500px;
-            }
-            
-            .a4-container {
-                width: 95%;
-                height: 400px;
-            }
-            
-            .btn {
-                flex: 1;
-                min-width: 120px;
-            }
-            
-            .node {
-                min-width: 70px;
-                padding: 6px;
-            }
-            
-            .modal-content {
-                margin: 1.3% auto;
-                width: 95%;
-                padding: 13px;
-            }
-        }
-
-        .file-input-hidden {
-            display: none;
-        }
-
-        .save-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .save-options button {
-            flex: 1;
+        .hidden-input { display: none; }
+        
+        /* MENSAJE FLOTANTE */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <input type="text" class="title-input" id="mapTitle" value="MAPA INTERACTIVO ARTE Y CIENCIAS SOCIALES" onchange="updateMapTitle(this.value)">
+            <input type="text" class="title-input" id="mapTitle" value="NUEVO MAPA CONCEPTUAL" placeholder="TÍTULO DEL PROYECTO">
         </div>
-        
+
         <div class="content">
             <div class="sidebar">
-                <button class="btn btn-primary" onclick="showNodeModal()">
-                    NODO
-                </button>
-                <button class="btn btn-warning" onclick="editSelectedNode()">
-                    EDITAR NODO
-                </button>
-                <button class="btn btn-danger" onclick="deleteSelectedNode()">
-                    BORRAR NODO
-                </button>
-                <button class="btn btn-info" onclick="startConnection()">
-                    CONECTAR
-                </button>
-                <button class="btn btn-disconnect" onclick="startDisconnect()">
-                    DESCONECTAR
-                </button>
-                <button class="btn btn-open" onclick="document.getElementById('fileInput').click()">
-                    ABRIR
-                </button>
-                <button class="btn btn-save" onclick="showSaveModal()">
-                    GUARDAR
-                </button>
-                <button class="btn btn-undo" onclick="undoAction()">
-                    DESHACER
-                </button>
-                <button class="btn btn-bg" onclick="showBackgroundModal()">
-                    FONDO
-                </button>
-                <button class="btn btn-danger" onclick="clearAll()">
-                    LIMPIAR TODO
-                </button>
-            </div>
+                <div style="font-size:10px; color:#a0aec0; margin-bottom:5px; font-weight:bold;">HERRAMIENTAS</div>
+                <button class="btn btn-primary" onclick="createNewNode()"><i class="fas fa-plus"></i> Nuevo Nodo</button>
+                <button class="btn btn-warning" onclick="editSelectedNode()"><i class="fas fa-pen"></i> Editar</button>
+                <button class="btn btn-danger" onclick="deleteSelected()"><i class="fas fa-trash"></i> Eliminar</button>
+                
+                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
+                
+                <button class="btn btn-info" onclick="toggleConnectionMode()"><i class="fas fa-project-diagram"></i> Conectar</button>
+                <button class="btn btn-dark" onclick="toggleDisconnectMode()"><i class="fas fa-cut"></i> Desconectar</button>
+                
+                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
+                
+                <button class="btn btn-success" onclick="copyNode()"><i class="fas fa-copy"></i> Copiar</button>
+                <button class="btn btn-success" onclick="pasteNode()"><i class="fas fa-paste"></i> Pegar</button>
+                
+                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
 
-            <!-- Input oculto para abrir archivos -->
-            <input type="file" id="fileInput" class="file-input-hidden" accept=".html" onchange="loadFromHTML(this.files[0])">
+                <button class="btn btn-primary" style="background:#2d3748" onclick="triggerLoad()"><i class="fas fa-folder-open"></i> Abrir</button>
+                <input type="file" id="fileInput" class="hidden-input" accept=".html" onchange="loadFile(this)">
+                <button class="btn btn-success" onclick="showSaveModal()"><i class="fas fa-save"></i> Guardar</button>
+                <button class="btn btn-danger" onclick="clearWorkspace()"><i class="fas fa-bomb"></i> Limpiar Todo</button>
+            </div>
 
             <div class="main-content">
-                <div class="connection-mode" id="connectionMode">
-                    🔗 Modo Conexión: Selecciona el nodo destino
-                </div>
-                
-                <div class="disconnect-mode" id="disconnectMode">
-                    ❌ Modo Desconexión: Selecciona una conexión para eliminar
+                <div class="status-bar">
+                    <span id="statusText">Listo para trabajar</span>
+                    <span id="modeIndicator" class="mode-indicator">MODO CONEXIÓN ACTIVADO</span>
+                    <span>Nodos: <span id="nodeCount">0</span> | Zoom: <span id="zoomValue">100%</span></span>
                 </div>
 
-                <div class="workspace-container" id="workspaceContainer">
-                    <div class="a4-container" id="a4Container">
-                        <div class="workspace" id="workspace">
-                            <!-- Los nodos y conexiones se crearán aquí -->
-                        </div>
-                    </div>
-                    <div class="zoom-controls">
-                        <button onclick="zoomIn()">+</button>
-                        <button onclick="zoomOut()">-</button>
-                        <button onclick="resetZoom()">⟳</button>
+                <div class="workspace-wrapper" id="workspaceWrapper">
+                    <div class="canvas-container" id="canvas">
+                        <div id="connectionsLayer"></div>
+                        <div id="nodesLayer"></div>
                     </div>
                 </div>
 
-                <div class="info-panel">
-                    <h3>💡 INFORMACIÓN DEL MAPA</h3>
-                    <div id="nodeInfo">
-                        <p>Haz doble click en cualquier nodo para ver sus opciones</p>
-                        <p>Total de nodos: <span id="nodesCount">0</span> | Conexiones: <span id="connectionsCount">0</span></p>
-                        <p>Acciones disponibles para deshacer: <span id="undoCount">0</span></p>
-                    </div>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="setZoom(-0.1)">-</button>
+                    <button class="zoom-btn" onclick="resetZoom()">1:1</button>
+                    <button class="zoom-btn" onclick="setZoom(0.1)">+</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal para crear/editar nodo -->
     <div id="nodeModal" class="modal">
         <div class="modal-content">
-            <button class="close-modal" onclick="closeNodeModal()">&times;</button>
-            <h3 class="modal-title" id="nodeModalTitle">CREAR NUEVO NODO</h3>
+            <h3 style="margin-bottom:15px; color:#e6e6e6;">Editar Nodo</h3>
+            <input type="hidden" id="editNodeId">
+            
             <div class="form-group">
-                <label for="nodeTitle">TÍTULO:</label>
-                <input type="text" id="nodeTitle" placeholder="Ej: Inteligencia Artificial">
-            </div>
-            <div class="form-group">
-                <label for="nodeSubtitle">SUBTÍTULO:</label>
-                <input type="text" id="nodeSubtitle" placeholder="Ej: Definición y conceptos básicos">
-            </div>
-            <div class="form-group">
-                <label for="nodeAuthor">TEXTO O AUTOR:</label>
-                <input type="text" id="nodeAuthor" placeholder="Ej: Roger Charnier (1990)">
-            </div>
-            <div class="form-group">
-                <label for="nodeDescription">DESCRIPCIÓN:</label>
-                <textarea id="nodeDescription" placeholder="Ej: La inteligencia artificial es el campo de la informática que se centra en la creación de sistemas que pueden realizar tareas que normalmente requieren inteligencia humana..." rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="nodeImage">IMAGEN (OPCIONAL):</label>
-                <input type="file" id="nodeImage" accept="image/*" onchange="previewImage(this)">
-                <img id="imagePreview" class="image-preview" alt="Vista previa de imagen">
+                <label>Título</label>
+                <input type="text" id="inputTitle" class="form-control" placeholder="Concepto principal">
             </div>
             
-            <div class="node-customization">
-                <h4 style="font-size: 11px; margin-bottom: 8px;">PERSONALIZACIÓN DEL NODO</h4>
-                
-                <div class="customization-group">
-                    <label>COLOR DE FONDO:</label>
-                    <button class="btn" onclick="showColorPickerModal('node')" style="width: 100%; margin-bottom: 10px;">SELECCIONAR COLOR</button>
-                    <div class="color-input-group">
-                        <label>Color:</label>
-                        <div id="nodeColorPreview" class="color-preview" style="background: #ffffff;"></div>
+            <div class="form-group">
+                <label>Subtítulo</label>
+                <input type="text" id="inputSubtitle" class="form-control" placeholder="Detalle breve">
+            </div>
+
+            <div class="form-group">
+                <label>Descripción / Texto</label>
+                <textarea id="inputDesc" class="form-control" rows="3" placeholder="Contenido extenso..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Color de fondo</label>
+                <div class="color-grid" id="colorGrid">
                     </div>
-                </div>
-                
-                <div class="customization-group">
-                    <label>COLOR DE TEXTO:</label>
-                    <div class="customization-row">
-                        <div class="text-color-option active" onclick="selectTextColor('black', this)">NEGRO</div>
-                        <div class="text-color-option" onclick="selectTextColor('white', this)">BLANCO</div>
-                    </div>
-                </div>
-                
-                <div class="customization-group">
-                    <label>TAMAÑO DE LETRA:</label>
-                    <div class="customization-row">
-                        <div class="font-size-option active" onclick="selectFontSize('small', this)">PEQUEÑO</div>
-                        <div class="font-size-option" onclick="selectFontSize('medium', this)">MEDIANO</div>
-                        <div class="font-size-option" onclick="selectFontSize('large', this)">GRANDE</div>
-                    </div>
-                </div>
-                
-                <div class="customization-group">
-                    <label>TIPOGRAFÍA:</label>
-                    <div class="customization-row">
-                        <div class="font-family-option active" onclick="selectFontFamily('Roboto', this)" style="font-family: 'Roboto'">ROBOTO</div>
-                        <div class="font-family-option" onclick="selectFontFamily('EB Garamond', this)" style="font-family: 'EB Garamond'">GARAMOND</div>
-                    </div>
+            </div>
+
+            <div class="form-group">
+                <label>Imagen (URL o Local)</label>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn btn-info" style="width:auto" onclick="document.getElementById('imgUpload').click()">Subir</button>
+                    <input type="file" id="imgUpload" class="hidden-input" accept="image/*" onchange="handleImageUpload(this)">
+                    <input type="text" id="inputImage" class="form-control" placeholder="...o pega URL de imagen">
                 </div>
             </div>
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="saveNode()" style="flex: 1;">GUARDAR NODO</button>
-                <button class="btn btn-danger" onclick="closeNodeModal()" style="flex: 1;">CANCELAR</button>
+
+            <div class="modal-footer">
+                <button class="btn btn-danger" style="width:auto" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-success" style="width:auto" onclick="saveNodeData()">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal para descripción -->
-    <div id="descriptionModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal()">&times;</button>
-            <h2 class="modal-title" id="modalTitle"></h2>
-            <h3 class="modal-subtitle" id="modalSubtitle"></h3>
-            <div class="modal-author" id="modalAuthor"></div>
-            <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
-            <div class="modal-description" id="modalDescription"></div>
-        </div>
-    </div>
-
-    <!-- Modal para guardar -->
     <div id="saveModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeSaveModal()">&times;</button>
-            <h3 class="modal-title">GUARDAR MAPA</h3>
-            <p>Selecciona el formato en el que deseas guardar tu mapa:</p>
-            
-            <div class="save-options">
-                <button class="btn btn-primary" onclick="downloadHTML()">GUARDAR COMO HTML</button>
-                <button class="btn btn-png" onclick="exportToPNG()">GUARDAR COMO PNG</button>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <button class="btn btn-danger" onclick="closeSaveModal()" style="width: 100%;">CANCELAR</button>
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+            <h3>Guardar Proyecto</h3>
+            <p style="color:#a0aec0; margin:10px 0 20px;">Elige el formato de descarga:</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn btn-primary" onclick="downloadHTML()">Archivo Editable (.HTML)</button>
+                <button class="btn btn-info" onclick="downloadPNG()">Imagen (.PNG)</button>
+                <button class="btn btn-danger" onclick="document.getElementById('saveModal').style.display='none'">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal para vista previa -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closePreviewModal()">&times;</button>
-            <h3 class="modal-title">VISTA PREVIA DEL MAPA</h3>
-            <div id="previewContent" style="border: 1px solid #4a5568; border-radius: 5px; padding: 10px; background: #1a1a2e; min-height: 400px; overflow: auto;">
-                <!-- Contenido de la vista previa -->
-            </div>
-            <div class="preview-actions">
-                <button class="btn-print" onclick="printPreview()">IMPRIMIR</button>
-                <button class="btn btn-danger" onclick="closePreviewModal()">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para seleccionar color de fondo -->
-    <div id="backgroundModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeBackgroundModal()">&times;</button>
-            <h3 class="modal-title">CONFIGURACIÓN DE FONDO</h3>
-            
-            <div class="form-group">
-                <label>COLOR DE FONDO:</label>
-                <button class="btn" onclick="showColorPickerModal('background')" style="width: 100%; margin-bottom: 10px;">SELECCIONAR COLOR</button>
-                <div class="color-input-group">
-                    <label>Color actual:</label>
-                    <div id="bgColorPreview" class="color-preview" style="background: #ffffff;"></div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="applyBackground()" style="flex: 1;">APLICAR</button>
-                <button class="btn btn-danger" onclick="closeBackgroundModal()" style="flex: 1;">CANCELAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para selector de color personalizado -->
-    <div id="colorPickerModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeColorPickerModal()">&times;</button>
-            <h3 class="modal-title" id="colorPickerTitle">SELECCIONAR COLOR</h3>
-            
-            <div class="color-picker-container">
-                <div class="color-input-group">
-                    <label>R:</label>
-                    <input type="range" id="colorR" min="0" max="255" value="255" oninput="updateCustomColor()">
-                    <input type="number" id="colorRValue" min="0" max="255" value="255" oninput="updateCustomColorFromInput()">
-                </div>
-                
-                <div class="color-input-group">
-                    <label>G:</label>
-                    <input type="range" id="colorG" min="0" max="255" value="255" oninput="updateCustomColor()">
-                    <input type="number" id="colorGValue" min="0" max="255" value="255" oninput="updateCustomColorFromInput()">
-                </div>
-                
-                <div class="color-input-group">
-                    <label>B:</label>
-                    <input type="range" id="colorB" min="0" max="255" value="255" oninput="updateCustomColor()">
-                    <input type="number" id="colorBValue" min="0" max="255" value="255" oninput="updateCustomColorFromInput()">
-                </div>
-                
-                <div class="color-input-group">
-                    <label>Color:</label>
-                    <div id="customColorPreview" class="color-preview" style="background: rgb(255, 255, 255);"></div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="applyCustomColor()" style="flex: 1;">APLICAR</button>
-                <button class="btn btn-danger" onclick="closeColorPickerModal()" style="flex: 1;">CANCELAR</button>
-            </div>
-        </div>
-    </div>
+    <div id="toast" class="toast">Acción completada</div>
 
     <script>
-        // Variables globales
-        let nodes = [];
-        let connections = [];
-        let connectionMode = false;
-        let disconnectMode = false;
-        let sourceNodeId = null;
-        let nodeCounter = 0;
-        let currentImage = null;
-        let editingNodeId = null;
-        let selectedNodeId = null;
-        let selectedConnection = null;
-        let zoomLevel = 1;
-        let translateX = 0, translateY = 0;
-        
-        // Variables de personalización de nodo - VALORES POR DEFECTO
-        let selectedNodeColor = '#ffffff';
-        let selectedTextColor = 'black';
-        let selectedFontSize = 'small';
-        let selectedFontFamily = 'Roboto';
-        let selectedBorder = 'solid';
-        
-        // Historial para deshacer acciones
-        let history = [];
-        let historyIndex = -1;
-        
-        // Variables para el selector de color personalizado
-        let currentColorPickerType = null;
-        let customColor = { r: 255, g: 255, b: 255 };
+        // --- ESTADO DE LA APLICACIÓN ---
+        const state = {
+            nodes: [],       // Array de objetos nodo
+            connections: [], // Array de objetos conexión {from: id, to: id}
+            scale: 1,
+            pan: { x: 0, y: 0 },
+            selectedNodeId: null,
+            mode: 'select',  // 'select', 'connect', 'disconnect'
+            connectSourceId: null,
+            clipboard: null,
+            isDraggingCanvas: false,
+            lastMousePos: { x: 0, y: 0 }
+        };
 
-        // Elementos DOM
-        const workspace = document.getElementById('workspace');
-        const a4Container = document.getElementById('a4Container');
-        const connectionModeDiv = document.getElementById('connectionMode');
-        const disconnectModeDiv = document.getElementById('disconnectMode');
-        const nodeInfo = document.getElementById('nodeInfo');
-
-        // CORREGIDO: Función para obtener el nodo seleccionado correctamente
-        function getSelectedNode() {
-            if (!selectedNodeId) return null;
-            return nodes.find(n => n.id === selectedNodeId);
+        // --- REFERENCIAS DOM ---
+        const canvas = document.getElementById('canvas');
+        const nodesLayer = document.getElementById('nodesLayer');
+        const connectionsLayer = document.getElementById('connectionsLayer');
+        const workspaceWrapper = document.getElementById('workspaceWrapper');
+        
+        // --- UTILIDADES ---
+        // Generador de ID Único (Crucial para evitar bugs de vinculación)
+        function generateUUID() {
+            return 'node_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // CORREGIDO: Función para obtener el índice del nodo seleccionado
-        function getSelectedNodeIndex() {
-            if (!selectedNodeId) return -1;
-            return nodes.findIndex(n => n.id === selectedNodeId);
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 2000);
         }
 
-        // Actualizar título del mapa
-        function updateMapTitle(title) {
-            document.title = title + " - Mapa Interactivo";
-        }
-
-        // Guardar estado actual en el historial
-        function saveState() {
-            // Eliminar estados futuros si estamos en medio del historial
-            if (historyIndex < history.length - 1) {
-                history = history.slice(0, historyIndex + 1);
-            }
+        // --- GESTIÓN DE NODOS ---
+        
+        function createNewNode(x = 100, y = 100, data = null) {
+            const id = generateUUID();
+            const node = {
+                id: id,
+                x: x,
+                y: y,
+                title: data ? data.title : 'Nuevo Concepto',
+                subtitle: data ? data.subtitle : '',
+                desc: data ? data.desc : '',
+                color: data ? data.color : '#ffffff',
+                image: data ? data.image : '',
+                width: 150
+            };
             
-            // Guardar estado actual
-            history.push({
-                nodes: JSON.parse(JSON.stringify(nodes)),
-                connections: JSON.parse(JSON.stringify(connections))
+            state.nodes.push(node);
+            renderNode(node);
+            updateStats();
+            return id;
+        }
+
+        function renderNode(node) {
+            const el = document.createElement('div');
+            el.id = node.id;
+            el.className = 'node';
+            el.style.left = node.x + 'px';
+            el.style.top = node.y + 'px';
+            el.style.backgroundColor = node.color;
+            // Texto oscuro si el fondo es claro, claro si es oscuro (simplificado)
+            el.style.color = isDark(node.color) ? '#fff' : '#000';
+
+            let imgHTML = '';
+            if (node.image) {
+                imgHTML = `<img src="${node.image}" class="node-img" alt="">`;
+            }
+
+            el.innerHTML = `
+                ${imgHTML}
+                <div class="node-title">${node.title}</div>
+                <div class="node-subtitle">${node.subtitle}</div>
+            `;
+
+            // EVENTOS DEL NODO
+            el.addEventListener('mousedown', (e) => startDragNode(e, node.id));
+            el.addEventListener('touchstart', (e) => startDragNode(e, node.id), {passive: false});
+            
+            // Evento Click manejado separadamente para evitar conflictos con drag
+            el.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar seleccionar canvas
+                if (el.getAttribute('data-was-dragged') === 'true') return; // Si se arrastró, no es un click
+                handleNodeClick(node.id);
             });
             
-            historyIndex = history.length - 1;
-            
-            // Limitar el historial a 50 estados para evitar uso excesivo de memoria
-            if (history.length > 50) {
-                history.shift();
-                historyIndex--;
-            }
-            
-            updateUndoCount();
+            // Doble click para editar
+            el.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                editNode(node.id);
+            });
+
+            nodesLayer.appendChild(el);
         }
 
-        // Deshacer última acción
-        function undoAction() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                const state = history[historyIndex];
-                nodes = JSON.parse(JSON.stringify(state.nodes));
-                connections = JSON.parse(JSON.stringify(state.connections));
-                
-                renderAll();
-                updateCounters();
-                updateUndoCount();
-                
-                // Deseleccionar cualquier elemento seleccionado
-                selectedNodeId = null;
-                selectedConnection = null;
+        function updateNodeVisuals(id) {
+            const node = state.nodes.find(n => n.id === id);
+            if (!node) return;
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            el.style.backgroundColor = node.color;
+            el.style.color = isDark(node.color) ? '#fff' : '#000';
+            
+            let imgHTML = '';
+            if (node.image) imgHTML = `<img src="${node.image}" class="node-img" alt="">`;
+            
+            el.innerHTML = `
+                ${imgHTML}
+                <div class="node-title">${node.title}</div>
+                <div class="node-subtitle">${node.subtitle}</div>
+            `;
+            
+            if (state.selectedNodeId === id) el.classList.add('selected');
+            else el.classList.remove('selected');
+            
+            updateConnections();
+        }
+
+        function handleNodeClick(id) {
+            if (state.mode === 'connect') {
+                if (state.connectSourceId === null) {
+                    state.connectSourceId = id;
+                    showToast('Selecciona el nodo destino');
+                    document.getElementById(id).classList.add('selected'); // Visual feedback
+                } else {
+                    if (state.connectSourceId !== id) {
+                        createConnection(state.connectSourceId, id);
+                        resetMode();
+                    } else {
+                        showToast('No puedes conectar un nodo a sí mismo');
+                        resetMode();
+                    }
+                }
+            } else if (state.mode === 'disconnect') {
+                // Modo desconectar es mejor vía las líneas, pero por si acaso
             } else {
-                alert("No hay más acciones para deshacer");
+                selectNode(id);
             }
         }
 
-        // Actualizar contador de acciones deshacer
-        function updateUndoCount() {
-            document.getElementById('undoCount').textContent = historyIndex;
+        function selectNode(id) {
+            // Deseleccionar anterior
+            if (state.selectedNodeId) {
+                const prev = document.getElementById(state.selectedNodeId);
+                if (prev) prev.classList.remove('selected');
+            }
+            
+            if (id) {
+                state.selectedNodeId = id;
+                const el = document.getElementById(id);
+                if (el) el.classList.add('selected');
+            } else {
+                state.selectedNodeId = null;
+            }
         }
 
-        // Modal functions
-        function showNodeModal() {
+        // --- ARRASTRAR NODOS (DRAG & DROP) ---
+        function startDragNode(e, id) {
+            if (e.target.tagName === 'BUTTON') return; // Si hubiera botones dentro
+            if (e.button !== 0 && e.type === 'mousedown') return; // Solo click izquierdo
+            
+            e.preventDefault(); // Evitar scroll en touch
+            e.stopPropagation();
+
+            const node = state.nodes.find(n => n.id === id);
+            const el = document.getElementById(id);
+            el.classList.add('dragging');
+            el.setAttribute('data-was-dragged', 'false'); // Reset flag
+
+            // Coordenadas iniciales
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            const startMouseX = clientX;
+            const startMouseY = clientY;
+            const startNodeX = node.x;
+            const startNodeY = node.y;
+
+            let hasMoved = false;
+
+            function move(ev) {
+                const curX = ev.type.includes('touch') ? ev.touches[0].clientX : ev.clientX;
+                const curY = ev.type.includes('touch') ? ev.touches[0].clientY : ev.clientY;
+
+                const dx = (curX - startMouseX) / state.scale;
+                const dy = (curY - startMouseY) / state.scale;
+
+                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                    hasMoved = true;
+                    el.setAttribute('data-was-dragged', 'true');
+                }
+
+                node.x = startNodeX + dx;
+                node.y = startNodeY + dy;
+
+                el.style.left = node.x + 'px';
+                el.style.top = node.y + 'px';
+                
+                requestAnimationFrame(updateConnections);
+            }
+
+            function stop() {
+                el.classList.remove('dragging');
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', stop);
+                document.removeEventListener('touchmove', move);
+                document.removeEventListener('touchend', stop);
+            }
+
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', stop);
+            document.addEventListener('touchmove', move, {passive: false});
+            document.addEventListener('touchend', stop);
+        }
+
+        // --- GESTIÓN DE CONEXIONES ---
+        function createConnection(fromId, toId) {
+            // Verificar duplicados
+            const exists = state.connections.some(c => 
+                (c.from === fromId && c.to === toId) || 
+                (c.from === toId && c.to === fromId)
+            );
+            
+            if (exists) {
+                showToast('Ya están conectados');
+                return;
+            }
+
+            state.connections.push({ from: fromId, to: toId });
+            renderConnections(); // Render completo para asegurar orden
+            showToast('Conexión creada');
+        }
+
+        function updateConnections() {
+            state.connections.forEach(conn => {
+                const lineId = `line_${conn.from}_${conn.to}`;
+                const arrowId = `arrow_${conn.from}_${conn.to}`;
+                const lineEl = document.getElementById(lineId);
+                const arrowEl = document.getElementById(arrowId);
+                const hitEl = document.getElementById(`hit_${conn.from}_${conn.to}`);
+
+                if (!lineEl || !arrowEl) return;
+
+                const n1 = state.nodes.find(n => n.id === conn.from);
+                const n2 = state.nodes.find(n => n.id === conn.to);
+                if (!n1 || !n2) return; // Si un nodo se borró
+
+                // Centros de nodos (aproximados, asumiendo ancho variable)
+                const el1 = document.getElementById(n1.id);
+                const el2 = document.getElementById(n2.id);
+                
+                const x1 = n1.x + el1.offsetWidth / 2;
+                const y1 = n1.y + el1.offsetHeight / 2;
+                const x2 = n2.x + el2.offsetWidth / 2;
+                const y2 = n2.y + el2.offsetHeight / 2;
+
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+                const transform = `translate(${x1}px, ${y1}px) rotate(${angle}deg)`;
+
+                // Línea visible
+                lineEl.style.width = length + 'px';
+                lineEl.style.transform = transform;
+                
+                // Zona de click (hit area)
+                if (hitEl) {
+                    hitEl.style.width = length + 'px';
+                    hitEl.style.transform = transform;
+                }
+
+                // Flecha
+                arrowEl.style.transform = `translate(${x2}px, ${y2}px) rotate(${angle}deg)`;
+            });
+        }
+
+        function renderConnections() {
+            connectionsLayer.innerHTML = '';
+            state.connections.forEach(conn => {
+                // Area de interacción (invisible pero gorda para clicar fácil)
+                const hitArea = document.createElement('div');
+                hitArea.id = `hit_${conn.from}_${conn.to}`;
+                hitArea.className = 'connection interactive';
+                hitArea.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (state.mode === 'disconnect') {
+                        deleteConnection(conn.from, conn.to);
+                    }
+                });
+
+                // Línea visible
+                const line = document.createElement('div');
+                line.id = `line_${conn.from}_${conn.to}`;
+                line.className = 'connection-visible';
+                
+                // Flecha
+                const arrow = document.createElement('div');
+                arrow.id = `arrow_${conn.from}_${conn.to}`;
+                arrow.className = 'connection-arrow';
+
+                connectionsLayer.appendChild(hitArea);
+                connectionsLayer.appendChild(line);
+                connectionsLayer.appendChild(arrow);
+            });
+            updateConnections();
+        }
+
+        function deleteConnection(from, to) {
+            state.connections = state.connections.filter(c => !(c.from === from && c.to === to));
+            renderConnections();
+            showToast('Conexión eliminada');
+            if (state.connections.length === 0) resetMode();
+        }
+
+        // --- EDITOR Y ACCIONES ---
+
+        function editSelectedNode() {
+            if (!state.selectedNodeId) {
+                showToast('Selecciona un nodo primero');
+                return;
+            }
+            editNode(state.selectedNodeId);
+        }
+
+        function editNode(id) {
+            const node = state.nodes.find(n => n.id === id);
+            if (!node) return;
+
+            document.getElementById('editNodeId').value = id;
+            document.getElementById('inputTitle').value = node.title;
+            document.getElementById('inputSubtitle').value = node.subtitle;
+            document.getElementById('inputDesc').value = node.desc;
+            document.getElementById('inputImage').value = node.image;
+            
+            generateColorGrid(node.color);
+            
             document.getElementById('nodeModal').style.display = 'block';
-            document.getElementById('nodeModalTitle').textContent = 'CREAR NUEVO NODO';
-            clearNodeForm();
-            editingNodeId = null;
         }
 
-        function closeNodeModal() {
-            document.getElementById('nodeModal').style.display = 'none';
-            editingNodeId = null;
+        function saveNodeData() {
+            const id = document.getElementById('editNodeId').value;
+            const node = state.nodes.find(n => n.id === id);
+            if (node) {
+                node.title = document.getElementById('inputTitle').value;
+                node.subtitle = document.getElementById('inputSubtitle').value;
+                node.desc = document.getElementById('inputDesc').value;
+                node.image = document.getElementById('inputImage').value;
+                
+                // Color seleccionado
+                const activeColor = document.querySelector('.color-opt.active');
+                if (activeColor) node.color = activeColor.dataset.color;
+
+                updateNodeVisuals(id);
+                closeModal();
+            }
         }
 
+        function deleteSelected() {
+            if (!state.selectedNodeId) return;
+            if (!confirm('¿Borrar nodo seleccionado?')) return;
+
+            const id = state.selectedNodeId;
+            
+            // Borrar nodo
+            state.nodes = state.nodes.filter(n => n.id !== id);
+            document.getElementById(id).remove();
+            
+            // Borrar conexiones asociadas (CRÍTICO para evitar errores)
+            state.connections = state.connections.filter(c => c.from !== id && c.to !== id);
+            
+            selectNode(null);
+            renderConnections();
+            updateStats();
+        }
+
+        function copyNode() {
+            if (state.selectedNodeId) {
+                const node = state.nodes.find(n => n.id === state.selectedNodeId);
+                state.clipboard = JSON.parse(JSON.stringify(node)); // Copia profunda
+                showToast('Nodo copiado');
+            }
+        }
+
+        function pasteNode() {
+            if (state.clipboard) {
+                // Nuevo ID y posición desplazada
+                const newData = state.clipboard;
+                createNewNode(newData.x + 30, newData.y + 30, newData);
+            }
+        }
+
+        // --- MODOS ---
+        function toggleConnectionMode() {
+            if (state.mode === 'connect') {
+                resetMode();
+            } else {
+                state.mode = 'connect';
+                state.connectSourceId = null;
+                updateStatusUI();
+                showToast('Modo Conexión: Click en Origen -> Click en Destino');
+            }
+        }
+
+        function toggleDisconnectMode() {
+            if (state.mode === 'disconnect') {
+                resetMode();
+            } else {
+                state.mode = 'disconnect';
+                selectNode(null); // Limpiar selección para ver mejor las líneas
+                updateStatusUI();
+                showToast('Modo Desconexión: Click en las líneas para borrar');
+            }
+        }
+
+        function resetMode() {
+            state.mode = 'select';
+            state.connectSourceId = null;
+            updateStatusUI();
+            if (state.selectedNodeId) {
+                const el = document.getElementById(state.selectedNodeId);
+                if (el) el.classList.remove('selected'); // Visual fix
+                state.selectedNodeId = null;
+            }
+        }
+
+        function updateStatusUI() {
+            const indicator = document.getElementById('modeIndicator');
+            const status = document.getElementById('statusText');
+            
+            if (state.mode === 'connect') {
+                indicator.style.display = 'inline';
+                indicator.textContent = 'MODO CONEXIÓN';
+                indicator.style.color = '#f1c40f';
+                status.textContent = 'Selecciona nodo origen...';
+            } else if (state.mode === 'disconnect') {
+                indicator.style.display = 'inline';
+                indicator.textContent = 'MODO BORRAR CONEXIÓN';
+                indicator.style.color = '#e74c3c';
+                status.textContent = 'Click en una conexión para eliminarla';
+            } else {
+                indicator.style.display = 'none';
+                status.textContent = 'Modo Selección';
+            }
+        }
+
+        // --- ZOOM Y PAN ---
+        function setZoom(delta) {
+            let newScale = state.scale + delta;
+            newScale = Math.min(Math.max(0.5, newScale), 2.5);
+            state.scale = newScale;
+            canvas.style.transform = `translate(-50%, -50%) scale(${state.scale})`;
+            document.getElementById('zoomValue').textContent = Math.round(state.scale * 100) + '%';
+        }
+
+        function resetZoom() {
+            state.scale = 1;
+            setZoom(0);
+        }
+
+        // --- ARCHIVOS ---
         function showSaveModal() {
             document.getElementById('saveModal').style.display = 'block';
         }
 
-        function closeSaveModal() {
+        function downloadHTML() {
+            // Guardamos el estado actual en el HTML
+            const currentState = JSON.stringify({
+                nodes: state.nodes,
+                connections: state.connections
+            });
+            
+            // Creamos una copia del DOM actual, pero inyectamos el estado
+            let htmlContent = document.documentElement.outerHTML;
+            
+            // Truco: Reemplazamos el script de inicialización vacío por uno con datos
+            // Buscamos un marcador o simplemente inyectamos al final
+            const dataScript = `<script>window.initialData = ${currentState};<\/script>`;
+            
+            // Insertar antes del cierre del body
+            htmlContent = htmlContent.replace('</body>', dataScript + '</body>');
+            
+            const blob = new Blob([htmlContent], {type: 'text/html'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (document.getElementById('mapTitle').value || 'mapa') + '.html';
+            a.click();
             document.getElementById('saveModal').style.display = 'none';
         }
 
-        function openPreviewModal() {
-            document.getElementById('previewModal').style.display = 'block';
-            updatePreviewContent();
-        }
-
-        function closePreviewModal() {
-            document.getElementById('previewModal').style.display = 'none';
-        }
-
-        function closeModal() {
-            document.getElementById('descriptionModal').style.display = 'none';
-        }
-
-        function showBackgroundModal() {
-            document.getElementById('backgroundModal').style.display = 'block';
-        }
-
-        function closeBackgroundModal() {
-            document.getElementById('backgroundModal').style.display = 'none';
-        }
-
-        function showColorPickerModal(type) {
-            currentColorPickerType = type;
-            document.getElementById('colorPickerModal').style.display = 'block';
+        function downloadPNG() {
+            // Desactivar zoom temporalmente para mejor calidad
+            const prevTransform = canvas.style.transform;
+            canvas.style.transform = "translate(0,0) scale(1)";
+            canvas.style.left = "0";
+            canvas.style.top = "0";
             
-            if (type === 'node') {
-                document.getElementById('colorPickerTitle').textContent = 'COLOR DE FONDO DEL NODO';
-            } else if (type === 'background') {
-                document.getElementById('colorPickerTitle').textContent = 'COLOR DE FONDO DEL MAPA';
-            }
-        }
-
-        function closeColorPickerModal() {
-            document.getElementById('colorPickerModal').style.display = 'none';
-            currentColorPickerType = null;
-        }
-
-        // Cambiar color de fondo del mapa
-        function changeMapBackground(color) {
-            a4Container.style.backgroundColor = color;
-            document.getElementById('bgColorPreview').style.backgroundColor = color;
-        }
-
-        // Aplicar configuración de fondo
-        function applyBackground() {
-            // Guardar estado antes de cambiar el fondo
-            saveState();
-            closeBackgroundModal();
-        }
-
-        // Vista previa de imagen
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    currentImage = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.style.display = 'none';
-                currentImage = null;
-            }
-        }
-
-        // Actualizar color personalizado
-        function updateCustomColor() {
-            customColor.r = parseInt(document.getElementById('colorR').value);
-            customColor.g = parseInt(document.getElementById('colorG').value);
-            customColor.b = parseInt(document.getElementById('colorB').value);
-            
-            document.getElementById('colorRValue').value = customColor.r;
-            document.getElementById('colorGValue').value = customColor.g;
-            document.getElementById('colorBValue').value = customColor.b;
-            
-            const preview = document.getElementById('customColorPreview');
-            preview.style.backgroundColor = `rgb(${customColor.r}, ${customColor.g}, ${customColor.b})`;
-        }
-
-        // Actualizar color personalizado desde inputs numéricos
-        function updateCustomColorFromInput() {
-            customColor.r = parseInt(document.getElementById('colorRValue').value);
-            customColor.g = parseInt(document.getElementById('colorGValue').value);
-            customColor.b = parseInt(document.getElementById('colorBValue').value);
-            
-            document.getElementById('colorR').value = customColor.r;
-            document.getElementById('colorG').value = customColor.g;
-            document.getElementById('colorB').value = customColor.b;
-            
-            const preview = document.getElementById('customColorPreview');
-            preview.style.backgroundColor = `rgb(${customColor.r}, ${customColor.g}, ${customColor.b})`;
-        }
-
-        // Aplicar color personalizado
-        function applyCustomColor() {
-            const color = `rgb(${customColor.r}, ${customColor.g}, ${customColor.b})`;
-            
-            if (currentColorPickerType === 'node') {
-                selectedNodeColor = color;
-                document.getElementById('nodeColorPreview').style.backgroundColor = color;
-            } else if (currentColorPickerType === 'background') {
-                changeMapBackground(color);
-            }
-            
-            closeColorPickerModal();
-        }
-
-        // Personalización de nodos
-        function selectTextColor(color, element) {
-            selectedTextColor = color;
-            document.querySelectorAll('.text-color-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        function selectFontSize(size, element) {
-            selectedFontSize = size;
-            document.querySelectorAll('.font-size-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        function selectFontFamily(font, element) {
-            selectedFontFamily = font;
-            document.querySelectorAll('.font-family-option').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            element.classList.add('active');
-        }
-
-        // Exportar a PNG
-        function exportToPNG() {
-            // Guardar el estado actual del zoom y transformación
-            const originalZoom = zoomLevel;
-            const originalTranslateX = translateX;
-            const originalTranslateY = translateY;
-            
-            // Restablecer el zoom y posición temporalmente
-            zoomLevel = 1;
-            translateX = 0;
-            translateY = 0;
-            updateWorkspaceTransform();
-            
-            // Esperar un momento para que se aplique la transformación
-            setTimeout(() => {
-                html2canvas(a4Container, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: a4Container.style.backgroundColor || '#ffffff'
-                }).then(canvas => {
-                    // Crear un enlace de descarga
-                    const link = document.createElement('a');
-                    link.download = 'mapa-interactivo.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    
-                    // Restaurar el zoom y posición original después de exportar
-                    zoomLevel = originalZoom;
-                    translateX = originalTranslateX;
-                    translateY = originalTranslateY;
-                    updateWorkspaceTransform();
-                    
-                    closeSaveModal();
-                });
-            }, 500);
-        }
-
-        // Limpiar formulario
-        function clearNodeForm() {
-            document.getElementById('nodeTitle').value = '';
-            document.getElementById('nodeSubtitle').value = '';
-            document.getElementById('nodeAuthor').value = '';
-            document.getElementById('nodeDescription').value = '';
-            document.getElementById('nodeImage').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            currentImage = null;
-            
-            // Resetear personalización a valores por defecto
-            selectedNodeColor = '#ffffff';
-            selectedTextColor = 'black';
-            selectedFontSize = 'small';
-            selectedFontFamily = 'Roboto';
-            selectedBorder = 'solid';
-            
-            updateCustomizationSelectors();
-        }
-
-        // Actualizar selectores de personalización
-        function updateCustomizationSelectors() {
-            document.getElementById('nodeColorPreview').style.backgroundColor = selectedNodeColor;
-            
-            document.querySelectorAll('.text-color-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.textContent === selectedTextColor.toUpperCase()) {
-                    opt.classList.add('active');
-                }
-            });
-            
-            document.querySelectorAll('.font-size-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.textContent === getFontSizeLabel(selectedFontSize)) {
-                    opt.classList.add('active');
-                }
-            });
-            
-            document.querySelectorAll('.font-family-option').forEach(opt => {
-                opt.classList.remove('active');
-                if (opt.textContent === getFontFamilyLabel(selectedFontFamily)) {
-                    opt.classList.add('active');
-                }
-            });
-        }
-
-        // Obtener etiqueta del tamaño de fuente
-        function getFontSizeLabel(size) {
-            switch(size) {
-                case 'small': return 'PEQUEÑO';
-                case 'medium': return 'MEDIANO';
-                case 'large': return 'GRANDE';
-                default: return 'PEQUEÑO';
-            }
-        }
-
-        // Obtener etiqueta de la familia de fuentes
-        function getFontFamilyLabel(font) {
-            switch(font) {
-                case 'EB Garamond': return 'GARAMOND';
-                case 'Roboto': return 'ROBOTO';
-                default: return 'ROBOTO';
-            }
-        }
-
-        // Guardar nodo (crear o editar)
-        function saveNode() {
-            const title = document.getElementById('nodeTitle').value.trim();
-            const subtitle = document.getElementById('nodeSubtitle').value.trim();
-            const author = document.getElementById('nodeAuthor').value.trim();
-            const description = document.getElementById('nodeDescription').value.trim();
-
-            if (!title) {
-                alert('Por favor ingresa un título');
-                return;
-            }
-
-            // Guardar estado actual antes de realizar cambios
-            saveState();
-
-            if (editingNodeId) {
-                // CORREGIDO: Editar nodo existente usando el ID correcto
-                const nodeIndex = getSelectedNodeIndex();
-                if (nodeIndex !== -1) {
-                    nodes[nodeIndex].title = title;
-                    nodes[nodeIndex].subtitle = subtitle;
-                    nodes[nodeIndex].author = author;
-                    nodes[nodeIndex].description = description;
-                    nodes[nodeIndex].image = currentImage;
-                    nodes[nodeIndex].color = selectedNodeColor;
-                    nodes[nodeIndex].textColor = selectedTextColor;
-                    nodes[nodeIndex].fontSize = selectedFontSize;
-                    nodes[nodeIndex].fontFamily = selectedFontFamily;
-                    nodes[nodeIndex].border = selectedBorder;
-                    
-                    // Re-renderizar el nodo
-                    renderAll();
-                }
-            } else {
-                // Crear nuevo nodo
-                nodeCounter++;
-                const nodeId = 'node-' + nodeCounter;
-
-                // Posición aleatoria en el workspace A4
-                const x = Math.random() * (a4Container.offsetWidth - 100) + 20;
-                const y = Math.random() * (a4Container.offsetHeight - 60) + 20;
-
-                const node = {
-                    id: nodeId,
-                    title: title,
-                    subtitle: subtitle,
-                    author: author,
-                    description: description,
-                    image: currentImage,
-                    type: 'main',
-                    x: x,
-                    y: y,
-                    color: selectedNodeColor,
-                    textColor: selectedTextColor,
-                    fontSize: selectedFontSize,
-                    fontFamily: selectedFontFamily,
-                    border: selectedBorder
-                };
-
-                nodes.push(node);
-                renderNode(node);
-                updateCounters();
-            }
-
-            closeNodeModal();
-        }
-
-        // CORREGIDO: Editar nodo seleccionado
-        function editSelectedNode() {
-            const selectedNode = getSelectedNode();
-            if (!selectedNode) {
-                alert('Por favor selecciona un nodo primero haciendo clic en él');
-                return;
-            }
-
-            editingNodeId = selectedNode.id;
-            document.getElementById('nodeModalTitle').textContent = 'EDITAR NODO';
-            
-            // Llenar formulario con datos existentes del nodo
-            document.getElementById('nodeTitle').value = selectedNode.title;
-            document.getElementById('nodeSubtitle').value = selectedNode.subtitle || '';
-            document.getElementById('nodeAuthor').value = selectedNode.author || '';
-            document.getElementById('nodeDescription').value = selectedNode.description || '';
-            
-            // Configurar personalización
-            selectedNodeColor = selectedNode.color || '#ffffff';
-            selectedTextColor = selectedNode.textColor || 'black';
-            selectedFontSize = selectedNode.fontSize || 'small';
-            selectedFontFamily = selectedNode.fontFamily || 'Roboto';
-            selectedBorder = selectedNode.border || 'solid';
-            
-            updateCustomizationSelectors();
-            
-            // Manejar imagen
-            const preview = document.getElementById('imagePreview');
-            if (selectedNode.image) {
-                preview.src = selectedNode.image;
-                preview.style.display = 'block';
-                currentImage = selectedNode.image;
-            } else {
-                preview.style.display = 'none';
-                currentImage = null;
-            }
-            
-            document.getElementById('nodeModal').style.display = 'block';
-        }
-
-        // CORREGIDO: Eliminar nodo seleccionado
-        function deleteSelectedNode() {
-            const selectedNode = getSelectedNode();
-            if (!selectedNode) {
-                alert('Por favor selecciona un nodo primero haciendo clic en él');
-                return;
-            }
-
-            if (!confirm('¿Estás seguro de que quieres eliminar este nodo?')) return;
-
-            // Guardar estado actual antes de eliminar
-            saveState();
-
-            // Eliminar conexiones relacionadas
-            connections = connections.filter(conn => 
-                conn.from !== selectedNode.id && conn.to !== selectedNode.id
-            );
-
-            // CORREGIDO: Eliminar nodo usando el índice correcto
-            const nodeIndex = getSelectedNodeIndex();
-            if (nodeIndex !== -1) {
-                nodes.splice(nodeIndex, 1);
-                selectedNodeId = null;
+            html2canvas(canvas, {
+                scale: 2, // Mayor calidad
+                backgroundColor: "#ffffff"
+            }).then(c => {
+                const a = document.createElement('a');
+                a.href = c.toDataURL('image/png');
+                a.download = 'mapa_conceptual.png';
+                a.click();
                 
-                // Re-renderizar
-                renderAll();
-                updateCounters();
-            }
+                // Restaurar
+                canvas.style.transform = prevTransform;
+                canvas.style.left = "50%";
+                canvas.style.top = "50%";
+                document.getElementById('saveModal').style.display = 'none';
+            });
         }
 
-        // Mostrar modal de descripción
-        function showDescriptionModal(nodeId) {
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node) return;
-
-            document.getElementById('modalTitle').textContent = node.title;
-            document.getElementById('modalSubtitle').textContent = node.subtitle || 'Sin subtítulo';
-            document.getElementById('modalAuthor').textContent = node.author ? `Autor: ${node.author}` : 'Autor no especificado';
-            document.getElementById('modalDescription').textContent = node.description || 'Sin descripción disponible.';
-            
-            const modalImage = document.getElementById('modalImage');
-            if (node.image) {
-                modalImage.src = node.image;
-                modalImage.style.display = 'block';
-            } else {
-                modalImage.style.display = 'none';
-            }
-            
-            document.getElementById('descriptionModal').style.display = 'block';
+        function triggerLoad() {
+            document.getElementById('fileInput').click();
         }
 
-        // Cargar desde archivo HTML
-        function loadFromHTML(file) {
+        function loadFile(input) {
+            const file = input.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    
-                    // Extraer datos del HTML
-                    const nodesMatch = content.match(/const nodes = (\[.*?\]);/s);
-                    const connectionsMatch = content.match(/const connections = (\[.*?\]);/s);
-                    
-                    if (nodesMatch && connectionsMatch) {
-                        // Parsear los datos
-                        const newNodes = JSON.parse(nodesMatch[1]);
-                        const newConnections = JSON.parse(connectionsMatch[1]);
-                        
-                        // Guardar estado actual antes de cargar
-                        saveState();
-                        
-                        // Actualizar datos
-                        nodes = newNodes;
-                        connections = newConnections;
-                        
-                        // Actualizar contador de nodos
-                        nodeCounter = nodes.length;
-                        
-                        // Re-renderizar
-                        renderAll();
-                        updateCounters();
-                        
-                        alert('✅ Mapa cargado correctamente');
-                    } else {
-                        alert('❌ El archivo no contiene datos válidos del mapa');
-                    }
-                } catch (error) {
-                    alert('❌ Error al cargar el archivo: ' + error.message);
+                const content = e.target.result;
+                
+                // Buscar datos inyectados
+                const match = content.match(/window\.initialData = (\{.*?\});/);
+                if (match && match[1]) {
+                    const data = JSON.parse(match[1]);
+                    loadData(data);
+                } else {
+                    alert('No se encontraron datos de mapa en este archivo HTML.');
                 }
             };
             reader.readAsText(file);
+            input.value = ''; // Reset
         }
 
-        // Cerrar modal al hacer click fuera
-        window.addEventListener('click', function(event) {
-            const modals = ['nodeModal', 'descriptionModal', 'saveModal', 'previewModal', 'backgroundModal', 'colorPickerModal'];
-            modals.forEach(modalId => {
-                const modal = document.getElementById(modalId);
-                if (event.target === modal) {
-                    if (modalId === 'nodeModal') closeNodeModal();
-                    else if (modalId === 'descriptionModal') closeModal();
-                    else if (modalId === 'saveModal') closeSaveModal();
-                    else if (modalId === 'previewModal') closePreviewModal();
-                    else if (modalId === 'backgroundModal') closeBackgroundModal();
-                    else if (modalId === 'colorPickerModal') closeColorPickerModal();
-                }
-            });
-        });
-
-        // Renderizar nodo en el workspace
-        function renderNode(node) {
-            const nodeElement = document.createElement('div');
-            nodeElement.className = `node node-main ${node.fontSize || 'small'}`;
-            nodeElement.id = node.id;
-            nodeElement.style.left = node.x + 'px';
-            nodeElement.style.top = node.y + 'px';
-            nodeElement.style.fontFamily = node.fontFamily || 'Roboto';
+        function loadData(data) {
+            clearWorkspace();
             
-            // Aplicar color de fondo (incluyendo transparente)
-            if (node.color === 'transparent') {
-                nodeElement.style.background = 'transparent';
-            } else {
-                nodeElement.style.background = node.color || '#ffffff';
-            }
-            
-            // Aplicar borde
-            if (node.border === 'none') {
-                nodeElement.style.border = 'none';
-            } else {
-                nodeElement.style.border = '1.3px solid #8e44ad';
-            }
-            
-            nodeElement.style.color = node.textColor || 'black';
-            
-            nodeElement.innerHTML = `
-                <div class="node-title">${node.title}</div>
-                ${node.subtitle ? `<div class="node-subtitle">${node.subtitle}</div>` : ''}
-            `;
+            // Regenerar IDs para asegurar integridad si se importa sobre algo existente (opcional, aqui limpiamos todo)
+            state.nodes = data.nodes;
+            state.connections = data.connections;
 
-            // Hacer arrastrable
-            makeDraggable(nodeElement, node);
-
-            // CORREGIDO: Evento click simple para selección
-            nodeElement.addEventListener('click', function(e) {
-                if (e.target.classList.contains('node-btn')) return;
-                
-                // Si estamos en modo desconexión, no seleccionar nodos
-                if (disconnectMode) return;
-                
-                // Deseleccionar nodo anterior
-                if (selectedNodeId) {
-                    const prevNode = document.getElementById(selectedNodeId);
-                    if (prevNode) prevNode.classList.remove('selected');
-                }
-                
-                // Deseleccionar conexión si había una seleccionada
-                if (selectedConnection) {
-                    const line = document.getElementById('conn-' + selectedConnection.from + '-' + selectedConnection.to);
-                    const arrow = document.getElementById('arrow-' + selectedConnection.from + '-' + selectedConnection.to);
-                    if (line) line.classList.remove('selected');
-                    if (arrow) arrow.classList.remove('selected');
-                    selectedConnection = null;
-                }
-                
-                // CORREGIDO: Seleccionar nuevo nodo usando el ID correcto
-                selectedNodeId = node.id;
-                nodeElement.classList.add('selected');
-                
-                if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
-                    createConnection(sourceNodeId, node.id);
-                    setConnectionMode(false);
-                } else if (connectionMode && !sourceNodeId) {
-                    sourceNodeId = node.id;
-                    connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el nodo destino';
-                }
-                
-                // DEBUG: Mostrar información del nodo seleccionado
-                console.log('Nodo seleccionado:', node.id, node.title);
-            });
-
-            // Evento doble click para mostrar descripción
-            nodeElement.addEventListener('dblclick', function(e) {
-                if (e.target.classList.contains('node-btn')) return;
-                
-                if (!connectionMode && !disconnectMode) {
-                    showDescriptionModal(node.id);
-                }
-            });
-
-            workspace.appendChild(nodeElement);
+            // Renderizar
+            state.nodes.forEach(node => renderNode(node));
+            renderConnections();
+            updateStats();
+            showToast('Mapa cargado exitosamente');
         }
 
-        // Hacer nodo arrastrable
-        function makeDraggable(element, node) {
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
-
-            element.addEventListener('mousedown', startDrag);
-
-            function startDrag(e) {
-                if (e.target.classList.contains('node-btn')) return;
-                
-                e.preventDefault();
-                isDragging = true;
-                element.classList.add('dragging');
-                
-                startX = e.clientX;
-                startY = e.clientY;
-                initialX = element.offsetLeft;
-                initialY = element.offsetTop;
-                
-                document.addEventListener('mousemove', onDrag);
-                document.addEventListener('mouseup', stopDrag);
-            }
-
-            function onDrag(e) {
-                if (!isDragging) return;
-                
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                let newX = initialX + dx;
-                let newY = initialY + dy;
-
-                // Mantener dentro de los límites del A4
-                newX = Math.max(6.5, Math.min(newX, a4Container.offsetWidth - element.offsetWidth - 6.5));
-                newY = Math.max(6.5, Math.min(newY, a4Container.offsetHeight - element.offsetHeight - 6.5));
-
-                element.style.left = newX + 'px';
-                element.style.top = newY + 'px';
-                
-                node.x = newX;
-                node.y = newY;
-
-                updateConnections();
-            }
-
-            function stopDrag() {
-                isDragging = false;
-                element.classList.remove('dragging');
-                document.removeEventListener('mousemove', onDrag);
-                document.removeEventListener('mouseup', stopDrag);
-                
-                // Guardar estado después de mover un nodo
-                saveState();
-            }
+        function clearWorkspace() {
+            state.nodes = [];
+            state.connections = [];
+            nodesLayer.innerHTML = '';
+            connectionsLayer.innerHTML = '';
+            selectNode(null);
+            updateStats();
         }
 
-        // Iniciar modo conexión
-        function startConnection() {
-            if (nodes.length < 2) {
-                alert('Necesitas al menos 2 nodos para crear conexiones');
-                return;
-            }
-            setConnectionMode(true);
-            setDisconnectMode(false);
-            sourceNodeId = null;
-            connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
-        }
-
-        // Activar/desactivar modo conexión
-        function setConnectionMode(active) {
-            connectionMode = active;
-            if (active) {
-                connectionModeDiv.style.display = 'block';
-                connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
-            } else {
-                connectionModeDiv.style.display = 'none';
-                sourceNodeId = null;
-            }
-        }
-
-        // Iniciar modo desconexión
-        function startDisconnect() {
-            if (connections.length === 0) {
-                alert('No hay conexiones para eliminar');
-                return;
-            }
-            setDisconnectMode(true);
-            setConnectionMode(false);
-            disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
-        }
-
-        // Activar/desactivar modo desconexión
-        function setDisconnectMode(active) {
-            disconnectMode = active;
-            if (active) {
-                disconnectModeDiv.style.display = 'block';
-                disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
-                
-                // Hacer las conexiones clickeables
-                connections.forEach(conn => {
-                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                    
-                    if (line && arrow) {
-                        line.style.pointerEvents = 'auto';
-                        arrow.style.pointerEvents = 'auto';
-                        
-                        line.addEventListener('click', function() {
-                            selectConnection(conn);
-                        });
-                        
-                        arrow.addEventListener('click', function() {
-                            selectConnection(conn);
-                        });
-                    }
-                });
-            } else {
-                disconnectModeDiv.style.display = 'none';
-                
-                // Restaurar conexiones a no clickeables
-                connections.forEach(conn => {
-                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                    
-                    if (line && arrow) {
-                        line.style.pointerEvents = 'none';
-                        arrow.style.pointerEvents = 'none';
-                    }
-                });
-            }
-        }
-
-        // Seleccionar una conexión
-        function selectConnection(conn) {
-            if (!disconnectMode) return;
-            
-            // Deseleccionar conexión anterior si existe
-            if (selectedConnection) {
-                const prevLine = document.getElementById('conn-' + selectedConnection.from + '-' + selectedConnection.to);
-                const prevArrow = document.getElementById('arrow-' + selectedConnection.from + '-' + selectedConnection.to);
-                if (prevLine) prevLine.classList.remove('selected');
-                if (prevArrow) prevArrow.classList.remove('selected');
-            }
-            
-            // Deseleccionar nodo si estaba seleccionado
-            if (selectedNodeId) {
-                const prevNode = document.getElementById(selectedNodeId);
-                if (prevNode) prevNode.classList.remove('selected');
-                selectedNodeId = null;
-            }
-            
-            // Seleccionar nueva conexión
-            selectedConnection = conn;
-            const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-            const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-            
-            if (line && arrow) {
-                line.classList.add('selected');
-                arrow.classList.add('selected');
-                
-                // Preguntar si desea eliminar la conexión
-                if (confirm('¿Estás seguro de que quieres eliminar esta conexión?')) {
-                    // Guardar estado antes de eliminar
-                    saveState();
-                    
-                    // Eliminar conexión
-                    connections = connections.filter(c => 
-                        !(c.from === conn.from && c.to === conn.to)
-                    );
-                    
-                    // Re-renderizar
-                    renderAll();
-                    updateCounters();
-                    
-                    // Salir del modo desconexión si no hay más conexiones
-                    if (connections.length === 0) {
-                        setDisconnectMode(false);
-                    }
-                } else {
-                    // Deseleccionar si el usuario cancela
-                    line.classList.remove('selected');
-                    arrow.classList.remove('selected');
-                    selectedConnection = null;
-                }
-            }
-        }
-
-        // Crear conexión entre nodos
-        function createConnection(fromId, toId) {
-            // Evitar conexiones duplicadas
-            const existingConnection = connections.find(conn => 
-                (conn.from === fromId && conn.to === toId) || 
-                (conn.from === toId && conn.to === fromId)
-            );
-
-            if (existingConnection) {
-                alert('Estos nodos ya están conectados');
-                return;
-            }
-
-            if (fromId === toId) {
-                alert('No puedes conectar un nodo consigo mismo');
-                return;
-            }
-
-            // Guardar estado antes de crear conexión
-            saveState();
-
-            connections.push({ from: fromId, to: toId });
-            renderConnection(fromId, toId);
-            updateCounters();
-        }
-
-        // Renderizar conexión
-        function renderConnection(fromId, toId) {
-            const fromNode = nodes.find(n => n.id === fromId);
-            const toNode = nodes.find(n => n.id === toId);
-
-            if (!fromNode || !toNode) return;
-
-            // Crear línea
-            const line = document.createElement('div');
-            line.className = 'connection';
-            line.id = 'conn-' + fromId + '-' + toId;
-
-            // Crear flecha
-            const arrow = document.createElement('div');
-            arrow.className = 'connection-arrow';
-            arrow.id = 'arrow-' + fromId + '-' + toId;
-
-            workspace.appendChild(line);
-            workspace.appendChild(arrow);
-
-            updateConnection(fromId, toId);
-        }
-
-        // Actualizar posición de conexión
-        function updateConnection(fromId, toId) {
-            const fromNode = nodes.find(n => n.id === fromId);
-            const toNode = nodes.find(n => n.id === toId);
-            const line = document.getElementById('conn-' + fromId + '-' + toId);
-            const arrow = document.getElementById('arrow-' + fromId + '-' + toId);
-
-            if (!fromNode || !toNode || !line || !arrow) return;
-
-            const fromElement = document.getElementById(fromId);
-            const toElement = document.getElementById(toId);
-
-            if (!fromElement || !toElement) return;
-
-            const fromX = fromNode.x + fromElement.offsetWidth / 2;
-            const fromY = fromNode.y + fromElement.offsetHeight / 2;
-            const toX = toNode.x + toElement.offsetWidth / 2;
-            const toY = toNode.y + toElement.offsetHeight / 2;
-
-            const dx = toX - fromX;
-            const dy = toY - fromY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-            line.style.width = length + 'px';
-            line.style.left = fromX + 'px';
-            line.style.top = fromY + 'px';
-            line.style.transform = 'rotate(' + angle + 'deg)';
-
-            arrow.style.left = toX + 'px';
-            arrow.style.top = toY + 'px';
-            arrow.style.transform = 'rotate(' + angle + 'deg)';
-        }
-
-        // Actualizar todas las conexiones
-        function updateConnections() {
-            connections.forEach(conn => {
-                updateConnection(conn.from, conn.to);
-            });
-        }
-
-        // Actualizar contadores
-        function updateCounters() {
-            document.getElementById('nodesCount').textContent = nodes.length;
-            document.getElementById('connectionsCount').textContent = connections.length;
-        }
-
-        // Limpiar todo
-        function clearAll() {
-            if (!confirm('¿Estás seguro de que quieres eliminar todo?')) return;
-            
-            // Guardar estado antes de limpiar
-            saveState();
-            
-            nodes = [];
-            connections = [];
-            selectedNodeId = null;
-            selectedConnection = null;
-            renderAll();
-            updateCounters();
-        }
-
-        // Renderizar todo
-        function renderAll() {
-            workspace.innerHTML = '';
-            nodes.forEach(node => renderNode(node));
-            connections.forEach(conn => renderConnection(conn.from, conn.to));
-            updateWorkspaceTransform();
-            
-            // Si estamos en modo desconexión, reactivar el modo
-            if (disconnectMode) {
-                setDisconnectMode(true);
-            }
-        }
-
-        // Generar código para exportar
-        function generateExportCode() {
-            const mapTitle = document.getElementById('mapTitle').value;
-            const exportHTML = `<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${mapTitle}</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Calibri', sans-serif; background: #1a1a2e; min-height: 100vh; padding: 10px; color: #e6e6e6; }
-        .container { max-width: 1200px; margin: 0 auto; background: #16213e; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        h1 { text-align: center; color: #e6e6e6; margin-bottom: 15px; font-size: 1.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .workspace-container { position: relative; width: 100%; height: 600px; overflow: auto; border: 1px solid #2d3748; border-radius: 8px; margin-bottom: 15px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
-        .a4-container { width: 1123px; height: 794px; background: ${a4Container.style.backgroundColor || 'white'}; box-shadow: 0 0 0 2px #8e44ad; position: relative; overflow: hidden; }
-        .workspace { position: relative; width: 100%; height: 100%; }
-        .node { position: absolute; min-width: 80px; max-width: 120px; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); user-select: none; transition: all 0.2s ease; z-index: 10; }
-        .node.small { font-size: 12px; }
-        .node.medium { font-size: 14px; }
-        .node.large { font-size: 16px; }
-        .node:hover { transform: scale(1.03); box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
-        .node-title { font-weight: 600; margin-bottom: 2px; line-height: 1.2; word-wrap: break-word; }
-        .node-subtitle { font-weight: 500; margin-bottom: 6px; font-style: italic; line-height: 1.2; opacity: 0.8; word-wrap: break-word; }
-        .connection { position: absolute; background: #718096; height: 2px; transform-origin: 0 0; pointer-events: none; z-index: 5; }
-        .connection-arrow { position: absolute; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #718096; transform-origin: center; pointer-events: none; z-index: 6; }
-        .info-panel { background: #2d3748; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
-        .info-panel h3 { font-family: 'Calibri', sans-serif; font-weight: 600; margin-bottom: 10px; color: #e6e6e6; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
-        .modal-content { background-color: #1a1a2e; margin: 5% auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; max-height: 80vh; overflow-y: auto; border: 1px solid #2d3748; color: #e6e6e6; }
-        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 20px; font-weight: bold; cursor: pointer; color: #a0aec0; background: none; border: none; padding: 0; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; }
-        .close-modal:hover { color: #e6e6e6; }
-        .modal-title { font-family: 'EB Garamond', serif; font-size: 22px; margin-bottom: 8px; color: #e6e6e6; }
-        .modal-subtitle { font-family: 'EB Garamond', serif; font-size: 14px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
-        .modal-author { font-family: 'Calibri', sans-serif; font-size: 13px; margin-bottom: 15px; color: #a0aec0; font-style: italic; }
-        .modal-image { max-width: 100%; max-height: 200px; margin: 15px 0; border-radius: 6px; display: block; margin-left: auto; margin-right: auto; }
-        .modal-description { font-family: 'Calibri', sans-serif; font-size: 14px; line-height: 1.6; color: #e6e6e6; padding: 15px; background: #2d3748; border-radius: 6px; }
-        @media (max-width: 768px) { .workspace-container { height: 500px; } .a4-container { width: 95%; height: 400px; } .node { min-width: 70px; max-width: 100px; padding: 6px; } .node.small { font-size: 11px; } .node.medium { font-size: 13px; } .node.large { font-size: 15px; } .modal-content { margin: 10% auto; padding: 20px; width: 95%; } h1 { font-size: 1.4em; } }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>${mapTitle}</h1>
-        <div class="workspace-container">
-            <div class="a4-container">
-                <div class="workspace" id="workspace"></div>
-            </div>
-        </div>
-        <div class="info-panel">
-            <h3>INFORMACIÓN DEL MAPA</h3>
-            <p>Total de nodos: ${nodes.length} | Conexiones: ${connections.length}</p>
-            <p>Haz click en cualquier nodo para ver más información</p>
-        </div>
-    </div>
-
-    <div id="descriptionModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal()">&times;</button>
-            <h2 class="modal-title" id="modalTitle"></h2>
-            <h3 class="modal-subtitle" id="modalSubtitle"></h3>
-            <div class="modal-author" id="modalAuthor"></div>
-            <img id="modalImage" class="modal-image" style="display: none;" alt="Imagen del nodo">
-            <div class="modal-description" id="modalDescription"></div>
-        </div>
-    </div>
-
-    <script>
-        const nodes = ${JSON.stringify(nodes)};
-        const connections = ${JSON.stringify(connections)};
-        
-        function loadMap() {
-            const workspace = document.getElementById('workspace');
-            
-            // Cargar nodos
-            nodes.forEach(node => {
-                const nodeElement = document.createElement('div');
-                nodeElement.className = 'node ' + (node.fontSize || 'small');
-                nodeElement.style.left = node.x + 'px';
-                nodeElement.style.top = node.y + 'px';
-                nodeElement.style.fontFamily = node.fontFamily || 'Roboto';
-                
-                // Aplicar color de fondo (incluyendo transparente)
-                if (node.color === 'transparent') {
-                    nodeElement.style.background = 'transparent';
-                } else {
-                    nodeElement.style.background = node.color || '#ffffff';
-                }
-                
-                // Aplicar borde
-                if (node.border === 'none') {
-                    nodeElement.style.border = 'none';
-                } else {
-                    nodeElement.style.border = '1px solid #8e44ad';
-                }
-                
-                nodeElement.style.color = node.textColor || 'black';
-                nodeElement.innerHTML = 
-                    '<div class="node-title">' + node.title + '</div>' + 
-                    (node.subtitle ? '<div class="node-subtitle">' + node.subtitle + '</div>' : '');
-                
-                nodeElement.addEventListener('click', function() {
-                    showDescriptionModal(node.id);
-                });
-                
-                workspace.appendChild(nodeElement);
-            });
-
-            // Cargar conexiones
-            connections.forEach(conn => {
-                const fromNode = nodes.find(n => n.id === conn.from);
-                const toNode = nodes.find(n => n.id === conn.to);
-                if (fromNode && toNode) {
-                    const fromX = fromNode.x + 40;
-                    const fromY = fromNode.y + 20;
-                    const toX = toNode.x + 40;
-                    const toY = toNode.y + 20;
-                    
-                    const dx = toX - fromX;
-                    const dy = toY - fromY;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-                    const line = document.createElement('div');
-                    line.className = 'connection';
-                    line.style.width = length + 'px';
-                    line.style.left = fromX + 'px';
-                    line.style.top = fromY + 'px';
-                    line.style.transform = 'rotate(' + angle + 'deg)';
-                    
-                    const arrow = document.createElement('div');
-                    arrow.className = 'connection-arrow';
-                    arrow.style.left = toX + 'px';
-                    arrow.style.top = toY + 'px';
-                    arrow.style.transform = 'rotate(' + angle + 'deg)';
-                    
-                    workspace.appendChild(line);
-                    workspace.appendChild(arrow);
-                }
-            });
-        }
-
-        function showDescriptionModal(nodeId) {
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node) return;
-
-            document.getElementById('modalTitle').textContent = node.title;
-            document.getElementById('modalSubtitle').textContent = node.subtitle || 'Sin subtítulo';
-            document.getElementById('modalAuthor').textContent = node.author ? 'Autor: ' + node.author : 'Autor no especificado';
-            document.getElementById('modalDescription').textContent = node.description || 'Sin descripción disponible.';
-            
-            const modalImage = document.getElementById('modalImage');
-            if (node.image) {
-                modalImage.src = node.image;
-                modalImage.style.display = 'block';
-            } else {
-                modalImage.style.display = 'none';
-            }
-            
-            document.getElementById('descriptionModal').style.display = 'block';
-        }
-
+        // --- AUXILIARES UI ---
         function closeModal() {
-            document.getElementById('descriptionModal').style.display = 'none';
+            document.getElementById('nodeModal').style.display = 'none';
+            document.getElementById('saveModal').style.display = 'none';
         }
 
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('descriptionModal');
-            if (event.target === modal) {
-                closeModal();
+        function generateColorGrid(selectedColor) {
+            const colors = ['#ffffff', '#ffcdd2', '#f8bbd0', '#e1bee7', '#d1c4e9', '#c5cae9', '#bbdefb', '#b3e5fc', 
+                          '#b2ebf2', '#b2dfdb', '#c8e6c9', '#dcedc8', '#f0f4c3', '#fff9c4', '#ffecb3', '#ffe0b2', 
+                          '#ffccbc', '#d7ccc8', '#f5f5f5', '#cfd8dc', '#2c3e50', '#c0392b'];
+            
+            const container = document.getElementById('colorGrid');
+            container.innerHTML = '';
+            
+            colors.forEach(c => {
+                const d = document.createElement('div');
+                d.className = 'color-opt ' + (c === selectedColor ? 'active' : '');
+                d.style.backgroundColor = c;
+                d.dataset.color = c;
+                d.onclick = function() {
+                    document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                };
+                container.appendChild(d);
+            });
+        }
+
+        function isDark(color) {
+            // Simple check para hex
+            if (color.startsWith('#')) {
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                return ((r * 299 + g * 587 + b * 114) / 1000) < 128;
+            }
+            return false;
+        }
+
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('inputImage').value = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('nodeCount').textContent = state.nodes.length;
+        }
+
+        // --- INICIALIZACIÓN ---
+        
+        // Click fuera para deseleccionar
+        workspaceWrapper.addEventListener('click', (e) => {
+            if (e.target === canvas || e.target === workspaceWrapper) {
+                if (state.mode !== 'select') return;
+                selectNode(null);
             }
         });
-        
-        document.addEventListener('DOMContentLoaded', loadMap);
-    <\/script>
-</body>
-</html>`;
 
-            return exportHTML;
-        }
+        // Verificar si hay datos cargados al inicio (cuando abrimos el HTML guardado)
+        window.onload = function() {
+            if (window.initialData) {
+                loadData(window.initialData);
+            } else {
+                // Crear nodo inicial
+                createNewNode(561 - 75, 397 - 30, {title: 'Idea Central', subtitle: 'Comienza aquí'});
+            }
+        };
 
-        // Descargar como HTML
-        function downloadHTML() {
-            const exportCode = generateExportCode();
-            const blob = new Blob([exportCode], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'mapa-interactivo.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert('✅ Archivo HTML guardado correctamente');
-            closeSaveModal();
-        }
-
-        // Actualizar contenido de vista previa
-        function updatePreviewContent() {
-            const previewContent = document.getElementById('previewContent');
-            previewContent.innerHTML = '';
-            
-            // Crear una representación simplificada del mapa
-            const previewWorkspace = document.createElement('div');
-            previewWorkspace.style.position = 'relative';
-            previewWorkspace.style.width = '100%';
-            previewWorkspace.style.height = '400px';
-            previewWorkspace.style.overflow = 'auto';
-            previewWorkspace.style.border = '1px solid #4a5568';
-            previewWorkspace.style.borderRadius = '5px';
-            previewWorkspace.style.padding = '10px';
-            previewWorkspace.style.background = a4Container.style.backgroundColor || '#ffffff';
-            
-            // Agregar nodos a la vista previa
-            nodes.forEach(node => {
-                const nodeElement = document.createElement('div');
-                nodeElement.className = 'node';
-                nodeElement.style.position = 'absolute';
-                nodeElement.style.left = (node.x / 1.5) + 'px';
-                nodeElement.style.top = (node.y / 1.5) + 'px';
-                nodeElement.style.minWidth = '60px';
-                nodeElement.style.maxWidth = '80px';
-                nodeElement.style.padding = '5px';
-                nodeElement.style.fontFamily = node.fontFamily || 'Roboto';
-                
-                // Aplicar color de fondo (incluyendo transparente)
-                if (node.color === 'transparent') {
-                    nodeElement.style.background = 'transparent';
-                } else {
-                    nodeElement.style.background = node.color || '#ffffff';
-                }
-                
-                // Aplicar borde
-                if (node.border === 'none') {
-                    nodeElement.style.border = 'none';
-                } else {
-                    nodeElement.style.border = '1px solid #8e44ad';
-                }
-                
-                nodeElement.style.borderRadius = '4px';
-                nodeElement.style.color = node.textColor || 'black';
-                
-                // Aplicar tamaño de fuente
-                let fontSize = '10px';
-                if (node.fontSize === 'medium') fontSize = '12px';
-                if (node.fontSize === 'large') fontSize = '14px';
-                nodeElement.style.fontSize = fontSize;
-                
-                nodeElement.style.textAlign = 'center';
-                
-                nodeElement.innerHTML = `
-                    <div style="font-weight: bold;">${node.title}</div>
-                    ${node.subtitle ? `<div style="font-style: italic; font-size: ${parseInt(fontSize) - 1}px;">${node.subtitle}</div>` : ''}
-                `;
-                
-                previewWorkspace.appendChild(nodeElement);
-            });
-            
-            // Agregar conexiones a la vista previa
-            connections.forEach(conn => {
-                const fromNode = nodes.find(n => n.id === conn.from);
-                const toNode = nodes.find(n => n.id === conn.to);
-                if (fromNode && toNode) {
-                    const fromX = (fromNode.x / 1.5) + 30;
-                    const fromY = (fromNode.y / 1.5) + 15;
-                    const toX = (toNode.x / 1.5) + 30;
-                    const toY = (toNode.y / 1.5) + 15;
-                    
-                    const dx = toX - fromX;
-                    const dy = toY - fromY;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-                    const line = document.createElement('div');
-                    line.style.position = 'absolute';
-                    line.style.background = '#718096';
-                    line.style.height = '2px';
-                    line.style.width = length + 'px';
-                    line.style.left = fromX + 'px';
-                    line.style.top = fromY + 'px';
-                    line.style.transform = 'rotate(' + angle + 'deg)';
-                    line.style.transformOrigin = '0 0';
-                    line.style.zIndex = '5';
-                    
-                    const arrow = document.createElement('div');
-                    arrow.style.position = 'absolute';
-                    arrow.style.width = '0';
-                    arrow.style.height = '0';
-                    arrow.style.borderLeft = '4px solid transparent';
-                    arrow.style.borderRight = '4px solid transparent';
-                    arrow.style.borderTop = '6px solid #718096';
-                    arrow.style.left = toX + 'px';
-                    arrow.style.top = toY + 'px';
-                    arrow.style.transform = 'rotate(' + angle + 'deg)';
-                    arrow.style.transformOrigin = 'center';
-                    arrow.style.zIndex = '6';
-                    
-                    previewWorkspace.appendChild(line);
-                    previewWorkspace.appendChild(arrow);
-                }
-            });
-            
-            previewContent.appendChild(previewWorkspace);
-            
-            // Agregar información de resumen
-            const summary = document.createElement('div');
-            summary.style.marginTop = '15px';
-            summary.style.padding = '10px';
-            summary.style.background = '#2d3748';
-            summary.style.borderRadius = '5px';
-            summary.innerHTML = `
-                <h4 style="margin-bottom: 8px; color: #e6e6e6;">RESUMEN DEL MAPA</h4>
-                <p>Total de nodos: ${nodes.length}</p>
-                <p>Conexiones: ${connections.length}</p>
-                <p>Fecha de generación: ${new Date().toLocaleString()}</p>
-            `;
-            
-            previewContent.appendChild(summary);
-        }
-
-        // Imprimir vista previa
-        function printPreview() {
-            const previewContent = document.getElementById('previewContent').innerHTML;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Mapa Interactivo - Vista Previa</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                        .node { border: 1px solid #8e44ad; background: #f0f8ff; padding: 8px; margin: 5px; border-radius: 4px; display: inline-block; }
-                        .summary { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Mapa Interactivo - Vista Previa</h1>
-                    <div>${previewContent}</div>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-
-        // Funciones de zoom
-        function zoomIn() {
-            zoomLevel = Math.min(zoomLevel + 0.1, 2);
-            updateWorkspaceTransform();
-        }
-
-        function zoomOut() {
-            zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
-            updateWorkspaceTransform();
-        }
-
-        function resetZoom() {
-            zoomLevel = 1;
-            translateX = 0;
-            translateY = 0;
-            updateWorkspaceTransform();
-        }
-
-        function updateWorkspaceTransform() {
-            workspace.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
-        }
-
-        // Inicializar
-        renderAll();
-        updateCounters();
-        saveState(); // Guardar estado inicial
-
-        // Agregar algunos nodos de ejemplo al inicio
-        setTimeout(() => {
-            const node1 = {
-                id: 'node-1',
-                title: 'Arte y Ciencias Sociales',
-                subtitle: 'Intersecciones disciplinares',
-                author: 'Varios autores',
-                description: 'Este mapa explora las conexiones entre el arte y las ciencias sociales, examinando cómo se influyen mutuamente.',
-                image: null,
-                type: 'main',
-                x: 100,
-                y: 100,
-                color: '#ffffff',
-                textColor: 'black',
-                fontSize: 'small',
-                fontFamily: 'Roboto',
-                border: 'solid'
-            };
-
-            const node2 = {
-                id: 'node-2',
-                title: 'Antropología Visual',
-                subtitle: 'Estudio cultural de las imágenes',
-                author: 'Margaret Mead',
-                description: 'La antropología visual estudia cómo las sociedades humanas producen, interpretan y utilizan las imágenes visuales.',
-                image: null,
-                type: 'main',
-                x: 300,
-                y: 200,
-                color: '#ffffff',
-                textColor: 'black',
-                fontSize: 'small',
-                fontFamily: 'Roboto',
-                border: 'solid'
-            };
-
-            nodes.push(node1, node2);
-            renderAll();
-            updateCounters();
-            saveState(); // Guardar estado con nodos de ejemplo
-        }, 500);
     </script>
 </body>
 </html>
