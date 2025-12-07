@@ -3,1052 +3,961 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Conceptual Interactivo Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Mapa Conceptual Pro V9</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
     <style>
-        /* ESTILOS GENERALES Y DE DISEÑO */
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body {
-            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
-            background: #1a1a2e;
-            min-height: 100vh;
-            padding: 15px;
-            color: #e6e6e6;
-            overflow-x: hidden;
+        :root {
+            --bg-dark: #1e1e2e;
+            --bg-panel: #252535;
+            --accent: #7c4dff;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0b0;
+            --border: #3f3f4f;
+            --node-bg: #ffffff;
+            --node-text: #222222;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #16213e;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            height: calc(100vh - 30px);
-        }
-
-        /* CABECERA */
-        .header { display: flex; justify-content: center; margin-bottom: 5px; }
-        .title-input {
-            background: #4a235a;
-            border: none;
-            text-align: center;
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            padding: 10px 30px;
-            border-radius: 6px;
-            width: 100%;
-            max-width: 800px;
-            transition: 0.3s;
-        }
-        .title-input:focus { background: #5b2b6b; box-shadow: 0 0 0 2px #8e44ad; }
-
-        /* LAYOUT PRINCIPAL */
-        .content { display: flex; gap: 15px; flex: 1; overflow: hidden; }
-
-        /* BARRA LATERAL */
-        .sidebar {
-            width: 180px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; user-select: none; }
         
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BARRA SUPERIOR --- */
+        .top-bar {
+            height: 50px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .app-title { font-weight: 600; color: var(--accent); letter-spacing: 1px; }
+        
+        .doc-title {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            width: 200px;
+            transition: 0.2s;
+        }
+        .doc-title:hover, .doc-title:focus { border-color: var(--accent); background: rgba(0,0,0,0.2); }
+
+        .btn-group { display: flex; gap: 5px; margin-left: auto; }
 
         .btn {
-            padding: 10px 12px;
+            padding: 6px 12px;
+            border-radius: 4px;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            transition: all 0.2s ease;
-            color: white;
-            text-transform: uppercase;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
+            gap: 6px;
+            transition: 0.2s;
+            background: #333344;
+            color: var(--text-main);
         }
-        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .btn:active { transform: translateY(1px); }
-        .btn i { font-size: 14px; width: 20px; text-align: center; }
+        .btn:hover { background: #444455; transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #6b3ee3; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-danger:hover { background: #ff6b81; }
 
-        /* Colores de botones */
-        .btn-primary { background: linear-gradient(135deg, #4a235a, #8e44ad); }
-        .btn-warning { background: linear-gradient(135deg, #d35400, #e67e22); }
-        .btn-danger { background: linear-gradient(135deg, #c0392b, #e74c3c); }
-        .btn-info { background: linear-gradient(135deg, #2980b9, #3498db); }
-        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-        .btn-dark { background: #2c3e50; }
-
-        /* ESPACIO DE TRABAJO */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
-        
-        .status-bar {
-            background: #2d3748;
-            padding: 8px 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 12px;
+        /* --- UI PRINCIPAL --- */
+        .main-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 35px;
-        }
-        .mode-indicator { font-weight: bold; color: #f1c40f; display: none; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
-
-        .workspace-wrapper {
             flex: 1;
             position: relative;
             overflow: hidden;
-            border: 2px solid #2d3748;
-            border-radius: 6px;
-            background: #0f1526;
-            cursor: grab;
-        }
-        .workspace-wrapper:active { cursor: grabbing; }
-
-        /* CONTENEDOR A4 ESCALABLE */
-        .canvas-container {
-            width: 1123px; /* A4 landscape 96dpi approx */
-            height: 794px;
-            background-color: #ffffff;
-            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-            background-size: 20px 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            position: absolute;
-            transform-origin: 0 0;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            transition: box-shadow 0.3s;
         }
 
-        /* NODOS */
-        .node {
-            position: absolute;
-            min-width: 100px;
-            max-width: 200px;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
-            border: 2px solid transparent; /* Para evitar salto al seleccionar */
-            user-select: none; /* Crucial para evitar selección de texto al arrastrar */
-            z-index: 10;
-            transition: transform 0.1s, box-shadow 0.2s;
-            font-family: 'Roboto', sans-serif;
-            overflow: hidden;
-        }
-
-        .node:hover { z-index: 100; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
-        
-        /* Estados del nodo */
-        .node.selected {
-            border-color: #8e44ad;
-            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.4);
+        .toolbar {
+            width: 50px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            gap: 8px;
             z-index: 90;
         }
+
+        .tool-btn {
+            width: 36px; height: 36px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.2s;
+            position: relative;
+        }
+        .tool-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .tool-btn.active { background: var(--accent); color: white; box-shadow: 0 0 10px rgba(124, 77, 255, 0.4); }
         
-        .node.dragging {
-            opacity: 0.9;
-            transform: scale(1.02);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
-            cursor: grabbing;
-            z-index: 1000;
+        /* Tooltips simples */
+        .tool-btn:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 45px; top: 50%; transform: translateY(-50%);
+            background: #111; color: #fff;
+            padding: 4px 8px; font-size: 11px; border-radius: 4px;
+            white-space: nowrap; pointer-events: none; z-index: 1000;
         }
 
+        /* --- CANVAS --- */
+        .viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f3; /* Color de fondo del papel */
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+            cursor: grab;
+        }
+        .viewport.grabbing { cursor: grabbing; }
+
+        .canvas-layer {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0;
+            /* La magia ocurre aquí con transform: translate(...) scale(...) */
+        }
+
+        /* --- NODOS --- */
+        .node {
+            position: absolute;
+            min-width: 120px;
+            max-width: 220px;
+            padding: 12px;
+            background: var(--node-bg);
+            color: var(--node-text);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            cursor: pointer;
+            z-index: 10;
+            transition: box-shadow 0.2s, transform 0.1s;
+        }
+        
+        .node:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.15); z-index: 100; }
+        .node.selected { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.2); z-index: 100; }
+        
         .node-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.2; pointer-events: none; }
-        .node-subtitle { font-weight: 400; font-size: 11px; color: #555; font-style: italic; pointer-events: none; }
-        .node-img { width: 100%; height: auto; margin-bottom: 5px; border-radius: 3px; pointer-events: none; display: block; }
+        .node-subtitle { font-size: 11px; color: #666; font-style: italic; margin-bottom: 2px; pointer-events: none; }
+        .node-desc-indicator { font-size: 10px; color: #999; margin-top: 5px; border-top: 1px solid #eee; padding-top: 2px; text-align: center; }
 
-        /* CONEXIONES */
-        .connection {
+        /* --- CONEXIONES --- */
+        .connection-line {
             position: absolute;
-            background: #718096;
             height: 2px;
-            transform-origin: 0 50%; /* Pivot a la izquierda centro */
-            pointer-events: none; /* Clics pasan a través */
-            z-index: 1;
-            transition: background 0.2s, height 0.2s;
-        }
-        
-        .connection.interactive { pointer-events: auto; cursor: pointer; height: 6px; background: transparent; }
-        .connection.interactive:hover + .connection-visible { background: #e74c3c; height: 3px; }
-        
-        .connection-visible {
-            position: absolute;
-            background: #718096;
-            height: 2px;
+            background-color: #888;
             transform-origin: 0 50%;
-            pointer-events: none;
-            z-index: 2;
+            z-index: 5;
+            pointer-events: auto; /* Para permitir click y borrar */
+            cursor: pointer;
         }
-
+        .connection-line:hover { height: 4px; background-color: #ff4757; }
         .connection-arrow {
             position: absolute;
             width: 0; height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 10px solid #718096;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #888;
             transform-origin: center;
+            z-index: 5;
             pointer-events: none;
-            z-index: 3;
         }
 
-        /* CONTROLES DE ZOOM */
+        /* --- PANELES FLOTANTES --- */
         .zoom-controls {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 5px;
-            background: rgba(26, 26, 46, 0.8);
+            bottom: 20px; right: 20px;
+            background: var(--bg-panel);
             padding: 5px;
             border-radius: 8px;
-            z-index: 50;
+            display: flex; gap: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         }
-        .zoom-btn {
-            width: 30px; height: 30px;
-            border: none;
-            background: #4a235a;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .zoom-btn:hover { background: #5b2b6b; }
 
-        /* MODALES */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            backdrop-filter: blur(4px);
-        }
-        .modal-content {
-            background-color: #1a1a2e;
-            margin: 5% auto;
-            padding: 25px;
-            border: 1px solid #4a5568;
-            border-radius: 10px;
-            width: 90%; max-width: 550px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            max-height: 90vh;
-            overflow-y: auto;
-            color: white;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #a0aec0; }
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            background: #2d3748;
-            border: 1px solid #4a5568;
-            border-radius: 4px;
-            color: white;
-            font-size: 14px;
-        }
-        .form-control:focus { border-color: #8e44ad; }
-        
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #2d3748; padding-top: 15px; }
-
-        /* UTILIDADES VISUALES */
-        .color-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
-        .color-opt { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-        .color-opt.active { border-color: white; transform: scale(1.1); }
-
-        .hidden-input { display: none; }
-        
-        /* MENSAJE FLOTANTE */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #27ae60;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity 0.3s;
+        .status-bar {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(30, 30, 46, 0.9);
+            color: #aaa;
+            font-size: 11px;
+            padding: 4px 10px;
+            display: flex; justify-content: space-between;
             pointer-events: none;
-            font-weight: bold;
         }
+
+        /* --- MODALES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal {
+            background: var(--bg-panel);
+            width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+        .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        .form-input { 
+            width: 100%; padding: 10px; background: #333344; border: 1px solid var(--border); 
+            border-radius: 4px; color: white; font-family: inherit; resize: vertical;
+        }
+        .form-input:focus { border-color: var(--accent); }
+
+        /* Color Picker Simple */
+        .color-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .color-circle { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-circle.selected { border-color: white; transform: scale(1.1); }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 10px 20px;
+            border-radius: 20px; font-size: 13px; font-weight: 500;
+            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000;
+        }
+
+        /* Ocultar input file */
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <input type="text" class="title-input" id="mapTitle" value="NUEVO MAPA CONCEPTUAL" placeholder="TÍTULO DEL PROYECTO">
-        </div>
 
-        <div class="content">
-            <div class="sidebar">
-                <div style="font-size:10px; color:#a0aec0; margin-bottom:5px; font-weight:bold;">HERRAMIENTAS</div>
-                <button class="btn btn-primary" onclick="createNewNode()"><i class="fas fa-plus"></i> Nuevo Nodo</button>
-                <button class="btn btn-warning" onclick="editSelectedNode()"><i class="fas fa-pen"></i> Editar</button>
-                <button class="btn btn-danger" onclick="deleteSelected()"><i class="fas fa-trash"></i> Eliminar</button>
-                
-                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
-                
-                <button class="btn btn-info" onclick="toggleConnectionMode()"><i class="fas fa-project-diagram"></i> Conectar</button>
-                <button class="btn btn-dark" onclick="toggleDisconnectMode()"><i class="fas fa-cut"></i> Desconectar</button>
-                
-                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
-                
-                <button class="btn btn-success" onclick="copyNode()"><i class="fas fa-copy"></i> Copiar</button>
-                <button class="btn btn-success" onclick="pasteNode()"><i class="fas fa-paste"></i> Pegar</button>
-                
-                <div style="height:1px; background:#4a5568; margin:5px 0;"></div>
-
-                <button class="btn btn-primary" style="background:#2d3748" onclick="triggerLoad()"><i class="fas fa-folder-open"></i> Abrir</button>
-                <input type="file" id="fileInput" class="hidden-input" accept=".html" onchange="loadFile(this)">
-                <button class="btn btn-success" onclick="showSaveModal()"><i class="fas fa-save"></i> Guardar</button>
-                <button class="btn btn-danger" onclick="clearWorkspace()"><i class="fas fa-bomb"></i> Limpiar Todo</button>
-            </div>
-
-            <div class="main-content">
-                <div class="status-bar">
-                    <span id="statusText">Listo para trabajar</span>
-                    <span id="modeIndicator" class="mode-indicator">MODO CONEXIÓN ACTIVADO</span>
-                    <span>Nodos: <span id="nodeCount">0</span> | Zoom: <span id="zoomValue">100%</span></span>
-                </div>
-
-                <div class="workspace-wrapper" id="workspaceWrapper">
-                    <div class="canvas-container" id="canvas">
-                        <div id="connectionsLayer"></div>
-                        <div id="nodesLayer"></div>
-                    </div>
-                </div>
-
-                <div class="zoom-controls">
-                    <button class="zoom-btn" onclick="setZoom(-0.1)">-</button>
-                    <button class="zoom-btn" onclick="resetZoom()">1:1</button>
-                    <button class="zoom-btn" onclick="setZoom(0.1)">+</button>
-                </div>
-            </div>
+    <div class="top-bar">
+        <div class="app-title"><i class="fas fa-project-diagram"></i> MAPA V9</div>
+        <div style="width: 1px; height: 20px; background: var(--border);"></div>
+        <input type="text" class="doc-title" id="docTitle" value="Sin Título">
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="IO.saveHTML()"><i class="fas fa-save"></i> Guardar HTML</button>
+            <button class="btn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i> Abrir</button>
+            <button class="btn" onclick="IO.exportPNG()"><i class="fas fa-image"></i> PNG</button>
+            <button class="btn btn-danger" onclick="App.clearAll()"><i class="fas fa-trash-alt"></i></button>
         </div>
     </div>
 
-    <div id="nodeModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-bottom:15px; color:#e6e6e6;">Editar Nodo</h3>
-            <input type="hidden" id="editNodeId">
-            
-            <div class="form-group">
-                <label>Título</label>
-                <input type="text" id="inputTitle" class="form-control" placeholder="Concepto principal">
-            </div>
-            
-            <div class="form-group">
-                <label>Subtítulo</label>
-                <input type="text" id="inputSubtitle" class="form-control" placeholder="Detalle breve">
-            </div>
+    <div class="main-container">
+        <div class="toolbar">
+            <button class="tool-btn active" id="btn-select" title="Seleccionar/Mover (V)" onclick="App.setMode('select')"><i class="fas fa-mouse-pointer"></i></button>
+            <button class="tool-btn" id="btn-node" title="Crear Nodo (N)" onclick="App.setMode('node')"><i class="fas fa-plus-square"></i></button>
+            <button class="tool-btn" id="btn-connect" title="Conectar (C)" onclick="App.setMode('connect')"><i class="fas fa-link"></i></button>
+            <div style="height: 1px; width: 30px; background: var(--border); margin: 5px 0;"></div>
+            <button class="tool-btn" title="Editar (Doble Click)" onclick="App.editSelected()"><i class="fas fa-pen"></i></button>
+            <button class="tool-btn" title="Borrar (Supr)" onclick="App.deleteSelected()"><i class="fas fa-times"></i></button>
+        </div>
 
-            <div class="form-group">
-                <label>Descripción / Texto</label>
-                <textarea id="inputDesc" class="form-control" rows="3" placeholder="Contenido extenso..."></textarea>
+        <div class="viewport" id="viewport">
+            <div class="canvas-layer" id="canvasLayer">
+                <div id="connectionsContainer"></div>
+                <div id="nodesContainer"></div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label>Color de fondo</label>
-                <div class="color-grid" id="colorGrid">
-                    </div>
+        <div class="zoom-controls">
+            <button class="btn" style="padding: 5px 10px;" onclick="App.zoom(-0.1)"><i class="fas fa-minus"></i></button>
+            <button class="btn" style="padding: 5px 10px;" onclick="App.resetView()">100%</button>
+            <button class="btn" style="padding: 5px 10px;" onclick="App.zoom(0.1)"><i class="fas fa-plus"></i></button>
+        </div>
+
+        <div class="status-bar">
+            <span id="statusMsg">Listo</span>
+            <span id="coords">0, 0</span>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Editar Nodo</h3>
+                <button class="btn" style="background:transparent; padding:0;" onclick="UI.closeModal()"><i class="fas fa-times"></i></button>
             </div>
-
-            <div class="form-group">
-                <label>Imagen (URL o Local)</label>
-                <div style="display:flex; gap:5px;">
-                    <button class="btn btn-info" style="width:auto" onclick="document.getElementById('imgUpload').click()">Subir</button>
-                    <input type="file" id="imgUpload" class="hidden-input" accept="image/*" onchange="handleImageUpload(this)">
-                    <input type="text" id="inputImage" class="form-control" placeholder="...o pega URL de imagen">
+            <div class="modal-body">
+                <input type="hidden" id="editNodeId">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" class="form-input" id="editTitle" placeholder="Concepto principal">
+                </div>
+                <div class="form-group">
+                    <label>Subtítulo</label>
+                    <input type="text" class="form-input" id="editSubtitle" placeholder="Detalle breve">
+                </div>
+                <div class="form-group">
+                    <label>Contenido / Descripción</label>
+                    <textarea class="form-input" id="editContent" rows="4" placeholder="Texto detallado..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-options" id="colorPicker">
+                        </div>
                 </div>
             </div>
-
             <div class="modal-footer">
-                <button class="btn btn-danger" style="width:auto" onclick="closeModal()">Cancelar</button>
-                <button class="btn btn-success" style="width:auto" onclick="saveNodeData()">Guardar Cambios</button>
+                <button class="btn" onclick="UI.closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="App.saveNodeEdit()">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
-    <div id="saveModal" class="modal">
-        <div class="modal-content" style="max-width:400px; text-align:center;">
-            <h3>Guardar Proyecto</h3>
-            <p style="color:#a0aec0; margin:10px 0 20px;">Elige el formato de descarga:</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <button class="btn btn-primary" onclick="downloadHTML()">Archivo Editable (.HTML)</button>
-                <button class="btn btn-info" onclick="downloadPNG()">Imagen (.PNG)</button>
-                <button class="btn btn-danger" onclick="document.getElementById('saveModal').style.display='none'">Cerrar</button>
+    <div class="modal-overlay" id="readModal">
+        <div class="modal" style="width: 500px;">
+            <div class="modal-header">
+                <h3 id="readTitle">Título</h3>
+                <button class="btn" style="background:transparent; padding:0;" onclick="document.getElementById('readModal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <h4 id="readSubtitle" style="color: #888; font-style: italic;"></h4>
+                <div id="readContent" style="color: #ddd; line-height: 1.5; max-height: 300px; overflow-y: auto;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="document.getElementById('readModal').style.display='none'">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="toast">Acción completada</div>
+    <input type="file" id="fileInput" accept=".html,.json" onchange="IO.handleFileSelect(this)">
+    
+    <div id="toast" class="toast">Mensaje</div>
 
     <script>
-        // --- ESTADO DE LA APLICACIÓN ---
-        const state = {
-            nodes: [],       // Array de objetos nodo
-            connections: [], // Array de objetos conexión {from: id, to: id}
-            scale: 1,
-            pan: { x: 0, y: 0 },
-            selectedNodeId: null,
-            mode: 'select',  // 'select', 'connect', 'disconnect'
-            connectSourceId: null,
-            clipboard: null,
-            isDraggingCanvas: false,
-            lastMousePos: { x: 0, y: 0 }
+        // ==========================================
+        // CONFIGURACIÓN Y ESTADO
+        // ==========================================
+        const Config = {
+            colors: ['#ffffff', '#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#222222'],
+            minZoom: 0.2,
+            maxZoom: 3.0
         };
 
-        // --- REFERENCIAS DOM ---
-        const canvas = document.getElementById('canvas');
-        const nodesLayer = document.getElementById('nodesLayer');
-        const connectionsLayer = document.getElementById('connectionsLayer');
-        const workspaceWrapper = document.getElementById('workspaceWrapper');
-        
-        // --- UTILIDADES ---
-        // Generador de ID Único (Crucial para evitar bugs de vinculación)
-        function generateUUID() {
-            return 'node_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
-        }
+        const State = {
+            nodes: [],
+            connections: [],
+            mode: 'select', // select, node, connect
+            selectedNode: null,
+            connectSource: null,
+            offset: { x: 0, y: 0 }, // Pan
+            zoom: 1,
+            isDraggingCanvas: false,
+            isDraggingNode: false,
+            dragStart: { x: 0, y: 0 },
+            lastMouse: { x: 0, y: 0 }
+        };
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', 2000);
-        }
-
-        // --- GESTIÓN DE NODOS ---
-        
-        function createNewNode(x = 100, y = 100, data = null) {
-            const id = generateUUID();
-            const node = {
-                id: id,
-                x: x,
-                y: y,
-                title: data ? data.title : 'Nuevo Concepto',
-                subtitle: data ? data.subtitle : '',
-                desc: data ? data.desc : '',
-                color: data ? data.color : '#ffffff',
-                image: data ? data.image : '',
-                width: 150
-            };
+        // ==========================================
+        // UTILIDADES (ID ÚNICO y COORDENADAS)
+        // ==========================================
+        const Utils = {
+            uid: () => 'n_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             
-            state.nodes.push(node);
-            renderNode(node);
-            updateStats();
-            return id;
-        }
-
-        function renderNode(node) {
-            const el = document.createElement('div');
-            el.id = node.id;
-            el.className = 'node';
-            el.style.left = node.x + 'px';
-            el.style.top = node.y + 'px';
-            el.style.backgroundColor = node.color;
-            // Texto oscuro si el fondo es claro, claro si es oscuro (simplificado)
-            el.style.color = isDark(node.color) ? '#fff' : '#000';
-
-            let imgHTML = '';
-            if (node.image) {
-                imgHTML = `<img src="${node.image}" class="node-img" alt="">`;
-            }
-
-            el.innerHTML = `
-                ${imgHTML}
-                <div class="node-title">${node.title}</div>
-                <div class="node-subtitle">${node.subtitle}</div>
-            `;
-
-            // EVENTOS DEL NODO
-            el.addEventListener('mousedown', (e) => startDragNode(e, node.id));
-            el.addEventListener('touchstart', (e) => startDragNode(e, node.id), {passive: false});
-            
-            // Evento Click manejado separadamente para evitar conflictos con drag
-            el.addEventListener('click', (e) => {
-                e.stopPropagation(); // Evitar seleccionar canvas
-                if (el.getAttribute('data-was-dragged') === 'true') return; // Si se arrastró, no es un click
-                handleNodeClick(node.id);
-            });
-            
-            // Doble click para editar
-            el.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                editNode(node.id);
-            });
-
-            nodesLayer.appendChild(el);
-        }
-
-        function updateNodeVisuals(id) {
-            const node = state.nodes.find(n => n.id === id);
-            if (!node) return;
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            el.style.backgroundColor = node.color;
-            el.style.color = isDark(node.color) ? '#fff' : '#000';
-            
-            let imgHTML = '';
-            if (node.image) imgHTML = `<img src="${node.image}" class="node-img" alt="">`;
-            
-            el.innerHTML = `
-                ${imgHTML}
-                <div class="node-title">${node.title}</div>
-                <div class="node-subtitle">${node.subtitle}</div>
-            `;
-            
-            if (state.selectedNodeId === id) el.classList.add('selected');
-            else el.classList.remove('selected');
-            
-            updateConnections();
-        }
-
-        function handleNodeClick(id) {
-            if (state.mode === 'connect') {
-                if (state.connectSourceId === null) {
-                    state.connectSourceId = id;
-                    showToast('Selecciona el nodo destino');
-                    document.getElementById(id).classList.add('selected'); // Visual feedback
-                } else {
-                    if (state.connectSourceId !== id) {
-                        createConnection(state.connectSourceId, id);
-                        resetMode();
-                    } else {
-                        showToast('No puedes conectar un nodo a sí mismo');
-                        resetMode();
-                    }
-                }
-            } else if (state.mode === 'disconnect') {
-                // Modo desconectar es mejor vía las líneas, pero por si acaso
-            } else {
-                selectNode(id);
-            }
-        }
-
-        function selectNode(id) {
-            // Deseleccionar anterior
-            if (state.selectedNodeId) {
-                const prev = document.getElementById(state.selectedNodeId);
-                if (prev) prev.classList.remove('selected');
-            }
-            
-            if (id) {
-                state.selectedNodeId = id;
-                const el = document.getElementById(id);
-                if (el) el.classList.add('selected');
-            } else {
-                state.selectedNodeId = null;
-            }
-        }
-
-        // --- ARRASTRAR NODOS (DRAG & DROP) ---
-        function startDragNode(e, id) {
-            if (e.target.tagName === 'BUTTON') return; // Si hubiera botones dentro
-            if (e.button !== 0 && e.type === 'mousedown') return; // Solo click izquierdo
-            
-            e.preventDefault(); // Evitar scroll en touch
-            e.stopPropagation();
-
-            const node = state.nodes.find(n => n.id === id);
-            const el = document.getElementById(id);
-            el.classList.add('dragging');
-            el.setAttribute('data-was-dragged', 'false'); // Reset flag
-
-            // Coordenadas iniciales
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            const startMouseX = clientX;
-            const startMouseY = clientY;
-            const startNodeX = node.x;
-            const startNodeY = node.y;
-
-            let hasMoved = false;
-
-            function move(ev) {
-                const curX = ev.type.includes('touch') ? ev.touches[0].clientX : ev.clientX;
-                const curY = ev.type.includes('touch') ? ev.touches[0].clientY : ev.clientY;
-
-                const dx = (curX - startMouseX) / state.scale;
-                const dy = (curY - startMouseY) / state.scale;
-
-                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                    hasMoved = true;
-                    el.setAttribute('data-was-dragged', 'true');
-                }
-
-                node.x = startNodeX + dx;
-                node.y = startNodeY + dy;
-
-                el.style.left = node.x + 'px';
-                el.style.top = node.y + 'px';
-                
-                requestAnimationFrame(updateConnections);
-            }
-
-            function stop() {
-                el.classList.remove('dragging');
-                document.removeEventListener('mousemove', move);
-                document.removeEventListener('mouseup', stop);
-                document.removeEventListener('touchmove', move);
-                document.removeEventListener('touchend', stop);
-            }
-
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', stop);
-            document.addEventListener('touchmove', move, {passive: false});
-            document.addEventListener('touchend', stop);
-        }
-
-        // --- GESTIÓN DE CONEXIONES ---
-        function createConnection(fromId, toId) {
-            // Verificar duplicados
-            const exists = state.connections.some(c => 
-                (c.from === fromId && c.to === toId) || 
-                (c.from === toId && c.to === fromId)
-            );
-            
-            if (exists) {
-                showToast('Ya están conectados');
-                return;
-            }
-
-            state.connections.push({ from: fromId, to: toId });
-            renderConnections(); // Render completo para asegurar orden
-            showToast('Conexión creada');
-        }
-
-        function updateConnections() {
-            state.connections.forEach(conn => {
-                const lineId = `line_${conn.from}_${conn.to}`;
-                const arrowId = `arrow_${conn.from}_${conn.to}`;
-                const lineEl = document.getElementById(lineId);
-                const arrowEl = document.getElementById(arrowId);
-                const hitEl = document.getElementById(`hit_${conn.from}_${conn.to}`);
-
-                if (!lineEl || !arrowEl) return;
-
-                const n1 = state.nodes.find(n => n.id === conn.from);
-                const n2 = state.nodes.find(n => n.id === conn.to);
-                if (!n1 || !n2) return; // Si un nodo se borró
-
-                // Centros de nodos (aproximados, asumiendo ancho variable)
-                const el1 = document.getElementById(n1.id);
-                const el2 = document.getElementById(n2.id);
-                
-                const x1 = n1.x + el1.offsetWidth / 2;
-                const y1 = n1.y + el1.offsetHeight / 2;
-                const x2 = n2.x + el2.offsetWidth / 2;
-                const y2 = n2.y + el2.offsetHeight / 2;
-
-                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-                const transform = `translate(${x1}px, ${y1}px) rotate(${angle}deg)`;
-
-                // Línea visible
-                lineEl.style.width = length + 'px';
-                lineEl.style.transform = transform;
-                
-                // Zona de click (hit area)
-                if (hitEl) {
-                    hitEl.style.width = length + 'px';
-                    hitEl.style.transform = transform;
-                }
-
-                // Flecha
-                arrowEl.style.transform = `translate(${x2}px, ${y2}px) rotate(${angle}deg)`;
-            });
-        }
-
-        function renderConnections() {
-            connectionsLayer.innerHTML = '';
-            state.connections.forEach(conn => {
-                // Area de interacción (invisible pero gorda para clicar fácil)
-                const hitArea = document.createElement('div');
-                hitArea.id = `hit_${conn.from}_${conn.to}`;
-                hitArea.className = 'connection interactive';
-                hitArea.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (state.mode === 'disconnect') {
-                        deleteConnection(conn.from, conn.to);
-                    }
-                });
-
-                // Línea visible
-                const line = document.createElement('div');
-                line.id = `line_${conn.from}_${conn.to}`;
-                line.className = 'connection-visible';
-                
-                // Flecha
-                const arrow = document.createElement('div');
-                arrow.id = `arrow_${conn.from}_${conn.to}`;
-                arrow.className = 'connection-arrow';
-
-                connectionsLayer.appendChild(hitArea);
-                connectionsLayer.appendChild(line);
-                connectionsLayer.appendChild(arrow);
-            });
-            updateConnections();
-        }
-
-        function deleteConnection(from, to) {
-            state.connections = state.connections.filter(c => !(c.from === from && c.to === to));
-            renderConnections();
-            showToast('Conexión eliminada');
-            if (state.connections.length === 0) resetMode();
-        }
-
-        // --- EDITOR Y ACCIONES ---
-
-        function editSelectedNode() {
-            if (!state.selectedNodeId) {
-                showToast('Selecciona un nodo primero');
-                return;
-            }
-            editNode(state.selectedNodeId);
-        }
-
-        function editNode(id) {
-            const node = state.nodes.find(n => n.id === id);
-            if (!node) return;
-
-            document.getElementById('editNodeId').value = id;
-            document.getElementById('inputTitle').value = node.title;
-            document.getElementById('inputSubtitle').value = node.subtitle;
-            document.getElementById('inputDesc').value = node.desc;
-            document.getElementById('inputImage').value = node.image;
-            
-            generateColorGrid(node.color);
-            
-            document.getElementById('nodeModal').style.display = 'block';
-        }
-
-        function saveNodeData() {
-            const id = document.getElementById('editNodeId').value;
-            const node = state.nodes.find(n => n.id === id);
-            if (node) {
-                node.title = document.getElementById('inputTitle').value;
-                node.subtitle = document.getElementById('inputSubtitle').value;
-                node.desc = document.getElementById('inputDesc').value;
-                node.image = document.getElementById('inputImage').value;
-                
-                // Color seleccionado
-                const activeColor = document.querySelector('.color-opt.active');
-                if (activeColor) node.color = activeColor.dataset.color;
-
-                updateNodeVisuals(id);
-                closeModal();
-            }
-        }
-
-        function deleteSelected() {
-            if (!state.selectedNodeId) return;
-            if (!confirm('¿Borrar nodo seleccionado?')) return;
-
-            const id = state.selectedNodeId;
-            
-            // Borrar nodo
-            state.nodes = state.nodes.filter(n => n.id !== id);
-            document.getElementById(id).remove();
-            
-            // Borrar conexiones asociadas (CRÍTICO para evitar errores)
-            state.connections = state.connections.filter(c => c.from !== id && c.to !== id);
-            
-            selectNode(null);
-            renderConnections();
-            updateStats();
-        }
-
-        function copyNode() {
-            if (state.selectedNodeId) {
-                const node = state.nodes.find(n => n.id === state.selectedNodeId);
-                state.clipboard = JSON.parse(JSON.stringify(node)); // Copia profunda
-                showToast('Nodo copiado');
-            }
-        }
-
-        function pasteNode() {
-            if (state.clipboard) {
-                // Nuevo ID y posición desplazada
-                const newData = state.clipboard;
-                createNewNode(newData.x + 30, newData.y + 30, newData);
-            }
-        }
-
-        // --- MODOS ---
-        function toggleConnectionMode() {
-            if (state.mode === 'connect') {
-                resetMode();
-            } else {
-                state.mode = 'connect';
-                state.connectSourceId = null;
-                updateStatusUI();
-                showToast('Modo Conexión: Click en Origen -> Click en Destino');
-            }
-        }
-
-        function toggleDisconnectMode() {
-            if (state.mode === 'disconnect') {
-                resetMode();
-            } else {
-                state.mode = 'disconnect';
-                selectNode(null); // Limpiar selección para ver mejor las líneas
-                updateStatusUI();
-                showToast('Modo Desconexión: Click en las líneas para borrar');
-            }
-        }
-
-        function resetMode() {
-            state.mode = 'select';
-            state.connectSourceId = null;
-            updateStatusUI();
-            if (state.selectedNodeId) {
-                const el = document.getElementById(state.selectedNodeId);
-                if (el) el.classList.remove('selected'); // Visual fix
-                state.selectedNodeId = null;
-            }
-        }
-
-        function updateStatusUI() {
-            const indicator = document.getElementById('modeIndicator');
-            const status = document.getElementById('statusText');
-            
-            if (state.mode === 'connect') {
-                indicator.style.display = 'inline';
-                indicator.textContent = 'MODO CONEXIÓN';
-                indicator.style.color = '#f1c40f';
-                status.textContent = 'Selecciona nodo origen...';
-            } else if (state.mode === 'disconnect') {
-                indicator.style.display = 'inline';
-                indicator.textContent = 'MODO BORRAR CONEXIÓN';
-                indicator.style.color = '#e74c3c';
-                status.textContent = 'Click en una conexión para eliminarla';
-            } else {
-                indicator.style.display = 'none';
-                status.textContent = 'Modo Selección';
-            }
-        }
-
-        // --- ZOOM Y PAN ---
-        function setZoom(delta) {
-            let newScale = state.scale + delta;
-            newScale = Math.min(Math.max(0.5, newScale), 2.5);
-            state.scale = newScale;
-            canvas.style.transform = `translate(-50%, -50%) scale(${state.scale})`;
-            document.getElementById('zoomValue').textContent = Math.round(state.scale * 100) + '%';
-        }
-
-        function resetZoom() {
-            state.scale = 1;
-            setZoom(0);
-        }
-
-        // --- ARCHIVOS ---
-        function showSaveModal() {
-            document.getElementById('saveModal').style.display = 'block';
-        }
-
-        function downloadHTML() {
-            // Guardamos el estado actual en el HTML
-            const currentState = JSON.stringify({
-                nodes: state.nodes,
-                connections: state.connections
-            });
-            
-            // Creamos una copia del DOM actual, pero inyectamos el estado
-            let htmlContent = document.documentElement.outerHTML;
-            
-            // Truco: Reemplazamos el script de inicialización vacío por uno con datos
-            // Buscamos un marcador o simplemente inyectamos al final
-            const dataScript = `<script>window.initialData = ${currentState};<\/script>`;
-            
-            // Insertar antes del cierre del body
-            htmlContent = htmlContent.replace('</body>', dataScript + '</body>');
-            
-            const blob = new Blob([htmlContent], {type: 'text/html'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = (document.getElementById('mapTitle').value || 'mapa') + '.html';
-            a.click();
-            document.getElementById('saveModal').style.display = 'none';
-        }
-
-        function downloadPNG() {
-            // Desactivar zoom temporalmente para mejor calidad
-            const prevTransform = canvas.style.transform;
-            canvas.style.transform = "translate(0,0) scale(1)";
-            canvas.style.left = "0";
-            canvas.style.top = "0";
-            
-            html2canvas(canvas, {
-                scale: 2, // Mayor calidad
-                backgroundColor: "#ffffff"
-            }).then(c => {
-                const a = document.createElement('a');
-                a.href = c.toDataURL('image/png');
-                a.download = 'mapa_conceptual.png';
-                a.click();
-                
-                // Restaurar
-                canvas.style.transform = prevTransform;
-                canvas.style.left = "50%";
-                canvas.style.top = "50%";
-                document.getElementById('saveModal').style.display = 'none';
-            });
-        }
-
-        function triggerLoad() {
-            document.getElementById('fileInput').click();
-        }
-
-        function loadFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                
-                // Buscar datos inyectados
-                const match = content.match(/window\.initialData = (\{.*?\});/);
-                if (match && match[1]) {
-                    const data = JSON.parse(match[1]);
-                    loadData(data);
-                } else {
-                    alert('No se encontraron datos de mapa en este archivo HTML.');
-                }
-            };
-            reader.readAsText(file);
-            input.value = ''; // Reset
-        }
-
-        function loadData(data) {
-            clearWorkspace();
-            
-            // Regenerar IDs para asegurar integridad si se importa sobre algo existente (opcional, aqui limpiamos todo)
-            state.nodes = data.nodes;
-            state.connections = data.connections;
-
-            // Renderizar
-            state.nodes.forEach(node => renderNode(node));
-            renderConnections();
-            updateStats();
-            showToast('Mapa cargado exitosamente');
-        }
-
-        function clearWorkspace() {
-            state.nodes = [];
-            state.connections = [];
-            nodesLayer.innerHTML = '';
-            connectionsLayer.innerHTML = '';
-            selectNode(null);
-            updateStats();
-        }
-
-        // --- AUXILIARES UI ---
-        function closeModal() {
-            document.getElementById('nodeModal').style.display = 'none';
-            document.getElementById('saveModal').style.display = 'none';
-        }
-
-        function generateColorGrid(selectedColor) {
-            const colors = ['#ffffff', '#ffcdd2', '#f8bbd0', '#e1bee7', '#d1c4e9', '#c5cae9', '#bbdefb', '#b3e5fc', 
-                          '#b2ebf2', '#b2dfdb', '#c8e6c9', '#dcedc8', '#f0f4c3', '#fff9c4', '#ffecb3', '#ffe0b2', 
-                          '#ffccbc', '#d7ccc8', '#f5f5f5', '#cfd8dc', '#2c3e50', '#c0392b'];
-            
-            const container = document.getElementById('colorGrid');
-            container.innerHTML = '';
-            
-            colors.forEach(c => {
-                const d = document.createElement('div');
-                d.className = 'color-opt ' + (c === selectedColor ? 'active' : '');
-                d.style.backgroundColor = c;
-                d.dataset.color = c;
-                d.onclick = function() {
-                    document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('active'));
-                    this.classList.add('active');
+            // Transforma coordenadas del mouse (pantalla) a coordenadas del canvas (mundo)
+            // Esta función es CRÍTICA para que el zoom no rompa la selección
+            screenToWorld: (screenX, screenY) => {
+                const viewport = document.getElementById('viewport').getBoundingClientRect();
+                return {
+                    x: (screenX - viewport.left - State.offset.x) / State.zoom,
+                    y: (screenY - viewport.top - State.offset.y) / State.zoom
                 };
-                container.appendChild(d);
-            });
-        }
+            },
 
-        function isDark(color) {
-            // Simple check para hex
-            if (color.startsWith('#')) {
-                const hex = color.replace('#', '');
-                const r = parseInt(hex.substr(0, 2), 16);
-                const g = parseInt(hex.substr(2, 2), 16);
-                const b = parseInt(hex.substr(4, 2), 16);
-                return ((r * 299 + g * 587 + b * 114) / 1000) < 128;
+            showToast: (msg) => {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.style.opacity = 1;
+                setTimeout(() => t.style.opacity = 0, 2000);
             }
-            return false;
-        }
+        };
 
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('inputImage').value = e.target.result;
+        // ==========================================
+        // UI Y RENDERIZADO
+        // ==========================================
+        const UI = {
+            init: () => {
+                // Generar picker de colores
+                const picker = document.getElementById('colorPicker');
+                Config.colors.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'color-circle';
+                    div.style.backgroundColor = c;
+                    div.onclick = () => {
+                        document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                    };
+                    picker.appendChild(div);
+                });
+                // Seleccionar el primero por defecto
+                if(picker.firstChild) picker.firstChild.classList.add('selected');
+
+                UI.updateTransform();
+            },
+
+            updateTransform: () => {
+                const layer = document.getElementById('canvasLayer');
+                layer.style.transform = `translate(${State.offset.x}px, ${State.offset.y}px) scale(${State.zoom})`;
+                
+                // Actualizar fondo para efecto de parallax/grid infinito
+                document.getElementById('viewport').style.backgroundPosition = 
+                    `${State.offset.x}px ${State.offset.y}px`;
+                document.getElementById('viewport').style.backgroundSize = 
+                    `${20 * State.zoom}px ${20 * State.zoom}px`;
+            },
+
+            renderAll: () => {
+                UI.renderConnections();
+                // Los nodos no se re-renderizan completamente cada vez para no perder eventos,
+                // pero si cargamos archivo sí.
+            },
+
+            createNodeElement: (node) => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.id = node.id;
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.style.backgroundColor = node.color;
+                div.style.color = node.color === '#222222' ? '#fff' : '#222';
+                
+                let contentHTML = `<div class="node-title">${node.title}</div>`;
+                if(node.subtitle) contentHTML += `<div class="node-subtitle">${node.subtitle}</div>`;
+                if(node.content) contentHTML += `<div class="node-desc-indicator"><i class="fas fa-align-left"></i></div>`;
+                
+                div.innerHTML = contentHTML;
+
+                // EVENTOS DEL NODO (BLINDADOS)
+                div.addEventListener('mousedown', (e) => App.onNodeDown(e, node));
+                div.addEventListener('click', (e) => { e.stopPropagation(); }); // Detener bubbling
+                div.addEventListener('dblclick', (e) => { e.stopPropagation(); App.onNodeDblClick(node); });
+
+                document.getElementById('nodesContainer').appendChild(div);
+            },
+
+            updateNodeDOM: (node) => {
+                const el = document.getElementById(node.id);
+                if(!el) return;
+                
+                el.style.backgroundColor = node.color;
+                el.style.color = node.color === '#222222' ? '#fff' : '#222';
+                let contentHTML = `<div class="node-title">${node.title}</div>`;
+                if(node.subtitle) contentHTML += `<div class="node-subtitle">${node.subtitle}</div>`;
+                if(node.content) contentHTML += `<div class="node-desc-indicator"><i class="fas fa-align-left"></i></div>`;
+                el.innerHTML = contentHTML;
+                
+                if(State.selectedNode && State.selectedNode.id === node.id) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
                 }
-                reader.readAsDataURL(input.files[0]);
+            },
+
+            renderConnections: () => {
+                const container = document.getElementById('connectionsContainer');
+                container.innerHTML = ''; // Limpiar y repintar (más seguro que actualizar DOM partial)
+
+                State.connections.forEach(conn => {
+                    const n1 = State.nodes.find(n => n.id === conn.from);
+                    const n2 = State.nodes.find(n => n.id === conn.to);
+                    if(!n1 || !n2) return;
+
+                    // Centros aproximados
+                    const w1 = 150, h1 = 60; // Estimación si no tenemos el DOM exacto aun
+                    const el1 = document.getElementById(n1.id);
+                    const el2 = document.getElementById(n2.id);
+                    
+                    const x1 = n1.x + (el1 ? el1.offsetWidth/2 : w1/2);
+                    const y1 = n1.y + (el1 ? el1.offsetHeight/2 : h1/2);
+                    const x2 = n2.x + (el2 ? el2.offsetWidth/2 : w1/2);
+                    const y2 = n2.y + (el2 ? el2.offsetHeight/2 : h1/2);
+
+                    const length = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+                    const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+
+                    const line = document.createElement('div');
+                    line.className = 'connection-line';
+                    line.style.width = length + 'px';
+                    line.style.left = x1 + 'px';
+                    line.style.top = y1 + 'px';
+                    line.style.transform = `rotate(${angle}deg)`;
+                    
+                    // Evento para borrar conexión
+                    line.onclick = (e) => {
+                        e.stopPropagation();
+                        if(confirm('¿Borrar conexión?')) {
+                            App.deleteConnection(conn.from, conn.to);
+                        }
+                    };
+
+                    const arrow = document.createElement('div');
+                    arrow.className = 'connection-arrow';
+                    arrow.style.left = x2 + 'px';
+                    arrow.style.top = y2 + 'px';
+                    arrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+                    container.appendChild(line);
+                    container.appendChild(arrow);
+                });
+            },
+
+            openEditModal: (node) => {
+                document.getElementById('editNodeId').value = node.id;
+                document.getElementById('editTitle').value = node.title;
+                document.getElementById('editSubtitle').value = node.subtitle || '';
+                document.getElementById('editContent').value = node.content || '';
+                
+                // Set color
+                document.querySelectorAll('.color-circle').forEach(el => {
+                    if(el.style.backgroundColor === node.color) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                }); // Fallback si el color no es exacto no importa mucho
+
+                document.getElementById('editorModal').style.display = 'flex';
+            },
+
+            openReadModal: (node) => {
+                document.getElementById('readTitle').textContent = node.title;
+                document.getElementById('readSubtitle').textContent = node.subtitle || '';
+                document.getElementById('readContent').innerText = node.content || 'Sin descripción detallada.';
+                document.getElementById('readModal').style.display = 'flex';
+            },
+
+            closeModal: () => {
+                document.getElementById('editorModal').style.display = 'none';
+            },
+
+            updateStatus: (msg) => {
+                document.getElementById('statusMsg').textContent = msg;
             }
-        }
+        };
 
-        function updateStats() {
-            document.getElementById('nodeCount').textContent = state.nodes.length;
-        }
+        // ==========================================
+        // LÓGICA DE APLICACIÓN
+        // ==========================================
+        const App = {
+            setMode: (mode) => {
+                State.mode = mode;
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('btn-' + mode).classList.add('active');
+                
+                // Resetear estados intermedios
+                State.connectSource = null;
+                State.selectedNode = null;
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+                
+                let text = "Modo Selección";
+                if(mode === 'node') text = "Haz click en el espacio para crear Nodo";
+                if(mode === 'connect') text = "Selecciona nodo origen y luego destino";
+                UI.updateStatus(text);
+            },
 
-        // --- INICIALIZACIÓN ---
+            // --- CANVAS INPUTS ---
+            onViewportDown: (e) => {
+                // Solo si es click izquierdo
+                if(e.button !== 0) return;
+
+                if (State.mode === 'select' || State.mode === 'connect') {
+                    State.isDraggingCanvas = true;
+                    State.dragStart = { x: e.clientX, y: e.clientY };
+                    document.getElementById('viewport').classList.add('grabbing');
+                    
+                    // Deseleccionar al hacer click en el vacío
+                    if(State.selectedNode) {
+                        State.selectedNode = null;
+                        document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+                    }
+                } else if (State.mode === 'node') {
+                    // Crear nodo
+                    const coords = Utils.screenToWorld(e.clientX, e.clientY);
+                    App.addNode(coords.x - 75, coords.y - 30); // Centrado aprox
+                    App.setMode('select'); // Volver a select para comodidad
+                }
+            },
+
+            onViewportMove: (e) => {
+                const world = Utils.screenToWorld(e.clientX, e.clientY);
+                document.getElementById('coords').textContent = `${Math.round(world.x)}, ${Math.round(world.y)}`;
+
+                if (State.isDraggingCanvas) {
+                    const dx = e.clientX - State.dragStart.x;
+                    const dy = e.clientY - State.dragStart.y;
+                    
+                    State.offset.x += dx;
+                    State.offset.y += dy;
+                    
+                    State.dragStart = { x: e.clientX, y: e.clientY };
+                    UI.updateTransform();
+                } else if (State.isDraggingNode && State.selectedNode) {
+                    // Mover nodo
+                    const dx = (e.clientX - State.lastMouse.x) / State.zoom;
+                    const dy = (e.clientY - State.lastMouse.y) / State.zoom;
+
+                    State.selectedNode.x += dx;
+                    State.selectedNode.y += dy;
+
+                    // Actualizar DOM del nodo (solo posición)
+                    const el = document.getElementById(State.selectedNode.id);
+                    el.style.left = State.selectedNode.x + 'px';
+                    el.style.top = State.selectedNode.y + 'px';
+
+                    // Actualizar conexiones en tiempo real
+                    UI.renderConnections();
+
+                    State.lastMouse = { x: e.clientX, y: e.clientY };
+                }
+            },
+
+            onViewportUp: () => {
+                State.isDraggingCanvas = false;
+                State.isDraggingNode = false;
+                document.getElementById('viewport').classList.remove('grabbing');
+            },
+
+            // --- NODE INPUTS ---
+            onNodeDown: (e, node) => {
+                e.stopPropagation(); // IMPORTANTE: No propagar al canvas
+
+                if (State.mode === 'select') {
+                    State.isDraggingNode = true;
+                    State.lastMouse = { x: e.clientX, y: e.clientY };
+                    App.selectNode(node);
+                } else if (State.mode === 'connect') {
+                    App.handleConnectionStep(node);
+                } else if (State.mode === 'node') {
+                    // Si hacemos click en un nodo en modo crear, asumimos que queríamos seleccionar
+                    App.setMode('select');
+                    App.selectNode(node);
+                }
+            },
+
+            onNodeDblClick: (node) => {
+                if(State.mode === 'select') {
+                    // Si tiene mucho contenido, abrir lectura primero o editor si está vacío
+                    if(node.content && node.content.length > 50) {
+                        UI.openReadModal(node);
+                    } else {
+                        UI.openEditModal(node);
+                    }
+                }
+            },
+
+            // --- ACTIONS ---
+            addNode: (x, y, data = {}) => {
+                const node = {
+                    id: data.id || Utils.uid(),
+                    x: x,
+                    y: y,
+                    title: data.title || 'Nuevo Concepto',
+                    subtitle: data.subtitle || '',
+                    content: data.content || '',
+                    color: data.color || '#ffffff'
+                };
+                State.nodes.push(node);
+                UI.createNodeElement(node);
+                return node;
+            },
+
+            selectNode: (node) => {
+                State.selectedNode = node;
+                // Visual
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+                document.getElementById(node.id).classList.add('selected');
+            },
+
+            editSelected: () => {
+                if(State.selectedNode) UI.openEditModal(State.selectedNode);
+                else Utils.showToast('Selecciona un nodo primero');
+            },
+
+            deleteSelected: () => {
+                if(!State.selectedNode) return;
+                if(!confirm('¿Eliminar nodo y sus conexiones?')) return;
+                
+                const id = State.selectedNode.id;
+                // Borrar del DOM
+                const el = document.getElementById(id);
+                if(el) el.remove();
+                
+                // Borrar de datos
+                State.nodes = State.nodes.filter(n => n.id !== id);
+                State.connections = State.connections.filter(c => c.from !== id && c.to !== id);
+                
+                State.selectedNode = null;
+                UI.renderConnections();
+            },
+
+            deleteConnection: (from, to) => {
+                State.connections = State.connections.filter(c => !(c.from === from && c.to === to));
+                UI.renderConnections();
+            },
+
+            handleConnectionStep: (node) => {
+                if(!State.connectSource) {
+                    State.connectSource = node;
+                    UI.updateStatus(`Origen: ${node.title}. Selecciona destino.`);
+                    document.getElementById(node.id).classList.add('selected');
+                } else {
+                    if(State.connectSource.id === node.id) {
+                        UI.updateStatus("Cancelado: Mismo nodo.");
+                    } else {
+                        // Crear conexión
+                        // Chequear duplicados
+                        const exists = State.connections.find(c => c.from === State.connectSource.id && c.to === node.id);
+                        if(!exists) {
+                            State.connections.push({ from: State.connectSource.id, to: node.id });
+                            UI.renderConnections();
+                            Utils.showToast('Conectado');
+                        }
+                    }
+                    // Reset
+                    document.getElementById(State.connectSource.id).classList.remove('selected');
+                    State.connectSource = null;
+                    UI.updateStatus("Listo para conectar otro par.");
+                }
+            },
+
+            saveNodeEdit: () => {
+                const id = document.getElementById('editNodeId').value;
+                const node = State.nodes.find(n => n.id === id);
+                if(node) {
+                    node.title = document.getElementById('editTitle').value || 'Sin Título';
+                    node.subtitle = document.getElementById('editSubtitle').value;
+                    node.content = document.getElementById('editContent').value;
+                    
+                    // Obtener color
+                    const selColor = document.querySelector('.color-circle.selected');
+                    if(selColor) node.color = selColor.style.backgroundColor;
+
+                    UI.updateNodeDOM(node);
+                    UI.closeModal();
+                }
+            },
+
+            zoom: (delta) => {
+                let newZoom = State.zoom + delta;
+                if(newZoom < Config.minZoom) newZoom = Config.minZoom;
+                if(newZoom > Config.maxZoom) newZoom = Config.maxZoom;
+                State.zoom = newZoom;
+                UI.updateTransform();
+            },
+
+            resetView: () => {
+                State.zoom = 1;
+                State.offset = { x: 0, y: 0 };
+                UI.updateTransform();
+            },
+
+            clearAll: () => {
+                if(confirm('¿BORRAR TODO EL MAPA? Esta acción no se puede deshacer.')) {
+                    State.nodes = [];
+                    State.connections = [];
+                    document.getElementById('nodesContainer').innerHTML = '';
+                    document.getElementById('connectionsContainer').innerHTML = '';
+                    State.selectedNode = null;
+                    Utils.showToast('Mapa limpio');
+                }
+            }
+        };
+
+        // ==========================================
+        // ENTRADA / SALIDA (ARCHIVOS)
+        // ==========================================
+        const IO = {
+            saveHTML: () => {
+                const data = {
+                    title: document.getElementById('docTitle').value,
+                    nodes: State.nodes,
+                    connections: State.connections,
+                    version: "V9"
+                };
+
+                // Clonamos el HTML actual pero inyectamos los datos en un script al final
+                const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${data.title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>${document.querySelector('style').innerHTML}</style>
+</head>
+<body>
+    ${document.body.innerHTML}
+    <script>
+        // DATOS INYECTADOS
+        window.initialData = ${JSON.stringify(data)};
         
-        // Click fuera para deseleccionar
-        workspaceWrapper.addEventListener('click', (e) => {
-            if (e.target === canvas || e.target === workspaceWrapper) {
-                if (state.mode !== 'select') return;
-                selectNode(null);
-            }
-        });
+        // RE-INICIALIZACION
+        // (Incluimos el script original aquí para que sea auto-ejecutable)
+        ${document.querySelector('script').innerHTML}
+    <\/script>
+</body>
+</html>`;
+                
+                const blob = new Blob([htmlContent], {type: 'text/html'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = data.title + ".html";
+                a.click();
+            },
 
-        // Verificar si hay datos cargados al inicio (cuando abrimos el HTML guardado)
-        window.onload = function() {
+            exportPNG: () => {
+                // Centrar vista temporalmente para la foto
+                const layer = document.getElementById('canvasLayer');
+                const oldTransform = layer.style.transform;
+                layer.style.transform = `translate(50px, 50px) scale(1)`; 
+                
+                // Necesitamos esperar que el navegador repinte
+                html2canvas(document.getElementById('canvasLayer'), {
+                    backgroundColor: '#f0f0f3',
+                    scale: 2 // Mejor calidad
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'mapa.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                    layer.style.transform = oldTransform; // Restaurar
+                });
+            },
+
+            handleFileSelect: (input) => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    IO.loadContent(content);
+                };
+                reader.readAsText(file);
+                input.value = ''; // Reset
+            },
+
+            // Lógica crítica para compatibilidad con V5/V8
+            loadContent: (content) => {
+                try {
+                    let loadedData = null;
+
+                    // 1. Intentar buscar window.initialData (V9+)
+                    const v9Match = content.match(/window\.initialData\s*=\s*(\{.*?\});/s);
+                    if (v9Match) {
+                        loadedData = JSON.parse(v9Match[1]);
+                    } 
+                    // 2. Intentar buscar el formato antiguo "const nodes = [...]"
+                    else {
+                        const nodesMatch = content.match(/const nodes = (\[.*?\]);/s);
+                        const connMatch = content.match(/const connections = (\[.*?\]);/s);
+                        
+                        if (nodesMatch) {
+                            loadedData = {
+                                nodes: JSON.parse(nodesMatch[1]),
+                                connections: connMatch ? JSON.parse(connMatch[1]) : []
+                            };
+                            console.log("Datos de versión antigua detectados.");
+                        }
+                    }
+
+                    if (loadedData) {
+                        // Limpiar actual
+                        State.nodes = [];
+                        State.connections = [];
+                        document.getElementById('nodesContainer').innerHTML = '';
+                        document.getElementById('connectionsContainer').innerHTML = '';
+
+                        // Cargar nodos asegurando integridad
+                        loadedData.nodes.forEach(n => {
+                            // Fix para versiones viejas que usaban campos diferentes
+                            App.addNode(n.x, n.y, {
+                                id: n.id, // Preservar ID es crucial para conexiones
+                                title: n.title,
+                                subtitle: n.subtitle,
+                                content: n.content || n.description || '', // Compatibilidad
+                                color: n.color
+                            });
+                        });
+
+                        // Cargar conexiones
+                        if(loadedData.connections) {
+                            State.connections = loadedData.connections;
+                            UI.renderConnections();
+                        }
+
+                        if(loadedData.title) document.getElementById('docTitle').value = loadedData.title;
+                        
+                        Utils.showToast('Mapa cargado con éxito');
+                    } else {
+                        alert("No se encontraron datos de mapa en este archivo.");
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Error al leer el archivo. Asegúrate de que es un HTML generado por esta herramienta.");
+                }
+            }
+        };
+
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        window.onload = () => {
+            UI.init();
+
+            // Listeners globales
+            const vp = document.getElementById('viewport');
+            vp.addEventListener('mousedown', App.onViewportDown);
+            window.addEventListener('mousemove', App.onViewportMove);
+            window.addEventListener('mouseup', App.onViewportUp);
+
+            // Teclas rápidas
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Delete') App.deleteSelected();
+                if(e.key === 'Escape') UI.closeModal();
+            });
+
+            // Auto-carga si estamos abriendo un archivo generado
             if (window.initialData) {
-                loadData(window.initialData);
-            } else {
-                // Crear nodo inicial
-                createNewNode(561 - 75, 397 - 30, {title: 'Idea Central', subtitle: 'Comienza aquí'});
+                // Pequeño delay para asegurar que el DOM está listo
+                setTimeout(() => {
+                    // Simular carga como si viniera de archivo externo para reutilizar lógica
+                    // Pero inyectando directo al state
+                    State.nodes = [];
+                    document.getElementById('nodesContainer').innerHTML = '';
+                    window.initialData.nodes.forEach(n => App.addNode(n.x, n.y, n));
+                    State.connections = window.initialData.connections || [];
+                    UI.renderConnections();
+                    document.getElementById('docTitle').value = window.initialData.title || "Mapa Cargado";
+                }, 100);
             }
         };
 
