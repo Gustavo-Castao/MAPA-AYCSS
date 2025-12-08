@@ -2,130 +2,155 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mapa Conceptual PRO</title>
+<title>Mapa Conceptual PRO - Multiarchivo</title>
+
 <style>
-body { margin:0;font-family:Arial;background:#e6e6e6; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial;background:#dcdcdc}
 
-#toolbar {
-  background:#1e1e1e;
-  color:#fff;
-  padding:8px;
-  display:flex;
-  gap:8px;
+#topbar{
+  height:40px;background:#1e1e1e;color:white;
+  display:flex;align-items:center;padding:0 10px;gap:10px
+}
+#tabs{
+  height:35px;background:#2c2c2c;display:flex;align-items:center;overflow-x:auto
+}
+.tab{
+  background:#3a3a3a;color:white;padding:6px 14px;margin-right:2px;
+  cursor:pointer;border-top:3px solid transparent
+}
+.tab.active{
+  background:#1e1e1e;border-top-color:#0a84ff
 }
 
-button {
-  background:#333;color:#fff;
-  border:none;border-radius:6px;
-  padding:8px 12px;
-  cursor:pointer;
-}
-button:hover { background:#555; }
+#main{display:flex;height:calc(100vh - 75px)}
 
-#workspace {
-  position:relative;
-  width:100vw;height:calc(100vh - 50px);
-  background:#fafafa;
-  overflow:hidden;
+#sidebar{
+  width:220px;background:#2b2b2b;color:white;padding:10px
+  display:flex;flex-direction:column;gap:10px
 }
 
-.node {
-  position:absolute;
-  min-width:140px;
-  padding:10px;
-  background:white;
-  border:2px solid #333;
-  border-radius:10px;
-  cursor:move;
-  user-select:none;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
+button{
+  width:100%;padding:8px;border:none;background:#444;color:white;
+  cursor:pointer;border-radius:6px
+}
+button:hover{background:#666}
+
+#workspace{
+  flex:1;position:relative;background:#fafafa;overflow:hidden
 }
 
-.node.selected {
+.node{
+  position:absolute;padding:10px;min-width:120px;
+  background:white;border:2px solid #333;border-radius:10px;
+  cursor:move;user-select:none;
+  box-shadow:0 4px 10px rgba(0,0,0,.15)
+}
+.node.selected{
   border-color:#0a84ff;
-  box-shadow:0 0 0 2px rgba(10,132,255,.3);
+  box-shadow:0 0 0 2px rgba(10,132,255,.3)
 }
 
-.connection {
-  position:absolute;
-  background:#333;
-  height:2px;
-  transform-origin:left center;
-  pointer-events:none;
+.connection{
+  position:absolute;height:2px;background:#333;
+  transform-origin:left center;pointer-events:none
 }
 
-.arrow {
-  width:0;height:0;
-  border-top:6px solid transparent;
-  border-bottom:6px solid transparent;
-  border-left:10px solid #333;
-  position:absolute;
-  pointer-events:none;
+.arrow{
+  position:absolute;width:0;height:0;
+  border-top:6px solid transparent;border-bottom:6px solid transparent;
+  border-left:10px solid #333;pointer-events:none
 }
 
-.label {
-  position:absolute;
-  padding:2px 6px;
-  font-size:12px;
-  background:white;
-  border:1px solid #ccc;
-  border-radius:6px;
-  pointer-events:none;
+.label{
+  position:absolute;background:white;padding:2px 6px;font-size:12px;
+  border:1px solid #ccc;border-radius:6px;pointer-events:none
 }
 
-.mode {
-  position:fixed;
-  top:60px;
-  left:20px;
-  background:black;
-  color:white;
-  padding:8px 14px;
-  border-radius:6px;
-  display:none;
-  z-index:1000;
+.mode{
+  position:fixed;top:80px;left:240px;background:black;color:white;
+  padding:8px 14px;border-radius:6px;display:none
 }
 </style>
 </head>
 <body>
 
-<div id="toolbar">
-  <button onclick="addNode()">➕ Nodo</button>
-  <button onclick="toggleConnectMode()">🔗 Conectar</button>
-  <button onclick="toggleDisconnectMode()">❌ Desconectar</button>
-  <button onclick="deleteSelectedNode()">🗑 Borrar nodo</button>
-  <button onclick="exportHTML()">💾 Exportar HTML</button>
+<div id="topbar">
+  <b>🧠 MAPA CONCEPTUAL PRO</b>
+  <button onclick="newFile()">Nuevo</button>
+  <button onclick="openFile()">Abrir HTML</button>
+  <button onclick="saveFile()">Guardar HTML</button>
+</div>
+
+<div id="tabs"></div>
+
+<div id="main">
+  <div id="sidebar">
+    <button onclick="addNode()">➕ Nodo</button>
+    <button onclick="toggleConnect()">🔗 Conectar</button>
+    <button onclick="toggleDisconnect()">❌ Desconectar</button>
+    <button onclick="deleteNode()">🗑 Eliminar nodo</button>
+  </div>
+
+  <div id="workspace"></div>
 </div>
 
 <div id="modeBox" class="mode"></div>
-<div id="workspace"></div>
+<input type="file" id="fileInput" accept=".html" style="display:none" multiple>
 
 <script>
-let nodes = [];
-let connections = [];
-
-let selectedNode = null;
-let selectedConnection = null;
-
-let connectMode = false;
-let disconnectMode = false;
-let sourceNode = null;
+let files = [];
+let currentFile = null;
 
 const workspace = document.getElementById("workspace");
+const tabs = document.getElementById("tabs");
 const modeBox = document.getElementById("modeBox");
+const fileInput = document.getElementById("fileInput");
 
-function uid(){
-  return 'id_'+Date.now()+Math.random().toString(36).substr(2,5);
+let connectMode=false,disconnectMode=false,sourceNode=null,selectedNode=null;
+
+function newFile(){
+  const f={
+    id:'f_'+Date.now(),
+    name:'Mapa '+(files.length+1),
+    nodes:[],
+    connections:[]
+  };
+  files.push(f);
+  selectFile(f.id);
+}
+
+function selectFile(id){
+  currentFile=files.find(f=>f.id===id);
+  renderTabs();
+  render();
+}
+
+function renderTabs(){
+  tabs.innerHTML='';
+  files.forEach(f=>{
+    const t=document.createElement('div');
+    t.className='tab'+(f===currentFile?' active':'');
+    t.textContent=f.name;
+    t.onclick=()=>selectFile(f.id);
+    tabs.appendChild(t);
+  });
 }
 
 function addNode(){
-  nodes.push({id:uid(),text:"Nuevo concepto",x:100,y:100});
+  if(!currentFile)return;
+  currentFile.nodes.push({
+    id:'n_'+Date.now()+Math.random().toString(36).substr(2,4),
+    text:'Nuevo concepto',x:100,y:100
+  });
   render();
 }
 
 function render(){
   workspace.innerHTML='';
-  connections.forEach(drawConnection);
-  nodes.forEach(drawNode);
+  if(!currentFile)return;
+  currentFile.connections.forEach(drawConn);
+  currentFile.nodes.forEach(drawNode);
 }
 
 function drawNode(node){
@@ -133,39 +158,31 @@ function drawNode(node){
   el.className='node';
   el.style.left=node.x+'px';
   el.style.top=node.y+'px';
-  el.innerText=node.text;
+  el.textContent=node.text;
   el.dataset.id=node.id;
 
-  el.addEventListener('mousedown',startDrag);
+  el.onmousedown=startDrag;
+  el.ondblclick=()=>{el.contentEditable=true;el.focus()};
+  el.onblur=()=>{el.contentEditable=false;node.text=el.innerText};
 
-  el.addEventListener('dblclick',()=>{
-    el.contentEditable=true;
-    el.focus();
-  });
-
-  el.addEventListener('blur',()=>{
-    el.contentEditable=false;
-    node.text=el.innerText;
-  });
-
-  el.addEventListener('click',(e)=>{
-    selectNode(node,el);
-    handleConnectClick(node);
+  el.onclick=(e)=>{
+    document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedNode=node;
+    handleConnect(node);
     e.stopPropagation();
-  });
+  };
 
   workspace.appendChild(el);
 }
 
-function drawConnection(conn){
-  const A=nodes.find(n=>n.id===conn.from);
-  const B=nodes.find(n=>n.id===conn.to);
-  if(!A||!B) return;
+function drawConn(c){
+  const A=currentFile.nodes.find(n=>n.id===c.from);
+  const B=currentFile.nodes.find(n=>n.id===c.to);
+  if(!A||!B)return;
 
-  const ax=A.x+70, ay=A.y+20;
-  const bx=B.x+70, by=B.y+20;
-  const dx=bx-ax, dy=by-ay;
-  const len=Math.hypot(dx,dy);
+  const ax=A.x+60,ay=A.y+20,bx=B.x+60,by=B.y+20;
+  const dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy);
   const angle=Math.atan2(dy,dx)*180/Math.PI;
 
   const line=document.createElement('div');
@@ -183,15 +200,15 @@ function drawConnection(conn){
 
   const label=document.createElement('div');
   label.className='label';
-  label.innerText=conn.label||'';
+  label.textContent=c.label||'';
   label.style.left=((ax+bx)/2)+'px';
   label.style.top=((ay+by)/2)+'px';
 
   if(disconnectMode){
     line.style.pointerEvents='auto';
     arrow.style.pointerEvents='auto';
-    line.onclick=()=>selectConnection(conn);
-    arrow.onclick=()=>selectConnection(conn);
+    line.onclick=()=>deleteConn(c);
+    arrow.onclick=()=>deleteConn(c);
   }
 
   workspace.appendChild(line);
@@ -199,107 +216,95 @@ function drawConnection(conn){
   workspace.appendChild(label);
 }
 
-function selectNode(node,el){
-  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedNode=node;
-  selectedConnection=null;
-}
-
-function handleConnectClick(node){
-  if(!connectMode) return;
-
-  if(!sourceNode){
-    sourceNode=node;
-    modeBox.innerText='Selecciona nodo destino';
-    return;
-  }
-
-  if(sourceNode.id===node.id) return;
-
-  const label=prompt("Texto de relación:","relación");
-  connections.push({from:sourceNode.id,to:node.id,label:label||''});
-  resetModes();
-}
-
-function selectConnection(conn){
-  if(!disconnectMode) return;
-  if(confirm("¿Eliminar conexión?")){
-    connections=connections.filter(c=>c!==conn);
-    resetModes();
-  }
-}
-
 function startDrag(e){
   const el=e.target;
-  const node=nodes.find(n=>n.id===el.dataset.id);
-  const ox=e.offsetX, oy=e.offsetY;
+  const node=currentFile.nodes.find(n=>n.id===el.dataset.id);
+  let ox=e.offsetX,oy=e.offsetY;
 
   function move(ev){
     node.x=ev.pageX-workspace.offsetLeft-ox;
     node.y=ev.pageY-workspace.offsetTop-oy;
     render();
   }
-
   document.addEventListener('mousemove',move);
-  document.addEventListener('mouseup',()=>{
-    document.removeEventListener('mousemove',move);
-  },{once:true});
+  document.addEventListener('mouseup',()=>document.removeEventListener('mousemove',move),{once:true});
 }
 
-function toggleConnectMode(){
+function toggleConnect(){
   connectMode=!connectMode;
   disconnectMode=false;
   sourceNode=null;
   modeBox.style.display=connectMode?'block':'none';
-  modeBox.innerText='Selecciona nodo origen';
-  render();
+  modeBox.textContent='Selecciona nodo origen';
 }
 
-function toggleDisconnectMode(){
+function toggleDisconnect(){
   disconnectMode=!disconnectMode;
   connectMode=false;
   sourceNode=null;
   modeBox.style.display=disconnectMode?'block':'none';
-  modeBox.innerText='Click en conexión para borrar';
+  modeBox.textContent='Click en conexión para borrar';
   render();
 }
 
-function resetModes(){
-  connectMode=false;
+function handleConnect(node){
+  if(!connectMode)return;
+  if(!sourceNode){
+    sourceNode=node;
+    modeBox.textContent='Selecciona nodo destino';
+    return;
+  }
+  if(sourceNode.id===node.id)return;
+  const label=prompt('Texto de relación:','');
+  currentFile.connections.push({from:sourceNode.id,to:node.id,label});
+  connectMode=false;sourceNode=null;modeBox.style.display='none';
+  render();
+}
+
+function deleteConn(c){
+  currentFile.connections=currentFile.connections.filter(x=>x!==c);
   disconnectMode=false;
-  sourceNode=null;
   modeBox.style.display='none';
   render();
 }
 
-function deleteSelectedNode(){
-  if(!selectedNode) return;
-  nodes=nodes.filter(n=>n!==selectedNode);
-  connections=connections.filter(c=>
-    c.from!==selectedNode.id && c.to!==selectedNode.id
+function deleteNode(){
+  if(!selectedNode||!currentFile)return;
+  currentFile.nodes=currentFile.nodes.filter(n=>n!==selectedNode);
+  currentFile.connections=currentFile.connections.filter(c=>
+    c.from!==selectedNode.id&&c.to!==selectedNode.id
   );
   selectedNode=null;
   render();
 }
 
-workspace.addEventListener('click',()=>{
-  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
-  selectedNode=null;
-  selectedConnection=null;
-});
+function openFile(){
+  fileInput.click();
+}
 
-function exportHTML(){
-  const data={nodes,connections};
+fileInput.onchange=function(){
+  [...this.files].forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const data=JSON.parse(e.target.result.match(/\{[\s\S]*\}/)[0]);
+        const nf={id:'f_'+Date.now()+Math.random(),name:f.name,nodes:data.nodes,connections:data.connections};
+        files.push(nf);
+        selectFile(nf.id);
+      }catch{alert('Archivo no válido')}
+    };
+    reader.readAsText(f);
+  });
+};
 
-  const html=`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"></head>
-<body><pre>${JSON.stringify(data,null,2)}</pre></body></html>`;
-
+function saveFile(){
+  if(!currentFile)return;
+  const data={nodes:currentFile.nodes,connections:currentFile.connections};
+  const html=`<html><body><pre>${JSON.stringify(data,null,2)}</pre></body></html>`;
   const blob=new Blob([html],{type:'text/html'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='mapa_conceptual.html';
+  a.download=currentFile.name+'.html';
   a.click();
 }
 </script>
