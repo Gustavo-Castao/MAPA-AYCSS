@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creador de Mapas Conceptuales Pro</title>
+    <title>Creador de Mapas Conceptuales Pro (v2)</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
@@ -55,15 +55,15 @@
 
         /* Nodes */
         .node {
-            position: absolute; min-width: 100px; min-height: 50px;
+            position: absolute; min-width: 120px; min-height: 60px;
             padding: 10px; border: 1px solid #aaa; border-radius: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            cursor: move; user-select: none; z-index: 10;
+            cursor: grab; user-select: none; z-index: 10;
             display: flex; align-items: center; justify-content: center;
             text-align: center; resize: both; overflow: auto;
         }
         
-        .node:focus, .node.selected {
+        .node.selected {
             outline: 2px solid var(--accent);
             box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
             z-index: 20;
@@ -104,6 +104,7 @@
         <div class="control-group">
             <label>Tamaño Texto</label>
             <input type="range" id="font-size" min="10" max="40" value="16" oninput="updateSelectedNode('size')">
+            <span id="font-size-value" style="font-size: 12px; text-align: right;">16px</span>
         </div>
 
         <button onclick="deleteSelected()" class="btn-danger" style="margin-top:10px;">🗑 Eliminar Seleccionado</button>
@@ -112,10 +113,10 @@
         
         <h3>Exportar</h3>
         <button onclick="exportPNG()" class="btn-secondary">📷 Guardar PNG</button>
-        <button onclick="exportHTML()" class="btn-secondary">💾 Guardar HTML</button>
+        <button onclick="exportHTML()" class="btn-secondary">💾 Guardar HTML (Editable)</button>
     </div>
 
-    <div id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <div id="workspace">
         <svg id="connections-layer"></svg>
         </div>
 
@@ -134,13 +135,13 @@
 
         // Generador de ID robusto para evitar conflictos
         function generateId() {
-            return 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            return 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
         }
 
         function createNode(loadData = null) {
             const id = loadData ? loadData.id : generateId();
-            const x = loadData ? loadData.x : 300 + (nodes.length * 20);
-            const y = loadData ? loadData.y : 100 + (nodes.length * 20);
+            const x = loadData ? loadData.x : 300 + (nodes.length * 10);
+            const y = loadData ? loadData.y : 100 + (nodes.length * 10);
             const text = loadData ? loadData.text : "Nuevo Concepto";
             const style = loadData ? loadData.style : { bg: '#ffffff', color: '#000000', size: '16px' };
 
@@ -158,21 +159,50 @@
             content.className = 'node-content';
             content.contentEditable = true;
             content.innerText = text;
-            // Prevenir que el arrastre se active al intentar seleccionar texto
-            content.onmousedown = (e) => e.stopPropagation(); 
             node.appendChild(content);
 
-            // Eventos del nodo
-            node.onmousedown = (e) => startDrag(e, node);
-            node.onclick = (e) => selectNode(e, node);
+            // --- CORRECCIÓN CLAVE: SEPARACIÓN DE SELECCIÓN Y DRAG ---
+            node.onmousedown = (e) => {
+                // 1. Siempre seleccionar/actualizar UI en mousedown, sin importar dónde
+                selectNode(e, node);
+                
+                // 2. Si el objetivo es el área de texto editable, no arrastrar (permitir edición)
+                if (e.target.className === 'node-content') {
+                    return; 
+                }
+
+                // 3. Si el clic fue en el borde, iniciar arrastre
+                e.preventDefault(); // Previene selección de texto del navegador
+                startDragLogic(e, node);
+            };
+            // -----------------------------------------------------------------
 
             workspace.appendChild(node);
             
             // Guardar en array lógico
             if(!loadData) {
-                nodes.push({ id, x, y, text, style });
+                // Asegura que el tamaño se guarde correctamente después de la carga inicial
+                node.style.width = '120px'; 
+                node.style.height = '60px'; 
+                nodes.push({ id, x, y, text, style, width: '120px', height: '60px' });
+            } else {
+                node.style.width = loadData.width;
+                node.style.height = loadData.height;
+                nodes.push(loadData);
             }
             selectNode(null, node);
+
+            // Event listener para redimensionamiento del nodo (HTML resize:both)
+            new ResizeObserver(entries => {
+                // Actualizar las conexiones al terminar de redimensionar
+                renderConnections();
+                // Actualizar las dimensiones en el modelo de datos
+                const resizedNode = nodes.find(n => n.id === id);
+                if (resizedNode) {
+                    resizedNode.width = node.style.width;
+                    resizedNode.height = node.style.height;
+                }
+            }).observe(node);
         }
 
         // --- SELECCIÓN Y EDICIÓN ---
@@ -186,7 +216,10 @@
                 return;
             }
 
-            // UI Feedback
+            // Si ya está seleccionado, no hacer nada (o permitir deselección si no hay drag)
+            if (selectedNodeId === node.id && !e) return; 
+
+            // UI Feedback: Deseleccionar todos y seleccionar este
             document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
             node.classList.add('selected');
             selectedNodeId = node.id;
@@ -194,9 +227,12 @@
             // Cargar propiedades en el panel
             const nodeData = nodes.find(n => n.id === node.id);
             if(nodeData) {
-                document.getElementById('bg-color').value = rgbToHex(node.style.backgroundColor);
-                document.getElementById('text-color').value = rgbToHex(node.style.color);
-                document.getElementById('font-size').value = parseInt(node.style.fontSize);
+                // Asegura que los colores se muestren como hex para el input type="color"
+                document.getElementById('bg-color').value = nodeData.style.bg;
+                document.getElementById('text-color').value = nodeData.style.color;
+                const fontSize = parseInt(nodeData.style.size);
+                document.getElementById('font-size').value = fontSize;
+                document.getElementById('font-size-value').innerText = `${fontSize}px`;
             }
         }
 
@@ -214,9 +250,10 @@
                 nodeEl.style.color = val;
                 nodeData.style.color = val;
             } else if (prop === 'size') {
-                const val = document.getElementById('font-size').value + 'px';
-                nodeEl.style.fontSize = val;
-                nodeData.style.size = val;
+                const val = document.getElementById('font-size').value;
+                nodeEl.style.fontSize = val + 'px';
+                nodeData.style.size = val + 'px';
+                document.getElementById('font-size-value').innerText = `${val}px`;
             }
         }
 
@@ -227,7 +264,9 @@
             connections = connections.filter(c => c.from !== selectedNodeId && c.to !== selectedNodeId);
             
             // Borrar nodo del DOM y Array
-            document.getElementById(selectedNodeId).remove();
+            const nodeEl = document.getElementById(selectedNodeId);
+            if(nodeEl) nodeEl.remove();
+
             nodes = nodes.filter(n => n.id !== selectedNodeId);
             
             selectedNodeId = null;
@@ -242,6 +281,9 @@
             const btn = document.getElementById('btn-link');
             const indicator = document.getElementById('mode-indicator');
             
+            // Limpiar cualquier borde azul temporal de un intento de vinculación anterior
+            document.querySelectorAll('.node').forEach(n => n.style.borderColor = '#aaa');
+
             if (isLinkMode) {
                 btn.classList.add('btn-primary');
                 btn.classList.remove('btn-secondary');
@@ -256,20 +298,31 @@
 
         function handleLinkClick(id) {
             const indicator = document.getElementById('mode-indicator');
+            const clickedNode = document.getElementById(id);
             
             if (!linkSourceId) {
+                // Primer clic: Origen
                 linkSourceId = id;
                 indicator.innerText = "Ahora selecciona el nodo DESTINO";
-                document.getElementById(id).style.borderColor = "blue";
+                clickedNode.style.borderColor = "blue";
             } else {
+                // Segundo clic: Destino
                 if (linkSourceId !== id) {
-                    // Crear conexión
-                    connections.push({ from: linkSourceId, to: id });
-                    renderConnections();
+                    // Verificar si la conexión ya existe para evitar duplicados
+                    const exists = connections.some(c => 
+                        (c.from === linkSourceId && c.to === id) || 
+                        (c.from === id && c.to === linkSourceId)
+                    );
+                    
+                    if (!exists) {
+                        connections.push({ from: linkSourceId, to: id });
+                        renderConnections();
+                    }
                 }
-                // Resetear estado
+                
+                // Resetear estado y salir del modo vincular
                 document.getElementById(linkSourceId).style.borderColor = "#aaa";
-                toggleLinkMode(); // Salir del modo vincular
+                toggleLinkMode(); 
             }
         }
 
@@ -284,15 +337,16 @@
                 
                 if (!fromNode || !toNode) return;
 
-                // Calcular centros
+                // Obtener posiciones exactas del DOM
                 const fromRect = fromNode.getBoundingClientRect();
                 const toRect = toNode.getBoundingClientRect();
-                
-                // Ajustar offset por el toolbar si fuera necesario, pero como es position absolute en body:
-                const fromX = fromNode.offsetLeft + fromNode.offsetWidth / 2;
-                const fromY = fromNode.offsetTop + fromNode.offsetHeight / 2;
-                const toX = toNode.offsetLeft + toNode.offsetWidth / 2;
-                const toY = toNode.offsetTop + toNode.offsetHeight / 2;
+                const wsRect = workspace.getBoundingClientRect(); // Para calcular offsets del workspace
+
+                // Calcular el centro de cada nodo, ajustado a la posición de la ventana (scroll es 0,0)
+                const fromX = fromRect.left + fromRect.width / 2 - wsRect.left;
+                const fromY = fromRect.top + fromRect.height / 2 - wsRect.top;
+                const toX = toRect.left + toRect.width / 2 - wsRect.left;
+                const toY = toRect.top + toRect.height / 2 - wsRect.top;
 
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 line.setAttribute('x1', fromX);
@@ -306,21 +360,17 @@
             });
         }
 
-        // --- DRAG AND DROP (ARRASTRE) ---
+        // --- DRAG AND DROP (ARRASTRE) LÓGICA CORREGIDA ---
         
         let activeDrag = null;
         let initialX, initialY, initialLeft, initialTop;
 
-        function startDrag(e, node) {
-            if(e.target.contentEditable === "true") return; // Permitir edición de texto
-            
+        function startDragLogic(e, node) {
             activeDrag = node;
             initialX = e.clientX;
             initialY = e.clientY;
             initialLeft = node.offsetLeft;
             initialTop = node.offsetTop;
-            
-            selectNode(e, node);
             
             document.onmousemove = drag;
             document.onmouseup = endDrag;
@@ -347,6 +397,7 @@
                     nodeData.x = activeDrag.offsetLeft;
                     nodeData.y = activeDrag.offsetTop;
                 }
+                activeDrag.style.cursor = 'grab'; // Restaurar cursor
             }
             activeDrag = null;
             document.onmousemove = null;
@@ -355,6 +406,18 @@
 
         // --- EXPORTACIÓN ---
 
+        function updateNodeDataForExport() {
+            // Sincroniza el contenido y las dimensiones del DOM con el array 'nodes'
+            nodes.forEach(n => {
+                const el = document.getElementById(n.id);
+                if(el) {
+                    n.text = el.querySelector('.node-content').innerText;
+                    n.width = el.style.width;
+                    n.height = el.style.height;
+                }
+            });
+        }
+
         function exportPNG() {
             // Deseleccionar todo para que no salga el borde azul
             document.querySelectorAll('.selected').forEach(n => n.classList.remove('selected'));
@@ -362,29 +425,30 @@
             // html2canvas captura el workspace
             html2canvas(document.querySelector("#workspace")).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'mapa_mental.png';
+                link.download = 'mapa_conceptual.png';
                 link.href = canvas.toDataURL();
                 link.click();
             });
         }
 
         function exportHTML() {
-            // Actualizar textos en el array de nodos antes de guardar
-            nodes.forEach(n => {
-                const el = document.getElementById(n.id);
-                if(el) n.text = el.querySelector('.node-content').innerText;
-            });
-
+            updateNodeDataForExport(); // Sincroniza datos antes de guardar
+            
             const data = {
                 nodes: nodes,
                 connections: connections
             };
             
             const json = JSON.stringify(data);
-            const blob = new Blob([
-                // Guardamos el HTML completo incluyendo los datos para poder reabrirlo
-                document.documentElement.outerHTML.replace('/*DATA_PLACEHOLDER*/', `window.loadData = ${json};`)
-            ], {type: "text/html"});
+            
+            // Creamos una copia del HTML actual y le inyectamos los datos para que sea editable al reabrirlo.
+            const fullHTML = document.documentElement.outerHTML;
+            
+            // Expresión regular para encontrar el placeholder y reemplazarlo con el script de carga
+            const scriptInjection = `window.loadData = ${json};`;
+            const newHTML = fullHTML.replace('/*DATA_PLACEHOLDER*/', scriptInjection);
+
+            const blob = new Blob([newHTML], {type: "text/html"});
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -394,28 +458,32 @@
 
         // --- INICIALIZACIÓN Y RECUPERACIÓN ---
         
-        // Helper para colores
-        function rgbToHex(rgb) {
-            if (rgb.startsWith('#')) return rgb;
-            const rgbValues = rgb.match(/\d+/g);
-            if (!rgbValues) return '#ffffff';
-            return "#" + ((1 << 24) + (parseInt(rgbValues[0]) << 16) + (parseInt(rgbValues[1]) << 8) + parseInt(rgbValues[2])).toString(16).slice(1);
-        }
-
         // Carga automática si el archivo se guardó a sí mismo
         window.onload = function() {
             // Ajustar tamaño del canvas SVG al redimensionar ventana
             window.onresize = renderConnections;
 
             if (window.loadData) {
-                nodes = []; // Limpiar por si acaso
+                // Cargar nodos guardados
+                nodes = []; 
                 window.loadData.nodes.forEach(n => createNode(n));
                 connections = window.loadData.connections;
-                setTimeout(renderConnections, 100);
+                
+                // Esperar un momento para que el DOM se renderice antes de dibujar las líneas
+                setTimeout(renderConnections, 50); 
             } else {
-                // Nodo inicial
+                // Nodo inicial si es la primera vez
                 createNode();
             }
+
+            // Deseleccionar si se hace clic fuera de cualquier nodo
+            workspace.onclick = (e) => {
+                // Solo deselecciona si no se está en modo vincular y no se hizo clic en un nodo
+                if (e.target.id === 'workspace' && !isLinkMode) {
+                    document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+                    selectedNodeId = null;
+                }
+            };
         };
 
         /*DATA_PLACEHOLDER*/ // Aquí se inyectarán los datos al exportar HTML
