@@ -1,966 +1,327 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo Arte y Ciencias Sociales - VERSIÓN ESTABLE</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <style>
-        /* [Mantén todos los estilos CSS iguales hasta el final] */
-        /* ... Todos los estilos anteriores se mantienen igual ... */
-    </style>
+<meta charset="UTF-8">
+<title>Mapa Conceptual PRO</title>
+<style>
+body {
+  margin: 0; font-family: Inter, Arial, sans-serif; background: #e8eaed;
+}
+
+#toolbar {
+  background: #1f1f1f;
+  color: white;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  border: none;
+  background: #3a3a3a;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+button:hover { background: #555; }
+
+#workspace {
+  width: 100vw;
+  height: calc(100vh - 50px);
+  background: #f9fafb;
+  position: relative;
+  overflow: hidden;
+}
+
+.node {
+  position: absolute;
+  min-width: 140px;
+  padding: 10px;
+  background: white;
+  border: 2px solid #222;
+  border-radius: 10px;
+  cursor: move;
+  user-select: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.node[contenteditable="true"] {
+  cursor: text;
+}
+
+.node.selected {
+  border-color: #0a84ff;
+  box-shadow: 0 0 0 2px rgba(10,132,255,.3);
+}
+
+.connection {
+  position: absolute;
+  height: 2px;
+  background: #333;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.arrow {
+  position: absolute;
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #333;
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  padding: 2px 6px;
+  background: #fff;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  pointer-events: none;
+}
+
+.mode {
+  position: fixed;
+  top: 60px;
+  left: 20px;
+  background: black;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: none;
+  z-index: 10000;
+}
+</style>
 </head>
 <body>
-    <!-- [Mantén toda la estructura HTML igual hasta el final] -->
-    <!-- ... Todo el HTML anterior se mantiene igual ... -->
-
-    <script>
-        // ============================================
-        // ARQUITECTURA REVISADA - VERSIÓN ESTABLE
-        // ============================================
-        
-        // Variables globales con inicialización explícita
-        let nodes = [];
-        let connections = [];
-        let connectionMode = false;
-        let disconnectMode = false;
-        let sourceNodeId = null;
-        let nodeCounter = 0;
-        let currentImage = null;
-        let editingNodeId = null;
-        let selectedNodeId = null;
-        let selectedConnection = null;
-        let zoomLevel = 1;
-        let translateX = 0, translateY = 0;
-        
-        // Variables de personalización de nodo
-        let selectedNodeColor = '#ffffff';
-        let selectedTextColor = 'black';
-        let selectedFontSize = 'small';
-        let selectedFontFamily = 'Roboto';
-        let selectedBorder = 'solid';
-        
-        // Variables para configuración de fondo
-        let backgroundImage = null;
-        
-        // Historial para deshacer acciones
-        let history = [];
-        let historyIndex = -1;
-        
-        // Variables para el selector de color personalizado
-        let currentColorPickerType = null;
-        let customColor = { r: 255, g: 255, b: 255 };
-        
-        // Variable para copiar/pegar
-        let copiedNode = null;
-        
-        // Sistema de cache para referencias de elementos DOM
-        const domCache = {
-            nodes: new Map(),
-            connections: new Map()
-        };
-
-        // Elementos DOM
-        const workspace = document.getElementById('workspace');
-        const a4Container = document.getElementById('a4Container');
-        const connectionModeDiv = document.getElementById('connectionMode');
-        const disconnectModeDiv = document.getElementById('disconnectMode');
-
-        // ============================================
-        // FUNCIONES DE GESTIÓN DE NODOS - REVISADAS
-        // ============================================
-
-        // Sistema de selección robusto
-        class NodeSelectionManager {
-            constructor() {
-                this.selectedNodeId = null;
-                this.selectedConnection = null;
-                this.lastSelected = null;
-            }
-            
-            selectNode(nodeId) {
-                // Deseleccionar nodo anterior
-                if (this.selectedNodeId && this.selectedNodeId !== nodeId) {
-                    this.deselectNode(this.selectedNodeId);
-                }
-                
-                // Deseleccionar conexión si había una seleccionada
-                if (this.selectedConnection) {
-                    this.deselectConnection(this.selectedConnection);
-                    this.selectedConnection = null;
-                }
-                
-                // Seleccionar nuevo nodo
-                this.selectedNodeId = nodeId;
-                const nodeElement = document.getElementById(nodeId);
-                if (nodeElement) {
-                    nodeElement.classList.add('selected');
-                }
-                
-                this.lastSelected = { type: 'node', id: nodeId };
-                return this.selectedNodeId;
-            }
-            
-            deselectNode(nodeId) {
-                if (!nodeId) return;
-                
-                const nodeElement = document.getElementById(nodeId);
-                if (nodeElement) {
-                    nodeElement.classList.remove('selected');
-                }
-                
-                if (this.selectedNodeId === nodeId) {
-                    this.selectedNodeId = null;
-                }
-            }
-            
-            selectConnection(conn) {
-                // Deseleccionar nodo si había uno seleccionado
-                if (this.selectedNodeId) {
-                    this.deselectNode(this.selectedNodeId);
-                    this.selectedNodeId = null;
-                }
-                
-                // Deseleccionar conexión anterior
-                if (this.selectedConnection) {
-                    this.deselectConnection(this.selectedConnection);
-                }
-                
-                // Seleccionar nueva conexión
-                this.selectedConnection = conn;
-                const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                
-                if (line) line.classList.add('selected');
-                if (arrow) arrow.classList.add('selected');
-                
-                this.lastSelected = { type: 'connection', data: conn };
-                return this.selectedConnection;
-            }
-            
-            deselectConnection(conn) {
-                if (!conn) return;
-                
-                const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                
-                if (line) line.classList.remove('selected');
-                if (arrow) arrow.classList.remove('selected');
-                
-                if (this.selectedConnection === conn) {
-                    this.selectedConnection = null;
-                }
-            }
-            
-            clearSelection() {
-                if (this.selectedNodeId) {
-                    this.deselectNode(this.selectedNodeId);
-                }
-                if (this.selectedConnection) {
-                    this.deselectConnection(this.selectedConnection);
-                }
-                this.selectedNodeId = null;
-                this.selectedConnection = null;
-                this.lastSelected = null;
-            }
-            
-            getSelectedNode() {
-                if (!this.selectedNodeId) return null;
-                return nodes.find(n => n.id === this.selectedNodeId);
-            }
-            
-            getSelectedNodeIndex() {
-                if (!this.selectedNodeId) return -1;
-                return nodes.findIndex(n => n.id === this.selectedNodeId);
-            }
-        }
-
-        // Instanciar el gestor de selección
-        const selectionManager = new NodeSelectionManager();
-
-        // ============================================
-        // FUNCIONES PRINCIPALES REVISADAS
-        // ============================================
-
-        // Guardar estado actual en el historial
-        function saveState() {
-            // Eliminar estados futuros si estamos en medio del historial
-            if (historyIndex < history.length - 1) {
-                history = history.slice(0, historyIndex + 1);
-            }
-            
-            // Guardar estado actual
-            history.push({
-                nodes: JSON.parse(JSON.stringify(nodes)),
-                connections: JSON.parse(JSON.stringify(connections)),
-                selectedNodeId: selectionManager.selectedNodeId,
-                selectedConnection: selectionManager.selectedConnection
-            });
-            
-            historyIndex = history.length - 1;
-            
-            // Limitar el historial a 50 estados
-            if (history.length > 50) {
-                history.shift();
-                historyIndex--;
-            }
-            
-            updateUndoCount();
-        }
-
-        // Deshacer última acción
-        function undoAction() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                const state = history[historyIndex];
-                
-                // Restaurar estado
-                nodes = JSON.parse(JSON.stringify(state.nodes));
-                connections = JSON.parse(JSON.stringify(state.connections));
-                
-                // Restaurar selección
-                selectionManager.clearSelection();
-                if (state.selectedNodeId) {
-                    selectionManager.selectNode(state.selectedNodeId);
-                } else if (state.selectedConnection) {
-                    selectionManager.selectConnection(state.selectedConnection);
-                }
-                
-                // Re-renderizar
-                renderAll();
-                updateCounters();
-                updateUndoCount();
-            } else {
-                alert("No hay más acciones para deshacer");
-            }
-        }
-
-        // Modal functions
-        function showNodeModal() {
-            document.getElementById('nodeModal').style.display = 'block';
-            document.getElementById('nodeModalTitle').textContent = 'CREAR NUEVO NODO';
-            clearNodeForm();
-            editingNodeId = null;
-        }
-
-        function closeNodeModal() {
-            document.getElementById('nodeModal').style.display = 'none';
-            editingNodeId = null;
-        }
-
-        // FUNCIÓN CORREGIDA: Editar nodo seleccionado
-        function editSelectedNode() {
-            const selectedNode = selectionManager.getSelectedNode();
-            if (!selectedNode) {
-                alert('Por favor selecciona un nodo primero haciendo clic en él');
-                return;
-            }
-
-            editingNodeId = selectedNode.id;
-            document.getElementById('nodeModalTitle').textContent = 'EDITAR NODO';
-            
-            // Llenar formulario con datos existentes del nodo
-            document.getElementById('nodeTitle').value = selectedNode.title;
-            document.getElementById('nodeSubtitle').value = selectedNode.subtitle || '';
-            document.getElementById('nodeAuthor').value = selectedNode.author || '';
-            document.getElementById('nodeDescription').value = selectedNode.description || '';
-            
-            // Configurar personalización
-            selectedNodeColor = selectedNode.color || '#ffffff';
-            selectedTextColor = selectedNode.textColor || 'black';
-            selectedFontSize = selectedNode.fontSize || 'small';
-            selectedFontFamily = selectedNode.fontFamily || 'Roboto';
-            selectedBorder = selectedNode.border || 'solid';
-            
-            updateCustomizationSelectors();
-            
-            // Manejar imagen
-            const preview = document.getElementById('imagePreview');
-            if (selectedNode.image) {
-                preview.src = selectedNode.image;
-                preview.style.display = 'block';
-                currentImage = selectedNode.image;
-            } else {
-                preview.style.display = 'none';
-                currentImage = null;
-            }
-            
-            document.getElementById('nodeModal').style.display = 'block';
-        }
-
-        // FUNCIÓN CORREGIDA: Eliminar nodo seleccionado
-        function deleteSelectedNode() {
-            const selectedNode = selectionManager.getSelectedNode();
-            if (!selectedNode) {
-                alert('Por favor selecciona un nodo primero haciendo clic en él');
-                return;
-            }
-
-            if (!confirm('¿Estás seguro de que quieres eliminar este nodo?')) return;
-
-            // Guardar estado actual antes de eliminar
-            saveState();
-
-            // Eliminar conexiones relacionadas
-            connections = connections.filter(conn => 
-                conn.from !== selectedNode.id && conn.to !== selectedNode.id
-            );
-
-            // Eliminar nodo
-            const nodeIndex = nodes.findIndex(n => n.id === selectedNode.id);
-            if (nodeIndex !== -1) {
-                nodes.splice(nodeIndex, 1);
-                selectionManager.clearSelection();
-                
-                // Re-renderizar
-                renderAll();
-                updateCounters();
-            }
-        }
-
-        // Mostrar modal de descripción - FUNCIÓN REVISADA
-        function showDescriptionModal(nodeId) {
-            const node = nodes.find(n => n.id === nodeId);
-            if (!node) {
-                console.error('Nodo no encontrado:', nodeId);
-                return;
-            }
-
-            document.getElementById('modalTitle').textContent = node.title;
-            document.getElementById('modalSubtitle').textContent = node.subtitle || 'Sin subtítulo';
-            document.getElementById('modalAuthor').textContent = node.author ? `Autor: ${node.author}` : 'Autor no especificado';
-            document.getElementById('modalDescription').textContent = node.description || 'Sin descripción disponible.';
-            
-            const modalImage = document.getElementById('modalImage');
-            if (node.image) {
-                modalImage.src = node.image;
-                modalImage.style.display = 'block';
-            } else {
-                modalImage.style.display = 'none';
-            }
-            
-            document.getElementById('descriptionModal').style.display = 'block';
-        }
-
-        // Guardar nodo (crear o editar) - FUNCIÓN REVISADA
-        function saveNode() {
-            const title = document.getElementById('nodeTitle').value.trim();
-            const subtitle = document.getElementById('nodeSubtitle').value.trim();
-            const author = document.getElementById('nodeAuthor').value.trim();
-            const description = document.getElementById('nodeDescription').value.trim();
-
-            if (!title) {
-                alert('Por favor ingresa un título');
-                return;
-            }
-
-            // Guardar estado actual antes de realizar cambios
-            saveState();
-
-            if (editingNodeId) {
-                // Editar nodo existente
-                const nodeIndex = nodes.findIndex(n => n.id === editingNodeId);
-                if (nodeIndex !== -1) {
-                    nodes[nodeIndex].title = title;
-                    nodes[nodeIndex].subtitle = subtitle;
-                    nodes[nodeIndex].author = author;
-                    nodes[nodeIndex].description = description;
-                    nodes[nodeIndex].image = currentImage;
-                    nodes[nodeIndex].color = selectedNodeColor;
-                    nodes[nodeIndex].textColor = selectedTextColor;
-                    nodes[nodeIndex].fontSize = selectedFontSize;
-                    nodes[nodeIndex].fontFamily = selectedFontFamily;
-                    nodes[nodeIndex].border = selectedBorder;
-                    
-                    // Re-seleccionar el nodo editado
-                    selectionManager.selectNode(editingNodeId);
-                    
-                    // Re-renderizar
-                    renderAll();
-                }
-            } else {
-                // Crear nuevo nodo
-                nodeCounter++;
-                const nodeId = 'node-' + nodeCounter;
-
-                // Posición aleatoria en el workspace A4
-                const x = Math.random() * (a4Container.offsetWidth - 100) + 20;
-                const y = Math.random() * (a4Container.offsetHeight - 60) + 20;
-
-                const node = {
-                    id: nodeId,
-                    title: title,
-                    subtitle: subtitle,
-                    author: author,
-                    description: description,
-                    image: currentImage,
-                    type: 'main',
-                    x: x,
-                    y: y,
-                    color: selectedNodeColor,
-                    textColor: selectedTextColor,
-                    fontSize: selectedFontSize,
-                    fontFamily: selectedFontFamily,
-                    border: selectedBorder
-                };
-
-                nodes.push(node);
-                renderNode(node);
-                updateCounters();
-                
-                // Seleccionar el nuevo nodo
-                selectionManager.selectNode(nodeId);
-            }
-
-            closeNodeModal();
-        }
-
-        // ============================================
-        // SISTEMA DE RENDERIZADO REVISADO
-        // ============================================
-
-        // Renderizar nodo en el workspace - FUNCIÓN COMPLETAMENTE REVISADA
-        function renderNode(node) {
-            // Eliminar nodo existente si ya está renderizado
-            const existingNode = document.getElementById(node.id);
-            if (existingNode) {
-                existingNode.remove();
-            }
-            
-            const nodeElement = document.createElement('div');
-            nodeElement.className = `node node-main ${node.fontSize || 'small'}`;
-            nodeElement.id = node.id;
-            nodeElement.dataset.nodeId = node.id; // Dataset para referencia segura
-            nodeElement.style.left = node.x + 'px';
-            nodeElement.style.top = node.y + 'px';
-            nodeElement.style.fontFamily = node.fontFamily || 'Roboto';
-            
-            // Aplicar color de fondo
-            if (node.color === 'transparent') {
-                nodeElement.style.background = 'transparent';
-            } else {
-                nodeElement.style.background = node.color || '#ffffff';
-            }
-            
-            // Aplicar borde
-            if (node.border === 'none') {
-                nodeElement.style.border = 'none';
-            } else {
-                nodeElement.style.border = '1.3px solid #8e44ad';
-            }
-            
-            nodeElement.style.color = node.textColor || 'black';
-            
-            nodeElement.innerHTML = `
-                <div class="node-title">${node.title}</div>
-                ${node.subtitle ? `<div class="node-subtitle">${node.subtitle}</div>` : ''}
-            `;
-
-            // Hacer arrastrable
-            makeDraggable(nodeElement, node);
-
-            // EVENTOS REVISADOS - Sistema de selección robusto
-            nodeElement.addEventListener('click', function(e) {
-                e.stopPropagation(); // Prevenir propagación
-                
-                if (e.target.classList.contains('node-btn')) return;
-                
-                // Si estamos en modo desconexión, no seleccionar nodos
-                if (disconnectMode) return;
-                
-                // Seleccionar nodo
-                selectionManager.selectNode(node.id);
-                
-                if (connectionMode && sourceNodeId && sourceNodeId !== node.id) {
-                    createConnection(sourceNodeId, node.id);
-                    setConnectionMode(false);
-                } else if (connectionMode && !sourceNodeId) {
-                    sourceNodeId = node.id;
-                    connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el nodo destino';
-                }
-            });
-
-            // Evento doble click para mostrar descripción
-            nodeElement.addEventListener('dblclick', function(e) {
-                e.stopPropagation();
-                
-                if (e.target.classList.contains('node-btn')) return;
-                
-                if (!connectionMode && !disconnectMode) {
-                    showDescriptionModal(node.id);
-                }
-            });
-
-            workspace.appendChild(nodeElement);
-            
-            // Actualizar cache
-            domCache.nodes.set(node.id, nodeElement);
-        }
-
-        // Hacer nodo arrastrable - FUNCIÓN REVISADA
-        function makeDraggable(element, node) {
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
-
-            // Eventos para mouse
-            element.addEventListener('mousedown', startDrag);
-            
-            // Eventos para pantallas táctiles
-            element.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                startDragTouch(touch);
-            });
-
-            function startDrag(e) {
-                if (e.target.classList.contains('node-btn')) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Seleccionar nodo al empezar a arrastrar
-                selectionManager.selectNode(node.id);
-                
-                isDragging = true;
-                element.classList.add('dragging');
-                
-                startX = e.clientX;
-                startY = e.clientY;
-                initialX = element.offsetLeft;
-                initialY = element.offsetTop;
-                
-                document.addEventListener('mousemove', onDrag);
-                document.addEventListener('mouseup', stopDrag);
-            }
-            
-            function startDragTouch(touch) {
-                if (touch.target.classList.contains('node-btn')) return;
-                
-                // Seleccionar nodo al empezar a arrastrar
-                selectionManager.selectNode(node.id);
-                
-                isDragging = true;
-                element.classList.add('dragging');
-                
-                startX = touch.clientX;
-                startY = touch.clientY;
-                initialX = element.offsetLeft;
-                initialY = element.offsetTop;
-                
-                document.addEventListener('touchmove', onDragTouch);
-                document.addEventListener('touchend', stopDrag);
-            }
-
-            function onDrag(e) {
-                if (!isDragging) return;
-                
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                updateNodePosition(dx, dy);
-            }
-            
-            function onDragTouch(e) {
-                if (!isDragging) return;
-                
-                const touch = e.touches[0];
-                const dx = touch.clientX - startX;
-                const dy = touch.clientY - startY;
-                
-                updateNodePosition(dx, dy);
-            }
-            
-            function updateNodePosition(dx, dy) {
-                let newX = initialX + dx;
-                let newY = initialY + dy;
-
-                // Mantener dentro de los límites del A4
-                newX = Math.max(6.5, Math.min(newX, a4Container.offsetWidth - element.offsetWidth - 6.5));
-                newY = Math.max(6.5, Math.min(newY, a4Container.offsetHeight - element.offsetHeight - 6.5));
-
-                element.style.left = newX + 'px';
-                element.style.top = newY + 'px';
-                
-                node.x = newX;
-                node.y = newY;
-
-                updateConnections();
-            }
-
-            function stopDrag() {
-                isDragging = false;
-                element.classList.remove('dragging');
-                document.removeEventListener('mousemove', onDrag);
-                document.removeEventListener('mouseup', stopDrag);
-                document.removeEventListener('touchmove', onDragTouch);
-                document.removeEventListener('touchend', stopDrag);
-                
-                // Guardar estado después de mover un nodo
-                saveState();
-            }
-        }
-
-        // ============================================
-        // SISTEMA DE CONEXIONES REVISADO
-        // ============================================
-
-        // Iniciar modo conexión
-        function startConnection() {
-            if (nodes.length < 2) {
-                alert('Necesitas al menos 2 nodos para crear conexiones');
-                return;
-            }
-            setConnectionMode(true);
-            setDisconnectMode(false);
-            sourceNodeId = null;
-            connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
-        }
-
-        // Activar/desactivar modo conexión
-        function setConnectionMode(active) {
-            connectionMode = active;
-            if (active) {
-                connectionModeDiv.style.display = 'block';
-                connectionModeDiv.textContent = '🔗 Modo Conexión: Selecciona el primer nodo';
-            } else {
-                connectionModeDiv.style.display = 'none';
-                sourceNodeId = null;
-            }
-        }
-
-        // Iniciar modo desconexión
-        function startDisconnect() {
-            if (connections.length === 0) {
-                alert('No hay conexiones para eliminar');
-                return;
-            }
-            setDisconnectMode(true);
-            setConnectionMode(false);
-            disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
-        }
-
-        // Activar/desactivar modo desconexión - FUNCIÓN REVISADA
-        function setDisconnectMode(active) {
-            disconnectMode = active;
-            if (active) {
-                disconnectModeDiv.style.display = 'block';
-                disconnectModeDiv.textContent = '❌ Modo Desconexión: Selecciona una conexión para eliminar';
-                
-                // Deseleccionar cualquier nodo seleccionado
-                selectionManager.clearSelection();
-                
-                // Hacer las conexiones clickeables
-                connections.forEach(conn => {
-                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                    
-                    if (line && arrow) {
-                        line.style.pointerEvents = 'auto';
-                        arrow.style.pointerEvents = 'auto';
-                        
-                        // Remover listeners anteriores para evitar duplicados
-                        line.removeEventListener('click', handleConnectionClick);
-                        arrow.removeEventListener('click', handleConnectionClick);
-                        
-                        // Agregar nuevos listeners
-                        line.addEventListener('click', () => handleConnectionClick(conn));
-                        arrow.addEventListener('click', () => handleConnectionClick(conn));
-                    }
-                });
-            } else {
-                disconnectModeDiv.style.display = 'none';
-                
-                // Restaurar conexiones a no clickeables
-                connections.forEach(conn => {
-                    const line = document.getElementById('conn-' + conn.from + '-' + conn.to);
-                    const arrow = document.getElementById('arrow-' + conn.from + '-' + conn.to);
-                    
-                    if (line && arrow) {
-                        line.style.pointerEvents = 'none';
-                        arrow.style.pointerEvents = 'none';
-                        
-                        // Remover listeners
-                        line.removeEventListener('click', handleConnectionClick);
-                        arrow.removeEventListener('click', handleConnectionClick);
-                    }
-                });
-            }
-        }
-
-        // Manejador de clic en conexiones
-        function handleConnectionClick(conn) {
-            if (!disconnectMode) return;
-            
-            if (confirm('¿Estás seguro de que quieres eliminar esta conexión?')) {
-                // Guardar estado antes de eliminar
-                saveState();
-                
-                // Eliminar conexión
-                connections = connections.filter(c => 
-                    !(c.from === conn.from && c.to === conn.to)
-                );
-                
-                // Re-renderizar
-                renderAll();
-                updateCounters();
-                
-                // Salir del modo desconexión si no hay más conexiones
-                if (connections.length === 0) {
-                    setDisconnectMode(false);
-                }
-            }
-        }
-
-        // Crear conexión entre nodos
-        function createConnection(fromId, toId) {
-            // Evitar conexiones duplicadas
-            const existingConnection = connections.find(conn => 
-                (conn.from === fromId && conn.to === toId) || 
-                (conn.from === toId && conn.to === fromId)
-            );
-
-            if (existingConnection) {
-                alert('Estos nodos ya están conectados');
-                return;
-            }
-
-            if (fromId === toId) {
-                alert('No puedes conectar un nodo consigo mismo');
-                return;
-            }
-
-            // Guardar estado antes de crear conexión
-            saveState();
-
-            connections.push({ from: fromId, to: toId });
-            renderConnection(fromId, toId);
-            updateCounters();
-        }
-
-        // Renderizar conexión
-        function renderConnection(fromId, toId) {
-            const connectionId = `conn-${fromId}-${toId}`;
-            const arrowId = `arrow-${fromId}-${toId}`;
-            
-            // Eliminar conexión existente si ya está renderizada
-            const existingLine = document.getElementById(connectionId);
-            const existingArrow = document.getElementById(arrowId);
-            if (existingLine) existingLine.remove();
-            if (existingArrow) existingArrow.remove();
-
-            // Crear línea
-            const line = document.createElement('div');
-            line.className = 'connection';
-            line.id = connectionId;
-            line.style.pointerEvents = disconnectMode ? 'auto' : 'none';
-
-            // Crear flecha
-            const arrow = document.createElement('div');
-            arrow.className = 'connection-arrow';
-            arrow.id = arrowId;
-            arrow.style.pointerEvents = disconnectMode ? 'auto' : 'none';
-
-            workspace.appendChild(line);
-            workspace.appendChild(arrow);
-
-            updateConnection(fromId, toId);
-            
-            // Agregar listeners si estamos en modo desconexión
-            if (disconnectMode) {
-                const conn = connections.find(c => c.from === fromId && c.to === toId);
-                if (conn) {
-                    line.addEventListener('click', () => handleConnectionClick(conn));
-                    arrow.addEventListener('click', () => handleConnectionClick(conn));
-                }
-            }
-        }
-
-        // Actualizar posición de conexión
-        function updateConnection(fromId, toId) {
-            const fromNode = nodes.find(n => n.id === fromId);
-            const toNode = nodes.find(n => n.id === toId);
-            const line = document.getElementById('conn-' + fromId + '-' + toId);
-            const arrow = document.getElementById('arrow-' + fromId + '-' + toId);
-
-            if (!fromNode || !toNode || !line || !arrow) return;
-
-            const fromElement = document.getElementById(fromId);
-            const toElement = document.getElementById(toId);
-
-            if (!fromElement || !toElement) return;
-
-            const fromX = fromNode.x + fromElement.offsetWidth / 2;
-            const fromY = fromNode.y + fromElement.offsetHeight / 2;
-            const toX = toNode.x + toElement.offsetWidth / 2;
-            const toY = toNode.y + toElement.offsetHeight / 2;
-
-            const dx = toX - fromX;
-            const dy = toY - fromY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-            line.style.width = length + 'px';
-            line.style.left = fromX + 'px';
-            line.style.top = fromY + 'px';
-            line.style.transform = 'rotate(' + angle + 'deg)';
-
-            arrow.style.left = toX + 'px';
-            arrow.style.top = toY + 'px';
-            arrow.style.transform = 'rotate(' + angle + 'deg)';
-        }
-
-        // Actualizar todas las conexiones
-        function updateConnections() {
-            connections.forEach(conn => {
-                updateConnection(conn.from, conn.to);
-            });
-        }
-
-        // ============================================
-        // FUNCIONES AUXILIARES
-        // ============================================
-
-        // Actualizar contadores
-        function updateCounters() {
-            document.getElementById('nodesCount').textContent = nodes.length;
-            document.getElementById('connectionsCount').textContent = connections.length;
-        }
-
-        // Actualizar contador de acciones deshacer
-        function updateUndoCount() {
-            document.getElementById('undoCount').textContent = historyIndex;
-        }
-
-        // Limpiar todo
-        function clearAll() {
-            if (!confirm('¿Estás seguro de que quieres eliminar todo?')) return;
-            
-            // Guardar estado antes de limpiar
-            saveState();
-            
-            nodes = [];
-            connections = [];
-            selectionManager.clearSelection();
-            renderAll();
-            updateCounters();
-        }
-
-        // Renderizar todo
-        function renderAll() {
-            workspace.innerHTML = '';
-            domCache.nodes.clear();
-            domCache.connections.clear();
-            
-            // Renderizar nodos primero
-            nodes.forEach(node => renderNode(node));
-            
-            // Renderizar conexiones después
-            connections.forEach(conn => renderConnection(conn.from, conn.to));
-            
-            updateWorkspaceTransform();
-            
-            // Reactivar modo si es necesario
-            if (disconnectMode) {
-                setDisconnectMode(true);
-            }
-        }
-
-        // Función para alternar menú móvil
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
-        }
-
-        // Actualizar título del mapa
-        function updateMapTitle(title) {
-            document.title = title + " - Mapa Interactivo";
-        }
-
-        // ============================================
-        // INICIALIZACIÓN
-        // ============================================
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            renderAll();
-            updateCounters();
-            saveState(); // Guardar estado inicial
-            
-            // Agregar nodos de ejemplo
-            setTimeout(() => {
-                const node1 = {
-                    id: 'node-1',
-                    title: 'Arte y Ciencias Sociales',
-                    subtitle: 'Intersecciones disciplinares',
-                    author: 'Varios autores',
-                    description: 'Este mapa explora las conexiones entre el arte y las ciencias sociales, examinando cómo se influyen mutuamente.',
-                    image: null,
-                    type: 'main',
-                    x: 100,
-                    y: 100,
-                    color: '#ffffff',
-                    textColor: 'black',
-                    fontSize: 'small',
-                    fontFamily: 'Roboto',
-                    border: 'solid'
-                };
-
-                const node2 = {
-                    id: 'node-2',
-                    title: 'Antropología Visual',
-                    subtitle: 'Estudio cultural de las imágenes',
-                    author: 'Margaret Mead',
-                    description: 'La antropología visual estudia cómo las sociedades humanas producen, interpretan y utilizan las imágenes visuales.',
-                    image: null,
-                    type: 'main',
-                    x: 300,
-                    y: 200,
-                    color: '#ffffff',
-                    textColor: 'black',
-                    fontSize: 'small',
-                    fontFamily: 'Roboto',
-                    border: 'solid'
-                };
-
-                nodes.push(node1, node2);
-                renderAll();
-                updateCounters();
-                saveState(); // Guardar estado con nodos de ejemplo
-                
-                // Crear una conexión de ejemplo
-                setTimeout(() => {
-                    connections.push({ from: 'node-1', to: 'node-2' });
-                    renderAll();
-                    updateCounters();
-                    saveState();
-                }, 100);
-            }, 100);
-        });
-
-        // ============================================
-        // FUNCIONES QUE SE MANTIENEN IGUAL
-        // ============================================
-        
-        // [Aquí mantén todas las demás funciones que no han sido modificadas:
-        // previewImage, updateCustomColor, exportToPNG, clearNodeForm, 
-        // updateCustomizationSelectors, getFontSizeLabel, getFontFamilyLabel,
-        // selectTextColor, selectFontSize, selectFontFamily, showSaveModal,
-        // closeSaveModal, downloadHTML, generateExportCode, openPreviewModal,
-        // closePreviewModal, updatePreviewContent, printPreview, zoomIn,
-        // zoomOut, resetZoom, updateWorkspaceTransform, showBackgroundModal,
-        // closeBackgroundModal, showColorPickerModal, closeColorPickerModal,
-        // updateCustomColorFromInput, applyCustomColor, previewBackgroundImage,
-        // applyBackgroundImage, removeBackgroundImage, applyMapSize,
-        // changeMapBackground, applyBackground, copySelectedNode, pasteNode,
-        // loadFromHTML, y todas las funciones de cierre de modales]
-        
-        // IMPORTANTE: Mantén el código de estas funciones exactamente como estaba
-        // ya que no han sido modificadas en esta revisión
-
-    </script>
+
+<div id="toolbar">
+  <button onclick="addNode()">➕ Nodo</button>
+  <button onclick="toggleConnectMode()">🔗 Conectar</button>
+  <button onclick="toggleDeleteMode()">❌ Eliminar conexión</button>
+  <button onclick="deleteSelectedNode()">🗑 Borrar nodo</button>
+  <button onclick="exportHTML()">💾 Exportar HTML</button>
+</div>
+
+<div id="modeBox" class="mode"></div>
+<div id="workspace"></div>
+
+<script>
+let nodes = [];
+let connections = [];
+let selectedNode = null;
+let selectedConnection = null;
+
+let connectMode = false;
+let deleteMode = false;
+let tempSourceNode = null;
+
+const workspace = document.getElementById('workspace');
+const modeBox = document.getElementById('modeBox');
+
+function id() {
+  return 'id_' + Date.now() + Math.random().toString(36).substr(2,5);
+}
+
+function addNode() {
+  nodes.push({
+    id: id(),
+    text: 'Nuevo concepto',
+    x: 100,
+    y: 100
+  });
+  render();
+}
+
+function render() {
+  workspace.innerHTML = '';
+  connections.forEach(drawConnection);
+  nodes.forEach(drawNode);
+}
+
+function drawNode(node) {
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.style.left = node.x + 'px';
+  el.style.top = node.y + 'px';
+  el.innerText = node.text;
+  el.dataset.id = node.id;
+
+  el.addEventListener('mousedown', dragStart);
+
+  el.addEventListener('dblclick', () => {
+    el.contentEditable = true;
+    el.focus();
+  });
+
+  el.addEventListener('blur', () => {
+    el.contentEditable = false;
+    node.text = el.innerText;
+  });
+
+  el.addEventListener('click', (e) => {
+    selectNode(node, el);
+    handleConnection(node);
+    e.stopPropagation();
+  });
+
+  workspace.appendChild(el);
+}
+
+function drawConnection(conn) {
+  const A = nodes.find(n => n.id === conn.from);
+  const B = nodes.find(n => n.id === conn.to);
+  if (!A || !B) return;
+
+  const ax = A.x + 70, ay = A.y + 20;
+  const bx = B.x + 70, by = B.y + 20;
+
+  const dx = bx - ax, dy = by - ay;
+  const len = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  const line = document.createElement('div');
+  line.className = 'connection';
+  line.style.width = len + 'px';
+  line.style.left = ax + 'px';
+  line.style.top = ay + 'px';
+  line.style.transform = `rotate(${angle}deg)`;
+
+  const arrow = document.createElement('div');
+  arrow.className = 'arrow';
+  arrow.style.left = bx - 10 + 'px';
+  arrow.style.top = by - 6 + 'px';
+  arrow.style.transform = `rotate(${angle}deg)`;
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.innerText = conn.label;
+
+  const mx = (ax + bx) / 2;
+  const my = (ay + by) / 2;
+  label.style.left = mx + 'px';
+  label.style.top = my + 'px';
+
+  if (deleteMode) {
+    line.style.pointerEvents = 'auto';
+    arrow.style.pointerEvents = 'auto';
+    line.onclick = () => deleteConnection(conn);
+    arrow.onclick = () => deleteConnection(conn);
+  }
+
+  workspace.appendChild(line);
+  workspace.appendChild(arrow);
+  workspace.appendChild(label);
+}
+
+function selectNode(node, el) {
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedNode = node;
+}
+
+function handleConnection(node) {
+  if (!connectMode) return;
+
+  if (!tempSourceNode) {
+    tempSourceNode = node;
+    modeBox.innerText = "Selecciona nodo destino";
+    return;
+  }
+
+  if (tempSourceNode.id === node.id) return;
+
+  const label = prompt("Texto de la relación:", "relación");
+  connections.push({
+    from: tempSourceNode.id,
+    to: node.id,
+    label: label || ''
+  });
+
+  connectMode = false;
+  tempSourceNode = null;
+  modeBox.style.display = "none";
+  render();
+}
+
+function dragStart(e) {
+  const el = e.target;
+  const node = nodes.find(n => n.id === el.dataset.id);
+  let ox = e.offsetX, oy = e.offsetY;
+
+  function move(ev) {
+    node.x = ev.pageX - workspace.offsetLeft - ox;
+    node.y = ev.pageY - workspace.offsetTop - oy;
+    render();
+  }
+
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', () => {
+    document.removeEventListener('mousemove', move);
+  }, { once: true });
+}
+
+function toggleConnectMode() {
+  connectMode = !connectMode;
+  deleteMode = false;
+  tempSourceNode = null;
+  modeBox.style.display = connectMode ? "block" : "none";
+  modeBox.innerText = "Selecciona nodo origen";
+  render();
+}
+
+function toggleDeleteMode() {
+  deleteMode = !deleteMode;
+  connectMode = false;
+  modeBox.style.display = deleteMode ? "block" : "none";
+  modeBox.innerText = "Click en conexión para borrar";
+  render();
+}
+
+function deleteConnection(conn) {
+  connections = connections.filter(c => c !== conn);
+  render();
+}
+
+function deleteSelectedNode() {
+  if (!selectedNode) return;
+  nodes = nodes.filter(n => n !== selectedNode);
+  connections = connections.filter(c => 
+    c.from !== selectedNode.id && c.to !== selectedNode.id
+  );
+  selectedNode = null;
+  render();
+}
+
+workspace.addEventListener('click', () => {
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  selectedNode = null;
+});
+
+function exportHTML() {
+  const data = {
+    nodes,
+    connections
+  };
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<pre>${JSON.stringify(data, null, 2)}</pre>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mapa_conceptual_exportado.html';
+  a.click();
+}
+</script>
 </body>
 </html>
