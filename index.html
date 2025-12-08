@@ -3,765 +3,754 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Conceptual V10 - Final</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Mapa V12 - Motor Canvas (Estable)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
+    
     <style>
-        :root {
-            --bg-dark: #1e1e2e;
-            --bg-panel: #2b2b3b;
-            --primary: #7c4dff;
-            --text: #ececec;
-            --border: #444;
+        /* RESET TOTAL */
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; outline: none; }
+        body { overflow: hidden; background: #222; color: #eee; font-family: sans-serif; height: 100vh; display: flex; }
+
+        /* --- UI LAYOUT --- */
+        .toolbar {
+            width: 50px; background: #333; border-right: 1px solid #444;
+            display: flex; flex-direction: column; align-items: center; padding-top: 10px; z-index: 10;
         }
-
-        * { box-sizing: border-box; user-select: none; outline: none; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* --- UI SUPERIOR --- */
-        .top-bar { height: 45px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; gap: 10px; }
-        .tabs-container { flex: 1; display: flex; gap: 2px; overflow-x: auto; }
-        .tab { 
-            padding: 8px 15px; background: #222; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 13px; display: flex; gap: 8px; align-items: center; border: 1px solid transparent; opacity: 0.7;
+        
+        .tool-btn {
+            width: 36px; height: 36px; margin-bottom: 10px; border-radius: 4px; border: none;
+            background: transparent; color: #aaa; font-size: 16px; cursor: pointer; transition: 0.2s;
         }
-        .tab.active { background: var(--bg-dark); border-color: var(--border); border-bottom-color: var(--bg-dark); opacity: 1; font-weight: 600; }
-        .tab-close { font-size: 10px; padding: 2px; border-radius: 50%; }
-        .tab-close:hover { background: #ff4757; color: white; }
-        
-        .btn-group { display: flex; gap: 5px; }
-        .btn { padding: 6px 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .btn:hover { background: #555; }
-        .btn-primary { background: var(--primary); }
-        .btn-primary:hover { background: #6b3ee3; }
-
-        /* --- UI PRINCIPAL --- */
-        .workspace { flex: 1; display: flex; position: relative; }
-        
-        .toolbar { width: 50px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 5px; z-index: 10; }
-        .tool-btn { width: 36px; height: 36px; border-radius: 5px; background: transparent; color: #aaa; border: none; cursor: pointer; font-size: 16px; position: relative; }
         .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .tool-btn.active { background: var(--primary); color: white; }
+        .tool-btn.active { background: #00d2ff; color: #000; }
+
+        .workspace { flex: 1; position: relative; cursor: default; }
         
-        /* --- CANVAS --- */
-        .canvas-wrapper { flex: 1; position: relative; overflow: hidden; background: #f4f4f7; cursor: grab; }
-        .canvas-wrapper.grabbing { cursor: grabbing; }
-        
-        /* Grid infinito */
-        .canvas-bg {
-            position: absolute; width: 100%; height: 100%;
-            background-image: radial-gradient(#ccc 1px, transparent 1px);
-            background-size: 20px 20px; pointer-events: none;
+        /* El Canvas ocupa todo */
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* --- BOTONES FLOTANTES SUPERIORES --- */
+        .top-bar {
+            position: absolute; top: 10px; right: 20px; display: flex; gap: 10px;
         }
-
-        .canvas-layer { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
-
-        /* --- NODOS --- */
-        .node {
-            position: absolute; min-width: 140px; max-width: 250px;
-            background: white; color: #222; border-radius: 8px;
-            padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border: 2px solid transparent; cursor: pointer;
-            display: flex; flex-direction: column; gap: 5px;
+        .btn {
+            padding: 8px 15px; border-radius: 4px; border: 1px solid #555; background: #333; color: #eee;
+            cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px;
         }
-        .node.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.3); z-index: 100; }
-        .node img { max-width: 100%; border-radius: 4px; display: block; margin-bottom: 5px; pointer-events: none; }
-        .node-title { font-weight: 700; font-size: 14px; line-height: 1.2; }
-        .node-subtitle { font-size: 11px; opacity: 0.7; font-style: italic; }
-        .node-desc-marker { font-size: 10px; color: #888; border-top: 1px solid #eee; margin-top: 5px; padding-top: 2px; text-align: center; }
+        .btn:hover { background: #444; }
+        .btn-primary { background: #00d2ff; color: #000; border: none; font-weight: bold; }
+        .btn-primary:hover { background: #00b8e6; }
 
-        /* --- CONEXIONES --- */
-        svg.connections-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
-        path.connection { fill: none; stroke: #888; stroke-width: 2px; pointer-events: stroke; cursor: pointer; transition: 0.2s; }
-        path.connection:hover { stroke: #ff4757; stroke-width: 4px; }
-        
-        /* --- MODAL EDITOR --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-        .modal { background: var(--bg-panel); width: 450px; max-height: 90vh; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .modal-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .form-row { display: flex; gap: 10px; }
-        .form-group { flex: 1; }
-        label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; }
+        /* --- MODAL EDITOR (HTML SOBRE CANVAS) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal {
+            background: #2a2a2a; padding: 20px; border-radius: 8px; width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #444;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        input[type="text"], textarea, select {
+            width: 100%; padding: 8px; background: #111; border: 1px solid #444; color: white; border-radius: 4px;
+        }
         input[type="color"] { width: 100%; height: 35px; border: none; background: transparent; cursor: pointer; }
         
-        .img-preview { max-width: 100%; height: 100px; object-fit: contain; background: #222; border: 1px dashed #444; display: none; margin-top: 5px; }
+        .row { display: flex; gap: 10px; }
+        
+        /* Imagen previa en modal */
+        #preview-img { max-width: 100%; height: 100px; object-fit: contain; border: 1px dashed #444; margin-top: 5px; display: none; background: #000; }
 
-        /* --- ZOOM CONTROLS --- */
-        .zoom-controls { position: absolute; bottom: 20px; right: 20px; background: var(--bg-panel); padding: 5px; border-radius: 8px; display: flex; gap: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-        /* --- TOAST --- */
-        .toast { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3000; }
+        /* NOTIFICACION */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #00d2ff; color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold;
+            pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <strong style="color:var(--primary)">MAPA V10</strong>
-        <div class="tabs-container" id="tabsHeader">
-            </div>
-        <button class="btn" onclick="Tabs.create()">+</button>
-        <div style="flex:1"></div>
-        <div class="btn-group">
-            <input type="file" id="fileInput" hidden accept=".html,.json" multiple onchange="IO.handleFiles(this)">
-            <button class="btn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i> Abrir (Multi)</button>
-            <button class="btn btn-primary" onclick="IO.saveCurrent()"><i class="fas fa-save"></i> Guardar</button>
-            <button class="btn" onclick="IO.exportImage()"><i class="fas fa-image"></i> PNG</button>
-        </div>
+    <div class="toolbar">
+        <button class="tool-btn active" id="t-select" onclick="App.setTool('select')" title="Seleccionar (V)"><i class="fas fa-mouse-pointer"></i></button>
+        <button class="tool-btn" id="t-node" onclick="App.setTool('node')" title="Crear Nodo (N)"><i class="fas fa-plus-square"></i></button>
+        <button class="tool-btn" id="t-connect" onclick="App.setTool('connect')" title="Conectar (C)"><i class="fas fa-bezier-curve"></i></button>
+        <div style="height:1px; width:30px; background:#555; margin:10px 0;"></div>
+        <button class="tool-btn" onclick="App.deleteSelection()" title="Borrar (Supr)"><i class="fas fa-trash"></i></button>
+        <button class="tool-btn" onclick="View.reset()" title="Reset Vista"><i class="fas fa-compress"></i></button>
     </div>
 
     <div class="workspace">
-        <div class="toolbar">
-            <button class="tool-btn active" id="t-select" onclick="App.setTool('select')" title="Seleccionar (V)"><i class="fas fa-mouse-pointer"></i></button>
-            <button class="tool-btn" id="t-node" onclick="App.setTool('node')" title="Crear Nodo (N)"><i class="fas fa-plus-square"></i></button>
-            <button class="tool-btn" id="t-connect" onclick="App.setTool('connect')" title="Conectar (C)"><i class="fas fa-link"></i></button>
-            <div style="height:1px; width:30px; background:#444; margin:5px 0"></div>
-            <button class="tool-btn" onclick="Actions.copy()" title="Copiar"><i class="fas fa-copy"></i></button>
-            <button class="tool-btn" onclick="Actions.paste()" title="Pegar"><i class="fas fa-paste"></i></button>
-            <button class="tool-btn" onclick="Actions.delete()" title="Borrar"><i class="fas fa-trash"></i></button>
-        </div>
+        <canvas id="canvas"></canvas>
 
-        <div class="canvas-wrapper" id="canvasWrapper">
-            <div class="canvas-bg" id="canvasBg"></div>
-            <div class="canvas-layer" id="canvasLayer">
-                <svg class="connections-layer" id="svgLayer"></svg>
-                <div id="nodesLayer"></div>
-            </div>
-        </div>
-
-        <div class="zoom-controls">
-            <button class="btn" onclick="App.zoom(-0.1)">-</button>
-            <button class="btn" onclick="App.resetZoom()">100%</button>
-            <button class="btn" onclick="App.zoom(0.1)">+</button>
+        <div class="top-bar">
+            <input type="file" id="fileInput" hidden multiple onchange="IO.handleFiles(this)">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-folder-open"></i> Importar / Unificar
+            </button>
+            <button class="btn btn-primary" onclick="IO.saveHTML()">
+                <i class="fas fa-save"></i> Guardar HTML
+            </button>
+            <button class="btn" onclick="IO.saveImage()">
+                <i class="fas fa-image"></i> PNG
+            </button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="editorModal">
+    <div class="modal-overlay" id="modal">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Editar Nodo</h3>
-                <button class="btn" style="background:transparent" onclick="UI.closeModal()"><i class="fas fa-times"></i></button>
+            <h3 style="margin-top:0">Editar Nodo</h3>
+            <input type="hidden" id="e-id">
+            
+            <div class="form-group">
+                <label>Título</label>
+                <input type="text" id="e-title">
             </div>
-            <div class="modal-body">
-                <input type="hidden" id="editId">
-                
-                <div class="form-group">
-                    <label>Título</label>
-                    <input type="text" id="editTitle">
+            <div class="form-group">
+                <label>Subtítulo</label>
+                <input type="text" id="e-subtitle">
+            </div>
+            
+            <div class="row">
+                <div class="form-group" style="flex:1">
+                    <label>Fondo</label>
+                    <input type="color" id="e-bg">
                 </div>
+                <div class="form-group" style="flex:1">
+                    <label>Texto</label>
+                    <input type="color" id="e-text">
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Tamaño</label>
+                    <select id="e-size">
+                        <option value="12">Pequeño</option>
+                        <option value="14">Normal</option>
+                        <option value="18">Grande</option>
+                        <option value="24">Título</option>
+                    </select>
+                </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Subtítulo</label>
-                    <input type="text" id="editSubtitle">
-                </div>
+            <div class="form-group">
+                <label>Imagen</label>
+                <input type="file" id="e-file" accept="image/*">
+                <img id="preview-img">
+                <button class="btn" style="width:100%; margin-top:5px; justify-content:center; background:#444" onclick="UI.removeImage()">Quitar Imagen</button>
+            </div>
 
-                <div class="form-group">
-                    <label>Descripción / Contenido</label>
-                    <textarea id="editContent" rows="4"></textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Color Fondo (Mezclador)</label>
-                        <input type="color" id="editBgColor" value="#ffffff">
-                    </div>
-                    <div class="form-group">
-                        <label>Color Texto (Mezclador)</label>
-                        <input type="color" id="editTextColor" value="#000000">
-                    </div>
-                    <div class="form-group">
-                        <label>Tamaño Texto</label>
-                        <select id="editSize">
-                            <option value="12px">Pequeño</option>
-                            <option value="14px">Normal</option>
-                            <option value="18px">Grande</option>
-                            <option value="24px">Título</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Imagen</label>
-                    <input type="file" id="editImageInput" accept="image/*" onchange="UI.handleImagePreview(this)">
-                    <img id="editImagePreview" class="img-preview">
-                    <button class="btn" style="margin-top:5px; width:100%" onclick="UI.removeImage()">Quitar Imagen</button>
-                </div>
-
-                <div class="form-row" style="margin-top:10px; border-top:1px solid #444; padding-top:10px">
-                    <button class="btn" onclick="UI.closeModal()">Cancelar</button>
-                    <button class="btn btn-primary" style="flex:1" onclick="Actions.saveNodeEdit()">Guardar Cambios</button>
-                </div>
+            <div class="row" style="justify-content: flex-end; margin-top:15px; padding-top:10px; border-top:1px solid #444">
+                <button class="btn" onclick="UI.closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="App.saveEdit()">Guardar</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="toast">Notificación</div>
+    <div id="toast" class="toast">Mensaje</div>
 
     <script>
-        // --- 1. GESTIÓN DE ESTADO (MULTITAB) ---
-        const State = {
-            tabs: [],       // Array de objetos {id, name, nodes:[], connections:[], pan:{x,y}, zoom:1}
-            activeTabId: null,
-            clipboard: null, // Para copiar/pegar entre pestañas
-            tool: 'select',  // select, node, connect
+        // ============================================
+        // 1. MOTOR GRÁFICO (CANVAS ENGINE)
+        // ============================================
+        const Canvas = {
+            elm: document.getElementById('canvas'),
+            ctx: document.getElementById('canvas').getContext('2d'),
+            width: 0,
+            height: 0,
             
-            // Runtime (No se guarda)
-            dragging: false,
-            dragType: null, // 'canvas' o 'node'
-            dragStart: {x:0, y:0}, // Mouse screen coords
-            initialPan: {x:0, y:0},
-            initialNodePos: {x:0, y:0},
-            connectSource: null
-        };
+            // Estado de la Vista (Pan/Zoom)
+            offset: { x: 0, y: 0 },
+            zoom: 1,
 
-        // --- 2. SISTEMA DE PESTAÑAS ---
-        const Tabs = {
-            create: (data = null) => {
-                const id = Date.now().toString();
-                const newTab = {
-                    id: id,
-                    name: data ? (data.title || "Sin Título") : `Mapa ${State.tabs.length + 1}`,
-                    nodes: data ? data.nodes : [],
-                    connections: data ? data.connections : [],
-                    pan: {x: 0, y: 0},
-                    zoom: 1
-                };
-                State.tabs.push(newTab);
-                Tabs.renderHeaders();
-                Tabs.activate(id);
-                return id;
-            },
-
-            activate: (id) => {
-                State.activeTabId = id;
-                Tabs.renderHeaders();
-                App.render();
-            },
-
-            close: (id, e) => {
-                e.stopPropagation();
-                if (State.tabs.length <= 1) return alert("Debe haber al menos una pestaña.");
-                if (!confirm("¿Cerrar pestaña? Se perderán los cambios no guardados.")) return;
-                
-                const idx = State.tabs.findIndex(t => t.id === id);
-                State.tabs.splice(idx, 1);
-                
-                // Activar la anterior o la primera
-                const nextId = State.tabs[Math.max(0, idx - 1)].id;
-                Tabs.activate(nextId);
-            },
-
-            getActive: () => State.tabs.find(t => t.id === State.activeTabId),
-
-            renderHeaders: () => {
-                const container = document.getElementById('tabsHeader');
-                container.innerHTML = '';
-                State.tabs.forEach(tab => {
-                    const div = document.createElement('div');
-                    div.className = `tab ${tab.id === State.activeTabId ? 'active' : ''}`;
-                    div.innerHTML = `
-                        <span>${tab.name}</span>
-                        <span class="tab-close" onclick="Tabs.close('${tab.id}', event)">✕</span>
-                    `;
-                    div.onclick = () => Tabs.activate(tab.id);
-                    container.appendChild(div);
-                });
-            }
-        };
-
-        // --- 3. LÓGICA PRINCIPAL (APP) ---
-        const App = {
             init: () => {
-                // Event Listeners Globales
-                const wrapper = document.getElementById('canvasWrapper');
-                wrapper.addEventListener('mousedown', Input.onMouseDown);
-                window.addEventListener('mousemove', Input.onMouseMove);
-                window.addEventListener('mouseup', Input.onMouseUp);
-                window.addEventListener('keydown', Input.onKeyDown);
-                
-                // Crear primera pestaña
-                Tabs.create();
+                window.addEventListener('resize', Canvas.resize);
+                Canvas.resize();
+                // Bucle de renderizado (Game Loop)
+                requestAnimationFrame(Canvas.loop);
             },
 
-            setTool: (tool) => {
-                State.tool = tool;
-                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('t-' + tool).classList.add('active');
-                
-                // Reset estados temporales
-                State.connectSource = null;
-                const tab = Tabs.getActive();
-                if(tab) {
-                    tab.nodes.forEach(n => n.selected = false);
-                    App.render();
-                }
+            resize: () => {
+                const parent = Canvas.elm.parentElement;
+                Canvas.width = parent.clientWidth;
+                Canvas.height = parent.clientHeight;
+                Canvas.elm.width = Canvas.width;
+                Canvas.elm.height = Canvas.height;
+                Canvas.draw(); // Redibujar forzado
             },
 
-            // --- RENDERIZADO ---
-            render: () => {
-                const tab = Tabs.getActive();
-                if (!tab) return;
-
-                // 1. Transformación del Canvas (Pan/Zoom)
-                const layer = document.getElementById('canvasLayer');
-                const bg = document.getElementById('canvasBg');
-                
-                layer.style.transform = `translate(${tab.pan.x}px, ${tab.pan.y}px) scale(${tab.zoom})`;
-                bg.style.backgroundPosition = `${tab.pan.x}px ${tab.pan.y}px`;
-                bg.style.backgroundSize = `${20 * tab.zoom}px ${20 * tab.zoom}px`;
-
-                // 2. Render Nodos
-                const nodesLayer = document.getElementById('nodesLayer');
-                nodesLayer.innerHTML = '';
-                
-                tab.nodes.forEach(node => {
-                    const el = document.createElement('div');
-                    el.className = `node ${node.selected ? 'selected' : ''}`;
-                    el.style.left = node.x + 'px';
-                    el.style.top = node.y + 'px';
-                    el.style.backgroundColor = node.bgColor || '#ffffff';
-                    el.style.color = node.textColor || '#000000';
-                    el.id = node.id; // Importante para lookup
-
-                    // Contenido
-                    let html = '';
-                    if (node.image) html += `<img src="${node.image}">`;
-                    html += `<div class="node-title" style="font-size:${node.textSize||'14px'}">${node.title}</div>`;
-                    if (node.subtitle) html += `<div class="node-subtitle">${node.subtitle}</div>`;
-                    if (node.content) html += `<div class="node-desc-marker">ℹ</div>`;
-                    
-                    el.innerHTML = html;
-
-                    // Eventos DOM directos para el nodo (Manejo robusto)
-                    el.onmousedown = (e) => Input.onNodeDown(e, node);
-                    el.ondblclick = (e) => { e.stopPropagation(); Actions.editNode(node); };
-                    
-                    nodesLayer.appendChild(el);
-                });
-
-                // 3. Render Conexiones (SVG)
-                const svg = document.getElementById('svgLayer');
-                svg.innerHTML = ''; // Limpiar
-
-                tab.connections.forEach(conn => {
-                    const n1 = tab.nodes.find(n => n.id === conn.from);
-                    const n2 = tab.nodes.find(n => n.id === conn.to);
-                    if (!n1 || !n2) return;
-
-                    // Calcular centros (aproximados si no están en DOM, o reales)
-                    // Usamos las coordenadas del modelo + ancho/alto estimado o hardcodeado
-                    // Mejor: Usar el centro del nodo basado en su posición
-                    const x1 = n1.x + 70; // mitad de min-width 140
-                    const y1 = n1.y + 30; 
-                    const x2 = n2.x + 70;
-                    const y2 = n2.y + 30;
-
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    path.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
-                    path.setAttribute("class", "connection");
-                    
-                    // Evento borrar conexión
-                    path.onclick = (e) => {
-                        e.stopPropagation();
-                        if (confirm("¿Borrar conexión?")) Actions.deleteConnection(conn);
-                    };
-
-                    svg.appendChild(path);
-                });
-            },
-
-            zoom: (delta) => {
-                const tab = Tabs.getActive();
-                let newZoom = tab.zoom + delta;
-                if (newZoom < 0.2) newZoom = 0.2;
-                if (newZoom > 3) newZoom = 3;
-                tab.zoom = newZoom;
-                App.render();
-            },
-            resetZoom: () => {
-                const tab = Tabs.getActive();
-                tab.zoom = 1;
-                tab.pan = {x:0, y:0};
-                App.render();
-            }
-        };
-
-        // --- 4. INPUT HANDLING (MATH ROBUSTA) ---
-        const Input = {
-            getCoords: (e) => {
-                const tab = Tabs.getActive();
-                const rect = document.getElementById('canvasWrapper').getBoundingClientRect();
-                // Coordenadas relativas al canvas wrapper
-                const screenX = e.clientX - rect.left;
-                const screenY = e.clientY - rect.top;
-                // Transformar a coordenadas del mundo (teniendo en cuenta pan y zoom)
+            // Sistema de Coordenadas: Pantalla -> Mundo
+            toWorld: (sx, sy) => {
                 return {
-                    x: (screenX - tab.pan.x) / tab.zoom,
-                    y: (screenY - tab.pan.y) / tab.zoom
+                    x: (sx - Canvas.offset.x) / Canvas.zoom,
+                    y: (sy - Canvas.offset.y) / Canvas.zoom
                 };
             },
 
-            onMouseDown: (e) => {
-                if (e.target.closest('.node')) return; // Si es nodo, lo maneja onNodeDown
+            loop: () => {
+                Canvas.draw();
+                requestAnimationFrame(Canvas.loop);
+            },
+
+            draw: () => {
+                const ctx = Canvas.ctx;
                 
-                const tab = Tabs.getActive();
-                if (State.tool === 'select' || State.tool === 'connect') {
-                    // Start Panning
-                    State.dragging = true;
-                    State.dragType = 'canvas';
-                    State.dragStart = { x: e.clientX, y: e.clientY };
-                    State.initialPan = { ...tab.pan };
-                    document.getElementById('canvasWrapper').classList.add('grabbing');
+                // Limpiar
+                ctx.fillStyle = '#f0f0f3'; // Color de fondo "papel"
+                ctx.fillRect(0, 0, Canvas.width, Canvas.height);
+
+                ctx.save();
+                
+                // Aplicar Transformaciones de Vista
+                ctx.translate(Canvas.offset.x, Canvas.offset.y);
+                ctx.scale(Canvas.zoom, Canvas.zoom);
+
+                // 1. Grid Infinito
+                View.drawGrid(ctx);
+
+                // 2. Conexiones (Dibujar primero para que queden detrás)
+                App.links.forEach(link => View.drawLink(ctx, link));
+
+                // 3. Línea temporal (conectando)
+                if (App.tool === 'connect' && App.dragNode) {
+                    View.drawTempLine(ctx);
+                }
+
+                // 4. Nodos
+                App.nodes.forEach(node => View.drawNode(ctx, node));
+
+                ctx.restore();
+            }
+        };
+
+        // ============================================
+        // 2. LÓGICA DE DIBUJADO (VIEW)
+        // ============================================
+        const View = {
+            drawGrid: (ctx) => {
+                // Optimización: Dibujar solo en el área visible
+                const gridSize = 40;
+                // Calculamos límites visibles en coordenadas mundo
+                const startX = Math.floor(-Canvas.offset.x / Canvas.zoom / gridSize) * gridSize;
+                const startY = Math.floor(-Canvas.offset.y / Canvas.zoom / gridSize) * gridSize;
+                const endX = startX + (Canvas.width / Canvas.zoom) + gridSize;
+                const endY = startY + (Canvas.height / Canvas.zoom) + gridSize;
+
+                ctx.beginPath();
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 1;
+
+                for (let x = startX; x < endX; x += gridSize) {
+                    ctx.moveTo(x, startY); ctx.lineTo(x, endY);
+                }
+                for (let y = startY; y < endY; y += gridSize) {
+                    ctx.moveTo(startX, y); ctx.lineTo(endX, y);
+                }
+                ctx.stroke();
+            },
+
+            drawNode: (ctx, node) => {
+                // Sombra
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 5;
+
+                // Rectángulo Base
+                ctx.fillStyle = node.color;
+                ctx.beginPath();
+                ctx.roundRect(node.x, node.y, node.w, node.h, 6);
+                ctx.fill();
+
+                // Borde (Selección)
+                ctx.shadowColor = 'transparent'; // Reset sombra
+                if (node.selected) {
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#00d2ff';
+                    ctx.stroke();
+                } else {
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#999';
+                    ctx.stroke();
+                }
+
+                // Contenido (Texto e Imagen)
+                ctx.fillStyle = node.textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const cx = node.x + node.w / 2;
+                let cy = node.y + node.h / 2;
+
+                // Imagen
+                if (node.imgObj) {
+                    // Si hay imagen, el texto baja
+                    const imgH = 40; 
+                    const ratio = node.imgObj.width / node.imgObj.height;
+                    const imgW = imgH * ratio;
                     
-                    // Deseleccionar todo si clic en vacío
-                    tab.nodes.forEach(n => n.selected = false);
-                    App.render();
-                } 
-                else if (State.tool === 'node') {
-                    const coords = Input.getCoords(e);
-                    Actions.addNode(coords.x - 70, coords.y - 20);
-                    App.setTool('select');
+                    // Dibujar imagen centrada arriba
+                    try {
+                        ctx.drawImage(node.imgObj, cx - imgW/2, node.y + 10, imgW, imgH);
+                        cy += 20; // Bajar el texto
+                    } catch(e) {}
+                }
+
+                // Título
+                ctx.font = `bold ${node.textSize}px sans-serif`;
+                ctx.fillText(node.title, cx, cy - 8);
+
+                // Subtítulo
+                if (node.subtitle) {
+                    ctx.font = `italic ${parseInt(node.textSize) - 3}px sans-serif`;
+                    ctx.fillStyle = '#666';
+                    ctx.fillText(node.subtitle, cx, cy + 8);
                 }
             },
 
-            onNodeDown: (e, node) => {
-                e.stopPropagation(); // IMPORTANTE
-                const tab = Tabs.getActive();
+            drawLink: (ctx, link) => {
+                const n1 = App.nodes.find(n => n.id === link.from);
+                const n2 = App.nodes.find(n => n.id === link.to);
+                if (!n1 || !n2) return;
 
-                if (State.tool === 'select') {
-                    State.dragging = true;
-                    State.dragType = 'node';
-                    State.dragStart = { x: e.clientX, y: e.clientY };
-                    
-                    // Seleccionar
-                    if (!e.ctrlKey) tab.nodes.forEach(n => n.selected = false);
-                    node.selected = true;
-                    
-                    // Guardar posiciones iniciales de todos los seleccionados (para mover grupo)
-                    State.initialNodes = tab.nodes.filter(n => n.selected).map(n => ({id: n.id, x: n.x, y: n.y}));
-                    
-                    App.render();
-                } 
-                else if (State.tool === 'connect') {
-                    if (!State.connectSource) {
-                        State.connectSource = node;
-                        node.selected = true; // Visual feedback
-                        UI.toast("Selecciona el nodo destino");
-                        App.render();
-                    } else {
-                        if (State.connectSource.id !== node.id) {
-                            Actions.addConnection(State.connectSource.id, node.id);
-                        }
-                        State.connectSource = null;
-                        tab.nodes.forEach(n => n.selected = false);
-                        App.render();
+                const x1 = n1.x + n1.w / 2;
+                const y1 = n1.y + n1.h / 2;
+                const x2 = n2.x + n2.w / 2;
+                const y2 = n2.y + n2.h / 2;
+
+                ctx.beginPath();
+                ctx.strokeStyle = link.selected ? '#ff4757' : '#888';
+                ctx.lineWidth = link.selected ? 3 : 2;
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                // Flecha simple
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                ctx.beginPath();
+                ctx.fillStyle = link.selected ? '#ff4757' : '#888';
+                ctx.translate(x2, y2);
+                ctx.rotate(angle);
+                ctx.moveTo(-10, -5);
+                ctx.lineTo(0, 0);
+                ctx.moveTo(-10, 5);
+                ctx.lineTo(0, 0);
+                // Restaurar matriz
+                ctx.rotate(-angle);
+                ctx.translate(-x2, -y2);
+                ctx.stroke();
+            },
+
+            drawTempLine: (ctx) => {
+                const n1 = App.nodes.find(n => n.id === App.dragNode);
+                if (!n1) return;
+                
+                const x1 = n1.x + n1.w / 2;
+                const y1 = n1.y + n1.h / 2;
+                
+                ctx.beginPath();
+                ctx.strokeStyle = '#00d2ff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(App.mouseWorld.x, App.mouseWorld.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            },
+
+            reset: () => {
+                Canvas.offset = {x: 0, y: 0};
+                Canvas.zoom = 1;
+            }
+        };
+
+        // ============================================
+        // 3. LÓGICA DE APLICACIÓN (APP STATE)
+        // ============================================
+        const App = {
+            nodes: [],
+            links: [],
+            tool: 'select', // select, node, connect
+            
+            // Estado Runtime
+            isDragging: false,
+            dragType: null, // 'node', 'canvas'
+            dragNode: null, // ID del nodo siendo arrastrado o fuente de conexión
+            startMouse: { x: 0, y: 0 }, // Para calcular delta del drag
+            mouseWorld: { x: 0, y: 0 }, // Posición actual mouse mundo
+
+            init: () => {
+                Canvas.init();
+                
+                // Eventos Mouse/Touch unificados
+                const c = Canvas.elm;
+                c.addEventListener('mousedown', Input.down);
+                c.addEventListener('mousemove', Input.move);
+                window.addEventListener('mouseup', Input.up);
+                c.addEventListener('wheel', Input.wheel);
+                c.addEventListener('dblclick', Input.dblclick);
+
+                // Teclado
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'Delete') App.deleteSelection();
+                });
+            },
+
+            setTool: (t) => {
+                App.tool = t;
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('t-' + t).classList.add('active');
+                
+                // Reset estados
+                App.nodes.forEach(n => n.selected = false);
+                App.links.forEach(l => l.selected = false);
+                App.dragNode = null;
+                
+                UI.toast(`Herramienta: ${t.toUpperCase()}`);
+            },
+
+            addNode: (x, y, data = null) => {
+                const node = {
+                    id: data ? data.id : 'n_' + Date.now(),
+                    x: x, y: y,
+                    w: 160, h: 80,
+                    title: data ? data.title : 'Nuevo Nodo',
+                    subtitle: data ? data.subtitle : '',
+                    color: data ? (data.color || data.bgColor || '#ffffff') : '#ffffff',
+                    textColor: data ? data.textColor : '#000000',
+                    textSize: data ? (data.textSize || 14) : 14,
+                    image: data ? data.image : null,
+                    imgObj: null, // Objeto Image() para canvas
+                    selected: false
+                };
+                
+                // Precargar imagen si existe
+                if (node.image) {
+                    const img = new Image();
+                    img.src = node.image;
+                    node.imgObj = img;
+                }
+                
+                App.nodes.push(node);
+                return node;
+            },
+
+            addLink: (from, to) => {
+                if (from === to) return;
+                const exists = App.links.find(l => l.from === from && l.to === to);
+                if (!exists) {
+                    App.links.push({ from, to, selected: false });
+                }
+            },
+
+            // Hit Test: ¿Qué toqué?
+            hitTest: (x, y) => {
+                // Revisar nodos (orden inverso para seleccionar el de arriba)
+                for (let i = App.nodes.length - 1; i >= 0; i--) {
+                    const n = App.nodes[i];
+                    if (x >= n.x && x <= n.x + n.w && y >= n.y && y <= n.y + n.h) {
+                        return { type: 'node', id: n.id };
                     }
                 }
+                return null;
             },
 
-            onMouseMove: (e) => {
-                if (!State.dragging) return;
-                const tab = Tabs.getActive();
+            deleteSelection: () => {
+                const selNodes = App.nodes.filter(n => n.selected);
+                const selLinks = App.links.filter(l => l.selected);
 
-                if (State.dragType === 'canvas') {
-                    const dx = e.clientX - State.dragStart.x;
-                    const dy = e.clientY - State.dragStart.y;
-                    tab.pan.x = State.initialPan.x + dx;
-                    tab.pan.y = State.initialPan.y + dy;
-                    App.render(); // Re-render solo transformación CSS (optimizable)
-                } 
-                else if (State.dragType === 'node') {
-                    const dx = (e.clientX - State.dragStart.x) / tab.zoom;
-                    const dy = (e.clientY - State.dragStart.y) / tab.zoom;
-                    
-                    // Mover todos los seleccionados
-                    State.initialNodes.forEach(init => {
-                        const n = tab.nodes.find(node => node.id === init.id);
-                        if (n) {
-                            n.x = init.x + dx;
-                            n.y = init.y + dy;
-                        }
-                    });
-                    App.render();
+                if (selNodes.length > 0) {
+                    if (!confirm("¿Borrar nodos seleccionados?")) return;
+                    // Borrar nodos
+                    App.nodes = App.nodes.filter(n => !n.selected);
+                    // Borrar conexiones huérfanas
+                    const nodeIds = selNodes.map(n => n.id);
+                    App.links = App.links.filter(l => !nodeIds.includes(l.from) && !nodeIds.includes(l.to));
                 }
-            },
-
-            onMouseUp: () => {
-                State.dragging = false;
-                State.dragType = null;
-                document.getElementById('canvasWrapper').classList.remove('grabbing');
-            },
-
-            onKeyDown: (e) => {
-                if (e.key === 'Delete') Actions.delete();
-                if (e.ctrlKey && e.key === 'c') Actions.copy();
-                if (e.ctrlKey && e.key === 'v') Actions.paste();
-            }
-        };
-
-        // --- 5. ACCIONES DE USUARIO ---
-        const Actions = {
-            addNode: (x, y) => {
-                const tab = Tabs.getActive();
-                const node = {
-                    id: 'n' + Date.now(),
-                    x: x, y: y,
-                    title: 'Nuevo Nodo',
-                    subtitle: '',
-                    content: '',
-                    bgColor: '#ffffff',
-                    textColor: '#000000',
-                    textSize: '14px',
-                    image: null
-                };
-                tab.nodes.push(node);
-                App.render();
-            },
-
-            addConnection: (fromId, toId) => {
-                const tab = Tabs.getActive();
-                // Check duplicados
-                const exists = tab.connections.find(c => c.from === fromId && c.to === toId);
-                if (!exists) {
-                    tab.connections.push({from: fromId, to: toId});
-                    App.render();
-                }
-            },
-
-            editNode: (node) => {
-                // Rellenar modal
-                document.getElementById('editId').value = node.id;
-                document.getElementById('editTitle').value = node.title;
-                document.getElementById('editSubtitle').value = node.subtitle || '';
-                document.getElementById('editContent').value = node.content || '';
-                document.getElementById('editBgColor').value = node.bgColor || '#ffffff';
-                document.getElementById('editTextColor').value = node.textColor || '#000000';
-                document.getElementById('editSize').value = node.textSize || '14px';
                 
-                const imgPreview = document.getElementById('editImagePreview');
-                if (node.image) {
-                    imgPreview.src = node.image;
-                    imgPreview.style.display = 'block';
-                } else {
-                    imgPreview.style.display = 'none';
-                    imgPreview.src = '';
+                if (selLinks.length > 0) {
+                    App.links = App.links.filter(l => !l.selected);
                 }
-                document.getElementById('editImageInput').value = ''; // Reset input
-
-                UI.showModal();
             },
 
-            saveNodeEdit: () => {
-                const tab = Tabs.getActive();
-                const id = document.getElementById('editId').value;
-                const node = tab.nodes.find(n => n.id === id);
+            saveEdit: () => {
+                const id = document.getElementById('e-id').value;
+                const node = App.nodes.find(n => n.id === id);
                 if (node) {
-                    node.title = document.getElementById('editTitle').value;
-                    node.subtitle = document.getElementById('editSubtitle').value;
-                    node.content = document.getElementById('editContent').value;
-                    node.bgColor = document.getElementById('editBgColor').value;
-                    node.textColor = document.getElementById('editTextColor').value;
-                    node.textSize = document.getElementById('editSize').value;
+                    node.title = document.getElementById('e-title').value;
+                    node.subtitle = document.getElementById('e-subtitle').value;
+                    node.color = document.getElementById('e-bg').value;
+                    node.textColor = document.getElementById('e-text').value;
+                    node.textSize = parseInt(document.getElementById('e-size').value);
                     
-                    const imgPreview = document.getElementById('editImagePreview');
+                    const imgPreview = document.getElementById('preview-img');
                     if (imgPreview.src && imgPreview.style.display !== 'none') {
                         node.image = imgPreview.src;
+                        const img = new Image();
+                        img.src = node.image;
+                        node.imgObj = img;
                     } else {
                         node.image = null;
+                        node.imgObj = null;
                     }
-
-                    App.render();
                     UI.closeModal();
                 }
-            },
-
-            delete: () => {
-                const tab = Tabs.getActive();
-                if (!tab) return;
-                
-                const selectedIds = tab.nodes.filter(n => n.selected).map(n => n.id);
-                if (selectedIds.length > 0) {
-                    if(!confirm("¿Borrar nodos seleccionados?")) return;
-                    // Borrar nodos
-                    tab.nodes = tab.nodes.filter(n => !n.selected);
-                    // Borrar conexiones asociadas
-                    tab.connections = tab.connections.filter(c => !selectedIds.includes(c.from) && !selectedIds.includes(c.to));
-                    App.render();
-                }
-            },
-            
-            deleteConnection: (connToDelete) => {
-                const tab = Tabs.getActive();
-                tab.connections = tab.connections.filter(c => c !== connToDelete);
-                App.render();
-            },
-
-            copy: () => {
-                const tab = Tabs.getActive();
-                const selected = tab.nodes.filter(n => n.selected);
-                if (selected.length === 0) return UI.toast("Nada seleccionado para copiar");
-                
-                // Copia profunda
-                State.clipboard = JSON.parse(JSON.stringify(selected));
-                UI.toast(`${selected.length} nodos copiados`);
-            },
-
-            paste: () => {
-                if (!State.clipboard || State.clipboard.length === 0) return;
-                const tab = Tabs.getActive();
-                
-                // Mapa de IDs viejos a nuevos para reconstruir conexiones internas si fuera necesario (simplificado aquí solo nodos)
-                State.clipboard.forEach(item => {
-                    const newNode = JSON.parse(JSON.stringify(item));
-                    newNode.id = 'n' + Date.now() + Math.random().toString(36).substr(2,4);
-                    newNode.x += 20; // Offset para que se vea
-                    newNode.y += 20;
-                    newNode.selected = true;
-                    tab.nodes.push(newNode);
-                });
-                App.render();
-                UI.toast("Pegado");
             }
         };
 
-        // --- 6. IMPORTAR / EXPORTAR (COMPATIBILIDAD V5, V8, V9) ---
+        // ============================================
+        // 4. INPUT HANDLING (EVENTOS)
+        // ============================================
+        const Input = {
+            down: (e) => {
+                const world = Canvas.toWorld(e.clientX, e.clientY);
+                const hit = App.hitTest(world.x, world.y);
+
+                if (App.tool === 'node') {
+                    // Crear nodo
+                    App.addNode(world.x - 80, world.y - 40);
+                    App.setTool('select');
+                    return;
+                }
+
+                if (hit && hit.type === 'node') {
+                    if (App.tool === 'select') {
+                        // Seleccionar
+                        App.isDragging = true;
+                        App.dragType = 'node';
+                        App.dragNode = hit.id;
+                        App.startMouse = world;
+                        
+                        // Lógica selección única
+                        App.nodes.forEach(n => n.selected = false);
+                        App.links.forEach(l => l.selected = false);
+                        const n = App.nodes.find(n => n.id === hit.id);
+                        n.selected = true;
+
+                    } else if (App.tool === 'connect') {
+                        App.isDragging = true;
+                        App.dragType = 'connect';
+                        App.dragNode = hit.id; // Origen
+                    }
+                } else {
+                    // Clic en fondo -> Mover Canvas
+                    App.isDragging = true;
+                    App.dragType = 'canvas';
+                    App.startMouse = { x: e.clientX, y: e.clientY }; // Usar coords pantalla
+                    
+                    // Deseleccionar
+                    App.nodes.forEach(n => n.selected = false);
+                }
+            },
+
+            move: (e) => {
+                // Actualizar puntero mundo siempre
+                App.mouseWorld = Canvas.toWorld(e.clientX, e.clientY);
+
+                if (!App.isDragging) return;
+
+                if (App.dragType === 'canvas') {
+                    const dx = e.clientX - App.startMouse.x;
+                    const dy = e.clientY - App.startMouse.y;
+                    Canvas.offset.x += dx;
+                    Canvas.offset.y += dy;
+                    App.startMouse = { x: e.clientX, y: e.clientY };
+                } 
+                else if (App.dragType === 'node') {
+                    const dx = App.mouseWorld.x - App.startMouse.x;
+                    const dy = App.mouseWorld.y - App.startMouse.y;
+                    
+                    const node = App.nodes.find(n => n.id === App.dragNode);
+                    if (node) {
+                        node.x += dx;
+                        node.y += dy;
+                    }
+                    App.startMouse = App.mouseWorld;
+                }
+                // 'connect' se maneja solo en el render (línea temporal)
+            },
+
+            up: (e) => {
+                if (App.dragType === 'connect' && App.dragNode) {
+                    const hit = App.hitTest(App.mouseWorld.x, App.mouseWorld.y);
+                    if (hit && hit.type === 'node' && hit.id !== App.dragNode) {
+                        App.addLink(App.dragNode, hit.id);
+                        UI.toast("Conexión Creada");
+                    }
+                }
+                App.isDragging = false;
+                App.dragType = null;
+                App.dragNode = null;
+            },
+
+            wheel: (e) => {
+                e.preventDefault();
+                const scale = e.deltaY < 0 ? 1.1 : 0.9;
+                Canvas.zoom *= scale;
+                // Clampar zoom
+                if (Canvas.zoom < 0.2) Canvas.zoom = 0.2;
+                if (Canvas.zoom > 5) Canvas.zoom = 5;
+            },
+
+            dblclick: (e) => {
+                const world = Canvas.toWorld(e.clientX, e.clientY);
+                const hit = App.hitTest(world.x, world.y);
+                if (hit && hit.type === 'node') {
+                    const n = App.nodes.find(n => n.id === hit.id);
+                    UI.openModal(n);
+                }
+            }
+        };
+
+        // ============================================
+        // 5. IMPORTAR / EXPORTAR (COMPATIBILIDAD)
+        // ============================================
         const IO = {
-            saveCurrent: () => {
-                const tab = Tabs.getActive();
-                const data = {
-                    title: tab.name,
-                    nodes: tab.nodes,
-                    connections: tab.connections,
-                    version: "V10"
-                };
+            saveHTML: () => {
+                const data = { nodes: App.nodes, links: App.links, version: 'V12' };
+                // Limpiar objetos pesados antes de guardar
+                const cleanNodes = App.nodes.map(n => {
+                    const { imgObj, ...rest } = n;
+                    return rest;
+                });
                 
-                // Empaquetar en HTML auto-contenido
-                const html = IO.generateHTML(data);
+                const html = document.documentElement.outerHTML.replace('</body>', 
+                    `<script>window.initialData = ${JSON.stringify({nodes: cleanNodes, links: App.links})};<\/script></body>`);
+                
                 const blob = new Blob([html], {type: 'text/html'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `${tab.name.replace(/\s+/g,'_')}_V10.html`;
+                a.download = `Mapa_V12_${Date.now()}.html`;
                 a.click();
             },
 
-            handleFiles: (input) => {
-                const files = input.files;
-                if (!files.length) return;
+            saveImage: () => {
+                const link = document.createElement('a');
+                link.download = 'mapa.png';
+                link.href = Canvas.elm.toDataURL();
+                link.click();
+            },
 
-                Array.from(files).forEach(file => {
+            handleFiles: (input) => {
+                Array.from(input.files).forEach(file => {
                     const reader = new FileReader();
-                    reader.onload = (e) => IO.parseContent(e.target.result, file.name);
+                    reader.onload = (e) => IO.parse(e.target.result);
                     reader.readAsText(file);
                 });
-                input.value = ''; // Reset
             },
 
-            parseContent: (content, filename) => {
-                try {
-                    let extracted = null;
-
-                    // 1. Detectar V10/V9 (window.initialData)
-                    const v10match = content.match(/window\.initialData\s*=\s*(\{.*?\});/s);
-                    if (v10match) {
-                        extracted = JSON.parse(v10match[1]);
-                    } 
-                    // 2. Detectar V5/V8 (const nodes = [...])
-                    else {
-                        const nodesMatch = content.match(/const nodes = (\[.*?\]);/s);
-                        const connMatch = content.match(/const connections = (\[.*?\]);/s);
-                        if (nodesMatch) {
-                            extracted = {
-                                title: filename.replace('.html',''),
-                                nodes: JSON.parse(nodesMatch[1]),
-                                connections: connMatch ? JSON.parse(connMatch[1]) : []
-                            };
-                            // Normalizar datos antiguos
-                            extracted.nodes.forEach(n => {
-                                if(!n.bgColor) n.bgColor = n.color || '#ffffff'; // V5 usaba .color
-                                if(!n.textColor) n.textColor = '#000000';
-                                if(!n.content) n.content = n.description || '';
-                            });
-                        }
+            parse: (content) => {
+                let data = null;
+                
+                // 1. Buscar window.initialData (V9, V10, V11, V12)
+                const vMatch = content.match(/window\.initialData\s*=\s*(\{.*?\});/);
+                if (vMatch) {
+                    data = JSON.parse(vMatch[1]);
+                    // Puede venir anidado en tabs (V10) o plano
+                    if (data.nodes) IO.merge(data.nodes, data.links || data.connections);
+                    else if (data.tabs) data.tabs.forEach(t => IO.merge(t.nodes, t.connections));
+                } 
+                // 2. Buscar formato antiguo (V5, V8)
+                else {
+                    const nMatch = content.match(/const nodes = (\[.*?\]);/s);
+                    const lMatch = content.match(/const connections = (\[.*?\]);/s);
+                    if (nMatch) {
+                        const nodes = JSON.parse(nMatch[1]);
+                        const links = lMatch ? JSON.parse(lMatch[1]) : [];
+                        IO.merge(nodes, links);
                     }
-
-                    if (extracted) {
-                        Tabs.create(extracted);
-                        UI.toast(`Importado: ${extracted.title || filename}`);
-                    } else {
-                        alert(`No se pudieron encontrar datos de mapa en ${filename}`);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al leer el archivo. Formato desconocido.");
                 }
             },
 
-            generateHTML: (data) => {
-                // Clonamos el código actual
-                const html = document.documentElement.outerHTML;
-                // Inyectamos los datos en un script al final
-                const injection = `<script>window.initialData = ${JSON.stringify(data)}; window.isAutoLoad = true;<\/script>`;
-                return `<!DOCTYPE html>${html.replace('</body>', injection + '</body>')}`;
-            },
-            
-            exportImage: () => {
-                const wrapper = document.getElementById('canvasLayer');
-                // Temporally reset transform to capture full quality
-                const tab = Tabs.getActive();
-                const oldTransform = wrapper.style.transform;
-                wrapper.style.transform = `scale(1)`;
+            merge: (newNodes, newLinks) => {
+                if (!newNodes) return;
                 
-                html2canvas(wrapper, { backgroundColor: '#f4f4f7' }).then(canvas => {
-                    const a = document.createElement('a');
-                    a.download = 'mapa.png';
-                    a.href = canvas.toDataURL();
-                    a.click();
-                    wrapper.style.transform = oldTransform;
+                // Normalizar datos antiguos a V12
+                newNodes.forEach(n => {
+                    // Mover un poco para que no se superpongan si importas lo mismo
+                    const offset = 20;
+                    App.addNode(n.x + offset, n.y + offset, {
+                        id: n.id, // Mantener ID para conexiones
+                        title: n.title,
+                        subtitle: n.subtitle,
+                        color: n.bgColor || n.color,
+                        textColor: n.textColor,
+                        image: n.image
+                    });
                 });
+
+                if (newLinks) {
+                    newLinks.forEach(l => {
+                        App.addLink(l.from || l.source, l.to || l.target);
+                    });
+                }
+                
+                UI.toast("Importación completada");
             }
         };
 
-        // --- 7. UI HELPERS ---
+        // ============================================
+        // 6. UI HELPERS
+        // ============================================
         const UI = {
-            toast: (msg) => {
-                const t = document.getElementById('toast');
-                t.innerText = msg;
-                t.style.opacity = 1;
-                setTimeout(() => t.style.opacity = 0, 2000);
-            },
-            showModal: () => document.getElementById('editorModal').style.display = 'flex',
-            closeModal: () => document.getElementById('editorModal').style.display = 'none',
-            
-            handleImagePreview: (input) => {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.getElementById('editImagePreview');
-                        img.src = e.target.result;
-                        img.style.display = 'block';
-                    };
-                    reader.readAsDataURL(input.files[0]);
+            openModal: (node) => {
+                document.getElementById('e-id').value = node.id;
+                document.getElementById('e-title').value = node.title;
+                document.getElementById('e-subtitle').value = node.subtitle;
+                document.getElementById('e-bg').value = node.color;
+                document.getElementById('e-text').value = node.textColor;
+                document.getElementById('e-size').value = node.textSize;
+                
+                const img = document.getElementById('preview-img');
+                if (node.image) {
+                    img.src = node.image;
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                    img.src = "";
                 }
+                
+                document.getElementById('modal').style.display = 'flex';
+            },
+            closeModal: () => {
+                document.getElementById('modal').style.display = 'none';
+            },
+            
+            // Manejo de imagen en modal
+            setupImageInput: () => {
+                document.getElementById('e-file').addEventListener('change', (e) => {
+                    const f = e.target.files[0];
+                    if (f) {
+                        const r = new FileReader();
+                        r.onload = (ev) => {
+                            const img = document.getElementById('preview-img');
+                            img.src = ev.target.result;
+                            img.style.display = 'block';
+                        };
+                        r.readAsDataURL(f);
+                    }
+                });
             },
             removeImage: () => {
-                const img = document.getElementById('editImagePreview');
-                img.src = '';
+                const img = document.getElementById('preview-img');
+                img.src = "";
                 img.style.display = 'none';
-                document.getElementById('editImageInput').value = '';
+                document.getElementById('e-file').value = "";
+            },
+            toast: (msg) => {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.style.opacity = 1;
+                setTimeout(() => t.style.opacity = 0, 2000);
             }
         };
 
-        // --- BOOTSTRAP ---
+        // ARRANCAR
         window.onload = () => {
             App.init();
-            // Auto carga si abrimos un archivo guardado
-            if (window.isAutoLoad && window.initialData) {
-                // Sobrescribir la pestaña inicial vacía con los datos cargados
-                State.tabs = [];
-                Tabs.create(window.initialData);
+            UI.setupImageInput();
+            
+            // Auto-carga (si abres el archivo guardado)
+            if (window.initialData) {
+                IO.merge(window.initialData.nodes, window.initialData.links);
             }
         };
 
