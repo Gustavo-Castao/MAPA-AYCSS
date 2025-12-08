@@ -3,757 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa V12 - Motor Canvas (Estable)</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Creador de Mapas Conceptuales Pro</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        /* RESET TOTAL */
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; outline: none; }
-        body { overflow: hidden; background: #222; color: #eee; font-family: sans-serif; height: 100vh; display: flex; }
+        :root {
+            --bg-color: #f0f2f5;
+            --panel-bg: #ffffff;
+            --border-color: #ccc;
+            --accent: #4a90e2;
+        }
 
-        /* --- UI LAYOUT --- */
-        .toolbar {
-            width: 50px; background: #333; border-right: 1px solid #444;
-            display: flex; flex-direction: column; align-items: center; padding-top: 10px; z-index: 10;
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; background: var(--bg-color); }
+        
+        /* UI Layout */
+        #toolbar {
+            position: fixed; top: 10px; left: 10px; width: 260px;
+            background: var(--panel-bg); padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 10px;
         }
         
-        .tool-btn {
-            width: 36px; height: 36px; margin-bottom: 10px; border-radius: 4px; border: none;
-            background: transparent; color: #aaa; font-size: 16px; cursor: pointer; transition: 0.2s;
-        }
-        .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .tool-btn.active { background: #00d2ff; color: #000; }
-
-        .workspace { flex: 1; position: relative; cursor: default; }
+        h3 { margin: 0 0 10px 0; font-size: 16px; color: #333; }
         
-        /* El Canvas ocupa todo */
-        canvas { display: block; width: 100%; height: 100%; }
-
-        /* --- BOTONES FLOTANTES SUPERIORES --- */
-        .top-bar {
-            position: absolute; top: 10px; right: 20px; display: flex; gap: 10px;
-        }
-        .btn {
-            padding: 8px 15px; border-radius: 4px; border: 1px solid #555; background: #333; color: #eee;
-            cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px;
-        }
-        .btn:hover { background: #444; }
-        .btn-primary { background: #00d2ff; color: #000; border: none; font-weight: bold; }
-        .btn-primary:hover { background: #00b8e6; }
-
-        /* --- MODAL EDITOR (HTML SOBRE CANVAS) --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
-            display: none; justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal {
-            background: #2a2a2a; padding: 20px; border-radius: 8px; width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #444;
-        }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
-        input[type="text"], textarea, select {
-            width: 100%; padding: 8px; background: #111; border: 1px solid #444; color: white; border-radius: 4px;
-        }
-        input[type="color"] { width: 100%; height: 35px; border: none; background: transparent; cursor: pointer; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; }
+        label { font-size: 12px; color: #666; font-weight: bold; }
+        input[type="color"] { width: 100%; height: 30px; border: none; cursor: pointer; }
+        input[type="range"] { width: 100%; cursor: pointer; }
         
-        .row { display: flex; gap: 10px; }
-        
-        /* Imagen previa en modal */
-        #preview-img { max-width: 100%; height: 100px; object-fit: contain; border: 1px dashed #444; margin-top: 5px; display: none; background: #000; }
-
-        /* NOTIFICACION */
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #00d2ff; color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold;
-            pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        button {
+            padding: 10px; border: none; border-radius: 4px; cursor: pointer;
+            font-weight: bold; transition: 0.2s;
         }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #357abd; }
+        .btn-secondary { background: #eee; color: #333; }
+        .btn-danger { background: #e74c3c; color: white; }
+        
+        /* Canvas Area */
+        #workspace {
+            width: 100vw; height: 100vh; position: relative;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* SVG Layer for Lines */
+        #connections-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* Allows clicking through to nodes */
+            z-index: 0;
+        }
+
+        /* Nodes */
+        .node {
+            position: absolute; min-width: 100px; min-height: 50px;
+            padding: 10px; border: 1px solid #aaa; border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: move; user-select: none; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; resize: both; overflow: auto;
+        }
+        
+        .node:focus, .node.selected {
+            outline: 2px solid var(--accent);
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+            z-index: 20;
+        }
+
+        .node-content {
+            width: 100%; height: 100%; outline: none; cursor: text;
+        }
+
+        /* Mode Indicators */
+        #mode-indicator {
+            margin-top: 10px; font-size: 12px; color: #d35400; font-weight: bold; display: none;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
-        <button class="tool-btn active" id="t-select" onclick="App.setTool('select')" title="Seleccionar (V)"><i class="fas fa-mouse-pointer"></i></button>
-        <button class="tool-btn" id="t-node" onclick="App.setTool('node')" title="Crear Nodo (N)"><i class="fas fa-plus-square"></i></button>
-        <button class="tool-btn" id="t-connect" onclick="App.setTool('connect')" title="Conectar (C)"><i class="fas fa-bezier-curve"></i></button>
-        <div style="height:1px; width:30px; background:#555; margin:10px 0;"></div>
-        <button class="tool-btn" onclick="App.deleteSelection()" title="Borrar (Supr)"><i class="fas fa-trash"></i></button>
-        <button class="tool-btn" onclick="View.reset()" title="Reset Vista"><i class="fas fa-compress"></i></button>
-    </div>
-
-    <div class="workspace">
-        <canvas id="canvas"></canvas>
-
-        <div class="top-bar">
-            <input type="file" id="fileInput" hidden multiple onchange="IO.handleFiles(this)">
-            <button class="btn" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-folder-open"></i> Importar / Unificar
-            </button>
-            <button class="btn btn-primary" onclick="IO.saveHTML()">
-                <i class="fas fa-save"></i> Guardar HTML
-            </button>
-            <button class="btn" onclick="IO.saveImage()">
-                <i class="fas fa-image"></i> PNG
-            </button>
+    <div id="toolbar">
+        <h3>Propiedades</h3>
+        
+        <div class="control-group">
+            <button onclick="createNode()" class="btn-primary">+ Nuevo Nodo</button>
+            <button onclick="toggleLinkMode()" id="btn-link" class="btn-secondary">🔗 Vincular Nodos</button>
+            <div id="mode-indicator">Modo Vincular: Selecciona 2 nodos</div>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="modal">
-        <div class="modal">
-            <h3 style="margin-top:0">Editar Nodo</h3>
-            <input type="hidden" id="e-id">
-            
-            <div class="form-group">
-                <label>Título</label>
-                <input type="text" id="e-title">
-            </div>
-            <div class="form-group">
-                <label>Subtítulo</label>
-                <input type="text" id="e-subtitle">
-            </div>
-            
-            <div class="row">
-                <div class="form-group" style="flex:1">
-                    <label>Fondo</label>
-                    <input type="color" id="e-bg">
-                </div>
-                <div class="form-group" style="flex:1">
-                    <label>Texto</label>
-                    <input type="color" id="e-text">
-                </div>
-                <div class="form-group" style="flex:1">
-                    <label>Tamaño</label>
-                    <select id="e-size">
-                        <option value="12">Pequeño</option>
-                        <option value="14">Normal</option>
-                        <option value="18">Grande</option>
-                        <option value="24">Título</option>
-                    </select>
-                </div>
-            </div>
+        <hr style="width:100%; border:0; border-top:1px solid #eee;">
 
-            <div class="form-group">
-                <label>Imagen</label>
-                <input type="file" id="e-file" accept="image/*">
-                <img id="preview-img">
-                <button class="btn" style="width:100%; margin-top:5px; justify-content:center; background:#444" onclick="UI.removeImage()">Quitar Imagen</button>
-            </div>
-
-            <div class="row" style="justify-content: flex-end; margin-top:15px; padding-top:10px; border-top:1px solid #444">
-                <button class="btn" onclick="UI.closeModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="App.saveEdit()">Guardar</button>
-            </div>
+        <div class="control-group">
+            <label>Color Fondo</label>
+            <input type="color" id="bg-color" value="#ffffff" onchange="updateSelectedNode('bg')">
         </div>
+        <div class="control-group">
+            <label>Color Texto</label>
+            <input type="color" id="text-color" value="#000000" onchange="updateSelectedNode('color')">
+        </div>
+        <div class="control-group">
+            <label>Tamaño Texto</label>
+            <input type="range" id="font-size" min="10" max="40" value="16" oninput="updateSelectedNode('size')">
+        </div>
+
+        <button onclick="deleteSelected()" class="btn-danger" style="margin-top:10px;">🗑 Eliminar Seleccionado</button>
+        
+        <hr style="width:100%; border:0; border-top:1px solid #eee;">
+        
+        <h3>Exportar</h3>
+        <button onclick="exportPNG()" class="btn-secondary">📷 Guardar PNG</button>
+        <button onclick="exportHTML()" class="btn-secondary">💾 Guardar HTML</button>
     </div>
 
-    <div id="toast" class="toast">Mensaje</div>
+    <div id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <svg id="connections-layer"></svg>
+        </div>
 
     <script>
-        // ============================================
-        // 1. MOTOR GRÁFICO (CANVAS ENGINE)
-        // ============================================
-        const Canvas = {
-            elm: document.getElementById('canvas'),
-            ctx: document.getElementById('canvas').getContext('2d'),
-            width: 0,
-            height: 0,
+        // --- ESTADO DE LA APLICACIÓN ---
+        let nodes = [];
+        let connections = [];
+        let selectedNodeId = null;
+        let isLinkMode = false;
+        let linkSourceId = null;
+
+        const workspace = document.getElementById('workspace');
+        const svgLayer = document.getElementById('connections-layer');
+
+        // --- GESTIÓN DE NODOS ---
+
+        // Generador de ID robusto para evitar conflictos
+        function generateId() {
+            return 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function createNode(loadData = null) {
+            const id = loadData ? loadData.id : generateId();
+            const x = loadData ? loadData.x : 300 + (nodes.length * 20);
+            const y = loadData ? loadData.y : 100 + (nodes.length * 20);
+            const text = loadData ? loadData.text : "Nuevo Concepto";
+            const style = loadData ? loadData.style : { bg: '#ffffff', color: '#000000', size: '16px' };
+
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.id = id;
+            node.style.left = x + 'px';
+            node.style.top = y + 'px';
+            node.style.backgroundColor = style.bg;
+            node.style.color = style.color;
+            node.style.fontSize = style.size;
+
+            // Contenido editable
+            const content = document.createElement('div');
+            content.className = 'node-content';
+            content.contentEditable = true;
+            content.innerText = text;
+            // Prevenir que el arrastre se active al intentar seleccionar texto
+            content.onmousedown = (e) => e.stopPropagation(); 
+            node.appendChild(content);
+
+            // Eventos del nodo
+            node.onmousedown = (e) => startDrag(e, node);
+            node.onclick = (e) => selectNode(e, node);
+
+            workspace.appendChild(node);
             
-            // Estado de la Vista (Pan/Zoom)
-            offset: { x: 0, y: 0 },
-            zoom: 1,
-
-            init: () => {
-                window.addEventListener('resize', Canvas.resize);
-                Canvas.resize();
-                // Bucle de renderizado (Game Loop)
-                requestAnimationFrame(Canvas.loop);
-            },
-
-            resize: () => {
-                const parent = Canvas.elm.parentElement;
-                Canvas.width = parent.clientWidth;
-                Canvas.height = parent.clientHeight;
-                Canvas.elm.width = Canvas.width;
-                Canvas.elm.height = Canvas.height;
-                Canvas.draw(); // Redibujar forzado
-            },
-
-            // Sistema de Coordenadas: Pantalla -> Mundo
-            toWorld: (sx, sy) => {
-                return {
-                    x: (sx - Canvas.offset.x) / Canvas.zoom,
-                    y: (sy - Canvas.offset.y) / Canvas.zoom
-                };
-            },
-
-            loop: () => {
-                Canvas.draw();
-                requestAnimationFrame(Canvas.loop);
-            },
-
-            draw: () => {
-                const ctx = Canvas.ctx;
-                
-                // Limpiar
-                ctx.fillStyle = '#f0f0f3'; // Color de fondo "papel"
-                ctx.fillRect(0, 0, Canvas.width, Canvas.height);
-
-                ctx.save();
-                
-                // Aplicar Transformaciones de Vista
-                ctx.translate(Canvas.offset.x, Canvas.offset.y);
-                ctx.scale(Canvas.zoom, Canvas.zoom);
-
-                // 1. Grid Infinito
-                View.drawGrid(ctx);
-
-                // 2. Conexiones (Dibujar primero para que queden detrás)
-                App.links.forEach(link => View.drawLink(ctx, link));
-
-                // 3. Línea temporal (conectando)
-                if (App.tool === 'connect' && App.dragNode) {
-                    View.drawTempLine(ctx);
-                }
-
-                // 4. Nodos
-                App.nodes.forEach(node => View.drawNode(ctx, node));
-
-                ctx.restore();
+            // Guardar en array lógico
+            if(!loadData) {
+                nodes.push({ id, x, y, text, style });
             }
-        };
+            selectNode(null, node);
+        }
 
-        // ============================================
-        // 2. LÓGICA DE DIBUJADO (VIEW)
-        // ============================================
-        const View = {
-            drawGrid: (ctx) => {
-                // Optimización: Dibujar solo en el área visible
-                const gridSize = 40;
-                // Calculamos límites visibles en coordenadas mundo
-                const startX = Math.floor(-Canvas.offset.x / Canvas.zoom / gridSize) * gridSize;
-                const startY = Math.floor(-Canvas.offset.y / Canvas.zoom / gridSize) * gridSize;
-                const endX = startX + (Canvas.width / Canvas.zoom) + gridSize;
-                const endY = startY + (Canvas.height / Canvas.zoom) + gridSize;
+        // --- SELECCIÓN Y EDICIÓN ---
 
-                ctx.beginPath();
-                ctx.strokeStyle = '#ddd';
-                ctx.lineWidth = 1;
-
-                for (let x = startX; x < endX; x += gridSize) {
-                    ctx.moveTo(x, startY); ctx.lineTo(x, endY);
-                }
-                for (let y = startY; y < endY; y += gridSize) {
-                    ctx.moveTo(startX, y); ctx.lineTo(endX, y);
-                }
-                ctx.stroke();
-            },
-
-            drawNode: (ctx, node) => {
-                // Sombra
-                ctx.shadowColor = 'rgba(0,0,0,0.2)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetY = 5;
-
-                // Rectángulo Base
-                ctx.fillStyle = node.color;
-                ctx.beginPath();
-                ctx.roundRect(node.x, node.y, node.w, node.h, 6);
-                ctx.fill();
-
-                // Borde (Selección)
-                ctx.shadowColor = 'transparent'; // Reset sombra
-                if (node.selected) {
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = '#00d2ff';
-                    ctx.stroke();
-                } else {
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = '#999';
-                    ctx.stroke();
-                }
-
-                // Contenido (Texto e Imagen)
-                ctx.fillStyle = node.textColor;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const cx = node.x + node.w / 2;
-                let cy = node.y + node.h / 2;
-
-                // Imagen
-                if (node.imgObj) {
-                    // Si hay imagen, el texto baja
-                    const imgH = 40; 
-                    const ratio = node.imgObj.width / node.imgObj.height;
-                    const imgW = imgH * ratio;
-                    
-                    // Dibujar imagen centrada arriba
-                    try {
-                        ctx.drawImage(node.imgObj, cx - imgW/2, node.y + 10, imgW, imgH);
-                        cy += 20; // Bajar el texto
-                    } catch(e) {}
-                }
-
-                // Título
-                ctx.font = `bold ${node.textSize}px sans-serif`;
-                ctx.fillText(node.title, cx, cy - 8);
-
-                // Subtítulo
-                if (node.subtitle) {
-                    ctx.font = `italic ${parseInt(node.textSize) - 3}px sans-serif`;
-                    ctx.fillStyle = '#666';
-                    ctx.fillText(node.subtitle, cx, cy + 8);
-                }
-            },
-
-            drawLink: (ctx, link) => {
-                const n1 = App.nodes.find(n => n.id === link.from);
-                const n2 = App.nodes.find(n => n.id === link.to);
-                if (!n1 || !n2) return;
-
-                const x1 = n1.x + n1.w / 2;
-                const y1 = n1.y + n1.h / 2;
-                const x2 = n2.x + n2.w / 2;
-                const y2 = n2.y + n2.h / 2;
-
-                ctx.beginPath();
-                ctx.strokeStyle = link.selected ? '#ff4757' : '#888';
-                ctx.lineWidth = link.selected ? 3 : 2;
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-
-                // Flecha simple
-                const angle = Math.atan2(y2 - y1, x2 - x1);
-                ctx.beginPath();
-                ctx.fillStyle = link.selected ? '#ff4757' : '#888';
-                ctx.translate(x2, y2);
-                ctx.rotate(angle);
-                ctx.moveTo(-10, -5);
-                ctx.lineTo(0, 0);
-                ctx.moveTo(-10, 5);
-                ctx.lineTo(0, 0);
-                // Restaurar matriz
-                ctx.rotate(-angle);
-                ctx.translate(-x2, -y2);
-                ctx.stroke();
-            },
-
-            drawTempLine: (ctx) => {
-                const n1 = App.nodes.find(n => n.id === App.dragNode);
-                if (!n1) return;
-                
-                const x1 = n1.x + n1.w / 2;
-                const y1 = n1.y + n1.h / 2;
-                
-                ctx.beginPath();
-                ctx.strokeStyle = '#00d2ff';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(App.mouseWorld.x, App.mouseWorld.y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            },
-
-            reset: () => {
-                Canvas.offset = {x: 0, y: 0};
-                Canvas.zoom = 1;
-            }
-        };
-
-        // ============================================
-        // 3. LÓGICA DE APLICACIÓN (APP STATE)
-        // ============================================
-        const App = {
-            nodes: [],
-            links: [],
-            tool: 'select', // select, node, connect
+        function selectNode(e, node) {
+            if(e) e.stopPropagation();
             
-            // Estado Runtime
-            isDragging: false,
-            dragType: null, // 'node', 'canvas'
-            dragNode: null, // ID del nodo siendo arrastrado o fuente de conexión
-            startMouse: { x: 0, y: 0 }, // Para calcular delta del drag
-            mouseWorld: { x: 0, y: 0 }, // Posición actual mouse mundo
+            // Si estamos en modo vincular
+            if (isLinkMode) {
+                handleLinkClick(node.id);
+                return;
+            }
 
-            init: () => {
-                Canvas.init();
-                
-                // Eventos Mouse/Touch unificados
-                const c = Canvas.elm;
-                c.addEventListener('mousedown', Input.down);
-                c.addEventListener('mousemove', Input.move);
-                window.addEventListener('mouseup', Input.up);
-                c.addEventListener('wheel', Input.wheel);
-                c.addEventListener('dblclick', Input.dblclick);
+            // UI Feedback
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+            node.classList.add('selected');
+            selectedNodeId = node.id;
 
-                // Teclado
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'Delete') App.deleteSelection();
-                });
-            },
+            // Cargar propiedades en el panel
+            const nodeData = nodes.find(n => n.id === node.id);
+            if(nodeData) {
+                document.getElementById('bg-color').value = rgbToHex(node.style.backgroundColor);
+                document.getElementById('text-color').value = rgbToHex(node.style.color);
+                document.getElementById('font-size').value = parseInt(node.style.fontSize);
+            }
+        }
 
-            setTool: (t) => {
-                App.tool = t;
-                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('t-' + t).classList.add('active');
-                
-                // Reset estados
-                App.nodes.forEach(n => n.selected = false);
-                App.links.forEach(l => l.selected = false);
-                App.dragNode = null;
-                
-                UI.toast(`Herramienta: ${t.toUpperCase()}`);
-            },
+        function updateSelectedNode(prop) {
+            if (!selectedNodeId) return;
+            const nodeEl = document.getElementById(selectedNodeId);
+            const nodeData = nodes.find(n => n.id === selectedNodeId);
 
-            addNode: (x, y, data = null) => {
-                const node = {
-                    id: data ? data.id : 'n_' + Date.now(),
-                    x: x, y: y,
-                    w: 160, h: 80,
-                    title: data ? data.title : 'Nuevo Nodo',
-                    subtitle: data ? data.subtitle : '',
-                    color: data ? (data.color || data.bgColor || '#ffffff') : '#ffffff',
-                    textColor: data ? data.textColor : '#000000',
-                    textSize: data ? (data.textSize || 14) : 14,
-                    image: data ? data.image : null,
-                    imgObj: null, // Objeto Image() para canvas
-                    selected: false
-                };
-                
-                // Precargar imagen si existe
-                if (node.image) {
-                    const img = new Image();
-                    img.src = node.image;
-                    node.imgObj = img;
+            if (prop === 'bg') {
+                const val = document.getElementById('bg-color').value;
+                nodeEl.style.backgroundColor = val;
+                nodeData.style.bg = val;
+            } else if (prop === 'color') {
+                const val = document.getElementById('text-color').value;
+                nodeEl.style.color = val;
+                nodeData.style.color = val;
+            } else if (prop === 'size') {
+                const val = document.getElementById('font-size').value + 'px';
+                nodeEl.style.fontSize = val;
+                nodeData.style.size = val;
+            }
+        }
+
+        function deleteSelected() {
+            if (!selectedNodeId) return;
+            
+            // Borrar conexiones asociadas
+            connections = connections.filter(c => c.from !== selectedNodeId && c.to !== selectedNodeId);
+            
+            // Borrar nodo del DOM y Array
+            document.getElementById(selectedNodeId).remove();
+            nodes = nodes.filter(n => n.id !== selectedNodeId);
+            
+            selectedNodeId = null;
+            renderConnections();
+        }
+
+        // --- SISTEMA DE VINCULACIÓN ---
+
+        function toggleLinkMode() {
+            isLinkMode = !isLinkMode;
+            linkSourceId = null;
+            const btn = document.getElementById('btn-link');
+            const indicator = document.getElementById('mode-indicator');
+            
+            if (isLinkMode) {
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-secondary');
+                indicator.style.display = 'block';
+                indicator.innerText = "Selecciona el nodo ORIGEN";
+            } else {
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-primary');
+                indicator.style.display = 'none';
+            }
+        }
+
+        function handleLinkClick(id) {
+            const indicator = document.getElementById('mode-indicator');
+            
+            if (!linkSourceId) {
+                linkSourceId = id;
+                indicator.innerText = "Ahora selecciona el nodo DESTINO";
+                document.getElementById(id).style.borderColor = "blue";
+            } else {
+                if (linkSourceId !== id) {
+                    // Crear conexión
+                    connections.push({ from: linkSourceId, to: id });
+                    renderConnections();
                 }
+                // Resetear estado
+                document.getElementById(linkSourceId).style.borderColor = "#aaa";
+                toggleLinkMode(); // Salir del modo vincular
+            }
+        }
+
+        // --- RENDERIZADO DE LÍNEAS SVG ---
+
+        function renderConnections() {
+            svgLayer.innerHTML = ''; // Limpiar SVG
+            
+            connections.forEach(conn => {
+                const fromNode = document.getElementById(conn.from);
+                const toNode = document.getElementById(conn.to);
                 
-                App.nodes.push(node);
-                return node;
-            },
+                if (!fromNode || !toNode) return;
 
-            addLink: (from, to) => {
-                if (from === to) return;
-                const exists = App.links.find(l => l.from === from && l.to === to);
-                if (!exists) {
-                    App.links.push({ from, to, selected: false });
-                }
-            },
-
-            // Hit Test: ¿Qué toqué?
-            hitTest: (x, y) => {
-                // Revisar nodos (orden inverso para seleccionar el de arriba)
-                for (let i = App.nodes.length - 1; i >= 0; i--) {
-                    const n = App.nodes[i];
-                    if (x >= n.x && x <= n.x + n.w && y >= n.y && y <= n.y + n.h) {
-                        return { type: 'node', id: n.id };
-                    }
-                }
-                return null;
-            },
-
-            deleteSelection: () => {
-                const selNodes = App.nodes.filter(n => n.selected);
-                const selLinks = App.links.filter(l => l.selected);
-
-                if (selNodes.length > 0) {
-                    if (!confirm("¿Borrar nodos seleccionados?")) return;
-                    // Borrar nodos
-                    App.nodes = App.nodes.filter(n => !n.selected);
-                    // Borrar conexiones huérfanas
-                    const nodeIds = selNodes.map(n => n.id);
-                    App.links = App.links.filter(l => !nodeIds.includes(l.from) && !nodeIds.includes(l.to));
-                }
+                // Calcular centros
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
                 
-                if (selLinks.length > 0) {
-                    App.links = App.links.filter(l => !l.selected);
-                }
-            },
+                // Ajustar offset por el toolbar si fuera necesario, pero como es position absolute en body:
+                const fromX = fromNode.offsetLeft + fromNode.offsetWidth / 2;
+                const fromY = fromNode.offsetTop + fromNode.offsetHeight / 2;
+                const toX = toNode.offsetLeft + toNode.offsetWidth / 2;
+                const toY = toNode.offsetTop + toNode.offsetHeight / 2;
 
-            saveEdit: () => {
-                const id = document.getElementById('e-id').value;
-                const node = App.nodes.find(n => n.id === id);
-                if (node) {
-                    node.title = document.getElementById('e-title').value;
-                    node.subtitle = document.getElementById('e-subtitle').value;
-                    node.color = document.getElementById('e-bg').value;
-                    node.textColor = document.getElementById('e-text').value;
-                    node.textSize = parseInt(document.getElementById('e-size').value);
-                    
-                    const imgPreview = document.getElementById('preview-img');
-                    if (imgPreview.src && imgPreview.style.display !== 'none') {
-                        node.image = imgPreview.src;
-                        const img = new Image();
-                        img.src = node.image;
-                        node.imgObj = img;
-                    } else {
-                        node.image = null;
-                        node.imgObj = null;
-                    }
-                    UI.closeModal();
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', fromX);
+                line.setAttribute('y1', fromY);
+                line.setAttribute('x2', toX);
+                line.setAttribute('y2', toY);
+                line.setAttribute('stroke', '#555');
+                line.setAttribute('stroke-width', '2');
+                
+                svgLayer.appendChild(line);
+            });
+        }
+
+        // --- DRAG AND DROP (ARRASTRE) ---
+        
+        let activeDrag = null;
+        let initialX, initialY, initialLeft, initialTop;
+
+        function startDrag(e, node) {
+            if(e.target.contentEditable === "true") return; // Permitir edición de texto
+            
+            activeDrag = node;
+            initialX = e.clientX;
+            initialY = e.clientY;
+            initialLeft = node.offsetLeft;
+            initialTop = node.offsetTop;
+            
+            selectNode(e, node);
+            
+            document.onmousemove = drag;
+            document.onmouseup = endDrag;
+        }
+
+        function drag(e) {
+            if (!activeDrag) return;
+            e.preventDefault();
+            
+            const dx = e.clientX - initialX;
+            const dy = e.clientY - initialY;
+            
+            activeDrag.style.left = (initialLeft + dx) + 'px';
+            activeDrag.style.top = (initialTop + dy) + 'px';
+            
+            renderConnections(); // Actualizar líneas en tiempo real
+        }
+
+        function endDrag() {
+            if (activeDrag) {
+                // Actualizar datos del array lógico
+                const nodeData = nodes.find(n => n.id === activeDrag.id);
+                if(nodeData) {
+                    nodeData.x = activeDrag.offsetLeft;
+                    nodeData.y = activeDrag.offsetTop;
                 }
             }
-        };
+            activeDrag = null;
+            document.onmousemove = null;
+            document.onmouseup = null;
+        }
 
-        // ============================================
-        // 4. INPUT HANDLING (EVENTOS)
-        // ============================================
-        const Input = {
-            down: (e) => {
-                const world = Canvas.toWorld(e.clientX, e.clientY);
-                const hit = App.hitTest(world.x, world.y);
+        // --- EXPORTACIÓN ---
 
-                if (App.tool === 'node') {
-                    // Crear nodo
-                    App.addNode(world.x - 80, world.y - 40);
-                    App.setTool('select');
-                    return;
-                }
-
-                if (hit && hit.type === 'node') {
-                    if (App.tool === 'select') {
-                        // Seleccionar
-                        App.isDragging = true;
-                        App.dragType = 'node';
-                        App.dragNode = hit.id;
-                        App.startMouse = world;
-                        
-                        // Lógica selección única
-                        App.nodes.forEach(n => n.selected = false);
-                        App.links.forEach(l => l.selected = false);
-                        const n = App.nodes.find(n => n.id === hit.id);
-                        n.selected = true;
-
-                    } else if (App.tool === 'connect') {
-                        App.isDragging = true;
-                        App.dragType = 'connect';
-                        App.dragNode = hit.id; // Origen
-                    }
-                } else {
-                    // Clic en fondo -> Mover Canvas
-                    App.isDragging = true;
-                    App.dragType = 'canvas';
-                    App.startMouse = { x: e.clientX, y: e.clientY }; // Usar coords pantalla
-                    
-                    // Deseleccionar
-                    App.nodes.forEach(n => n.selected = false);
-                }
-            },
-
-            move: (e) => {
-                // Actualizar puntero mundo siempre
-                App.mouseWorld = Canvas.toWorld(e.clientX, e.clientY);
-
-                if (!App.isDragging) return;
-
-                if (App.dragType === 'canvas') {
-                    const dx = e.clientX - App.startMouse.x;
-                    const dy = e.clientY - App.startMouse.y;
-                    Canvas.offset.x += dx;
-                    Canvas.offset.y += dy;
-                    App.startMouse = { x: e.clientX, y: e.clientY };
-                } 
-                else if (App.dragType === 'node') {
-                    const dx = App.mouseWorld.x - App.startMouse.x;
-                    const dy = App.mouseWorld.y - App.startMouse.y;
-                    
-                    const node = App.nodes.find(n => n.id === App.dragNode);
-                    if (node) {
-                        node.x += dx;
-                        node.y += dy;
-                    }
-                    App.startMouse = App.mouseWorld;
-                }
-                // 'connect' se maneja solo en el render (línea temporal)
-            },
-
-            up: (e) => {
-                if (App.dragType === 'connect' && App.dragNode) {
-                    const hit = App.hitTest(App.mouseWorld.x, App.mouseWorld.y);
-                    if (hit && hit.type === 'node' && hit.id !== App.dragNode) {
-                        App.addLink(App.dragNode, hit.id);
-                        UI.toast("Conexión Creada");
-                    }
-                }
-                App.isDragging = false;
-                App.dragType = null;
-                App.dragNode = null;
-            },
-
-            wheel: (e) => {
-                e.preventDefault();
-                const scale = e.deltaY < 0 ? 1.1 : 0.9;
-                Canvas.zoom *= scale;
-                // Clampar zoom
-                if (Canvas.zoom < 0.2) Canvas.zoom = 0.2;
-                if (Canvas.zoom > 5) Canvas.zoom = 5;
-            },
-
-            dblclick: (e) => {
-                const world = Canvas.toWorld(e.clientX, e.clientY);
-                const hit = App.hitTest(world.x, world.y);
-                if (hit && hit.type === 'node') {
-                    const n = App.nodes.find(n => n.id === hit.id);
-                    UI.openModal(n);
-                }
-            }
-        };
-
-        // ============================================
-        // 5. IMPORTAR / EXPORTAR (COMPATIBILIDAD)
-        // ============================================
-        const IO = {
-            saveHTML: () => {
-                const data = { nodes: App.nodes, links: App.links, version: 'V12' };
-                // Limpiar objetos pesados antes de guardar
-                const cleanNodes = App.nodes.map(n => {
-                    const { imgObj, ...rest } = n;
-                    return rest;
-                });
-                
-                const html = document.documentElement.outerHTML.replace('</body>', 
-                    `<script>window.initialData = ${JSON.stringify({nodes: cleanNodes, links: App.links})};<\/script></body>`);
-                
-                const blob = new Blob([html], {type: 'text/html'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `Mapa_V12_${Date.now()}.html`;
-                a.click();
-            },
-
-            saveImage: () => {
+        function exportPNG() {
+            // Deseleccionar todo para que no salga el borde azul
+            document.querySelectorAll('.selected').forEach(n => n.classList.remove('selected'));
+            
+            // html2canvas captura el workspace
+            html2canvas(document.querySelector("#workspace")).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'mapa.png';
-                link.href = Canvas.elm.toDataURL();
+                link.download = 'mapa_mental.png';
+                link.href = canvas.toDataURL();
                 link.click();
-            },
+            });
+        }
 
-            handleFiles: (input) => {
-                Array.from(input.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => IO.parse(e.target.result);
-                    reader.readAsText(file);
-                });
-            },
+        function exportHTML() {
+            // Actualizar textos en el array de nodos antes de guardar
+            nodes.forEach(n => {
+                const el = document.getElementById(n.id);
+                if(el) n.text = el.querySelector('.node-content').innerText;
+            });
 
-            parse: (content) => {
-                let data = null;
-                
-                // 1. Buscar window.initialData (V9, V10, V11, V12)
-                const vMatch = content.match(/window\.initialData\s*=\s*(\{.*?\});/);
-                if (vMatch) {
-                    data = JSON.parse(vMatch[1]);
-                    // Puede venir anidado en tabs (V10) o plano
-                    if (data.nodes) IO.merge(data.nodes, data.links || data.connections);
-                    else if (data.tabs) data.tabs.forEach(t => IO.merge(t.nodes, t.connections));
-                } 
-                // 2. Buscar formato antiguo (V5, V8)
-                else {
-                    const nMatch = content.match(/const nodes = (\[.*?\]);/s);
-                    const lMatch = content.match(/const connections = (\[.*?\]);/s);
-                    if (nMatch) {
-                        const nodes = JSON.parse(nMatch[1]);
-                        const links = lMatch ? JSON.parse(lMatch[1]) : [];
-                        IO.merge(nodes, links);
-                    }
-                }
-            },
-
-            merge: (newNodes, newLinks) => {
-                if (!newNodes) return;
-                
-                // Normalizar datos antiguos a V12
-                newNodes.forEach(n => {
-                    // Mover un poco para que no se superpongan si importas lo mismo
-                    const offset = 20;
-                    App.addNode(n.x + offset, n.y + offset, {
-                        id: n.id, // Mantener ID para conexiones
-                        title: n.title,
-                        subtitle: n.subtitle,
-                        color: n.bgColor || n.color,
-                        textColor: n.textColor,
-                        image: n.image
-                    });
-                });
-
-                if (newLinks) {
-                    newLinks.forEach(l => {
-                        App.addLink(l.from || l.source, l.to || l.target);
-                    });
-                }
-                
-                UI.toast("Importación completada");
-            }
-        };
-
-        // ============================================
-        // 6. UI HELPERS
-        // ============================================
-        const UI = {
-            openModal: (node) => {
-                document.getElementById('e-id').value = node.id;
-                document.getElementById('e-title').value = node.title;
-                document.getElementById('e-subtitle').value = node.subtitle;
-                document.getElementById('e-bg').value = node.color;
-                document.getElementById('e-text').value = node.textColor;
-                document.getElementById('e-size').value = node.textSize;
-                
-                const img = document.getElementById('preview-img');
-                if (node.image) {
-                    img.src = node.image;
-                    img.style.display = 'block';
-                } else {
-                    img.style.display = 'none';
-                    img.src = "";
-                }
-                
-                document.getElementById('modal').style.display = 'flex';
-            },
-            closeModal: () => {
-                document.getElementById('modal').style.display = 'none';
-            },
+            const data = {
+                nodes: nodes,
+                connections: connections
+            };
             
-            // Manejo de imagen en modal
-            setupImageInput: () => {
-                document.getElementById('e-file').addEventListener('change', (e) => {
-                    const f = e.target.files[0];
-                    if (f) {
-                        const r = new FileReader();
-                        r.onload = (ev) => {
-                            const img = document.getElementById('preview-img');
-                            img.src = ev.target.result;
-                            img.style.display = 'block';
-                        };
-                        r.readAsDataURL(f);
-                    }
-                });
-            },
-            removeImage: () => {
-                const img = document.getElementById('preview-img');
-                img.src = "";
-                img.style.display = 'none';
-                document.getElementById('e-file').value = "";
-            },
-            toast: (msg) => {
-                const t = document.getElementById('toast');
-                t.textContent = msg;
-                t.style.opacity = 1;
-                setTimeout(() => t.style.opacity = 0, 2000);
-            }
-        };
-
-        // ARRANCAR
-        window.onload = () => {
-            App.init();
-            UI.setupImageInput();
+            const json = JSON.stringify(data);
+            const blob = new Blob([
+                // Guardamos el HTML completo incluyendo los datos para poder reabrirlo
+                document.documentElement.outerHTML.replace('/*DATA_PLACEHOLDER*/', `window.loadData = ${json};`)
+            ], {type: "text/html"});
             
-            // Auto-carga (si abres el archivo guardado)
-            if (window.initialData) {
-                IO.merge(window.initialData.nodes, window.initialData.links);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "mi_mapa.html";
+            link.click();
+        }
+
+        // --- INICIALIZACIÓN Y RECUPERACIÓN ---
+        
+        // Helper para colores
+        function rgbToHex(rgb) {
+            if (rgb.startsWith('#')) return rgb;
+            const rgbValues = rgb.match(/\d+/g);
+            if (!rgbValues) return '#ffffff';
+            return "#" + ((1 << 24) + (parseInt(rgbValues[0]) << 16) + (parseInt(rgbValues[1]) << 8) + parseInt(rgbValues[2])).toString(16).slice(1);
+        }
+
+        // Carga automática si el archivo se guardó a sí mismo
+        window.onload = function() {
+            // Ajustar tamaño del canvas SVG al redimensionar ventana
+            window.onresize = renderConnections;
+
+            if (window.loadData) {
+                nodes = []; // Limpiar por si acaso
+                window.loadData.nodes.forEach(n => createNode(n));
+                connections = window.loadData.connections;
+                setTimeout(renderConnections, 100);
+            } else {
+                // Nodo inicial
+                createNode();
             }
         };
 
+        /*DATA_PLACEHOLDER*/ // Aquí se inyectarán los datos al exportar HTML
     </script>
 </body>
 </html>
