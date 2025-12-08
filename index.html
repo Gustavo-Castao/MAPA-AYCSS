@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mapa Conceptual PRO - Multiarchivo</title>
+<title>Mapa Conceptual PRO</title>
 
 <style>
 *{box-sizing:border-box}
@@ -12,9 +12,11 @@ body{margin:0;font-family:Segoe UI,Arial;background:#dcdcdc}
   height:40px;background:#1e1e1e;color:white;
   display:flex;align-items:center;padding:0 10px;gap:10px
 }
+
 #tabs{
   height:35px;background:#2c2c2c;display:flex;align-items:center;overflow-x:auto
 }
+
 .tab{
   background:#3a3a3a;color:white;padding:6px 14px;margin-right:2px;
   cursor:pointer;border-top:3px solid transparent
@@ -26,7 +28,7 @@ body{margin:0;font-family:Segoe UI,Arial;background:#dcdcdc}
 #main{display:flex;height:calc(100vh - 75px)}
 
 #sidebar{
-  width:220px;background:#2b2b2b;color:white;padding:10px
+  width:220px;background:#2b2b2b;color:white;padding:10px;
   display:flex;flex-direction:column;gap:10px
 }
 
@@ -73,13 +75,14 @@ button:hover{background:#666}
 }
 </style>
 </head>
+
 <body>
 
 <div id="topbar">
   <b>🧠 MAPA CONCEPTUAL PRO</b>
   <button onclick="newFile()">Nuevo</button>
   <button onclick="openFile()">Abrir HTML</button>
-  <button onclick="saveFile()">Guardar HTML</button>
+  <button onclick="saveFile()">Exportar HTML</button>
 </div>
 
 <div id="tabs"></div>
@@ -101,18 +104,17 @@ button:hover{background:#666}
 <script>
 let files = [];
 let currentFile = null;
-
-const workspace = document.getElementById("workspace");
-const tabs = document.getElementById("tabs");
-const modeBox = document.getElementById("modeBox");
-const fileInput = document.getElementById("fileInput");
-
 let connectMode=false,disconnectMode=false,sourceNode=null,selectedNode=null;
+
+const workspace=document.getElementById("workspace");
+const tabs=document.getElementById("tabs");
+const modeBox=document.getElementById("modeBox");
+const fileInput=document.getElementById("fileInput");
 
 function newFile(){
   const f={
     id:'f_'+Date.now(),
-    name:'Mapa '+(files.length+1),
+    name:'Mapa_'+(files.length+1),
     nodes:[],
     connections:[]
   };
@@ -138,17 +140,19 @@ function renderTabs(){
 }
 
 function addNode(){
-  if(!currentFile)return;
+  if(!currentFile) return;
   currentFile.nodes.push({
     id:'n_'+Date.now()+Math.random().toString(36).substr(2,4),
-    text:'Nuevo concepto',x:100,y:100
+    text:'Nuevo concepto',
+    description:'Descripción del concepto...',
+    x:100,y:100
   });
   render();
 }
 
 function render(){
   workspace.innerHTML='';
-  if(!currentFile)return;
+  if(!currentFile) return;
   currentFile.connections.forEach(drawConn);
   currentFile.nodes.forEach(drawNode);
 }
@@ -165,6 +169,12 @@ function drawNode(node){
   el.ondblclick=()=>{el.contentEditable=true;el.focus()};
   el.onblur=()=>{el.contentEditable=false;node.text=el.innerText};
 
+  el.oncontextmenu=(e)=>{
+    e.preventDefault();
+    const d=prompt("Descripción:",node.description||"");
+    if(d!==null) node.description=d;
+  };
+
   el.onclick=(e)=>{
     document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
     el.classList.add('selected');
@@ -172,7 +182,6 @@ function drawNode(node){
     handleConnect(node);
     e.stopPropagation();
   };
-
   workspace.appendChild(el);
 }
 
@@ -248,13 +257,14 @@ function toggleDisconnect(){
 }
 
 function handleConnect(node){
-  if(!connectMode)return;
+  if(!connectMode) return;
   if(!sourceNode){
     sourceNode=node;
     modeBox.textContent='Selecciona nodo destino';
     return;
   }
-  if(sourceNode.id===node.id)return;
+  if(sourceNode.id===node.id) return;
+
   const label=prompt('Texto de relación:','');
   currentFile.connections.push({from:sourceNode.id,to:node.id,label});
   connectMode=false;sourceNode=null;modeBox.style.display='none';
@@ -269,7 +279,7 @@ function deleteConn(c){
 }
 
 function deleteNode(){
-  if(!selectedNode||!currentFile)return;
+  if(!selectedNode||!currentFile) return;
   currentFile.nodes=currentFile.nodes.filter(n=>n!==selectedNode);
   currentFile.connections=currentFile.connections.filter(c=>
     c.from!==selectedNode.id&&c.to!==selectedNode.id
@@ -283,30 +293,122 @@ function openFile(){
 }
 
 fileInput.onchange=function(){
-  [...this.files].forEach(f=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
+  [...this.files].forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{
       try{
-        const data=JSON.parse(e.target.result.match(/\{[\s\S]*\}/)[0]);
-        const nf={id:'f_'+Date.now()+Math.random(),name:f.name,nodes:data.nodes,connections:data.connections};
+        const html=e.target.result;
+        const match=html.match(/<script id="mapa-data"[\\s\\S]*?>([\\s\\S]*?)<\\/script>/);
+        if(!match) return alert("Archivo no válido");
+        const data=JSON.parse(match[1]);
+
+        const nf={
+          id:'f_'+Date.now()+Math.random(),
+          name:file.name.replace('.html',''),
+          nodes:data.nodes,
+          connections:data.connections
+        };
+
         files.push(nf);
         selectFile(nf.id);
-      }catch{alert('Archivo no válido')}
+      }catch{alert("Error al leer el archivo")}
     };
-    reader.readAsText(f);
+    r.readAsText(file);
   });
+  this.value="";
 };
 
 function saveFile(){
-  if(!currentFile)return;
-  const data={nodes:currentFile.nodes,connections:currentFile.connections};
-  const html=`<html><body><pre>${JSON.stringify(data,null,2)}</pre></body></html>`;
+  if(!currentFile) return;
+
+  const data={
+    name:currentFile.name,
+    nodes:currentFile.nodes,
+    connections:currentFile.connections
+  };
+
+  const html=`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${currentFile.name}</title>
+<style>
+body{margin:0;background:#f5f5f5;font-family:Arial;}
+#map{width:100vw;height:100vh;position:relative;background:white;}
+.node{position:absolute;padding:10px;background:#fff;border:2px solid #333;border-radius:10px;
+cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.line{position:absolute;height:2px;background:#333;transform-origin:left center}
+.arrow{position:absolute;width:0;height:0;border-top:6px solid transparent;
+border-bottom:6px solid transparent;border-left:10px solid #333}
+#info{position:fixed;right:20px;top:20px;width:260px;background:white;
+border:2px solid #333;border-radius:10px;padding:10px;display:none}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="info"></div>
+
+<script id="mapa-data" type="application/json">
+${JSON.stringify(data,null,2)}
+</script>
+
+<script>
+const data=JSON.parse(document.getElementById("mapa-data").textContent);
+const map=document.getElementById("map");
+const info=document.getElementById("info");
+
+function draw(){
+  data.connections.forEach(c=>{
+    const A=data.nodes.find(n=>n.id===c.from);
+    const B=data.nodes.find(n=>n.id===c.to);
+    if(!A||!B)return;
+    const ax=A.x+60,ay=A.y+20,bx=B.x+60,by=B.y+20;
+    const dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy);
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+
+    const line=document.createElement('div');
+    line.className='line';
+    line.style.width=len+'px';
+    line.style.left=ax+'px';
+    line.style.top=ay+'px';
+    line.style.transform='rotate('+angle+'deg)';
+
+    const arrow=document.createElement('div');
+    arrow.className='arrow';
+    arrow.style.left=(bx-10)+'px';
+    arrow.style.top=(by-6)+'px';
+    arrow.style.transform='rotate('+angle+'deg)';
+
+    map.appendChild(line);
+    map.appendChild(arrow);
+  });
+
+  data.nodes.forEach(n=>{
+    const el=document.createElement('div');
+    el.className='node';
+    el.style.left=n.x+'px';
+    el.style.top=n.y+'px';
+    el.textContent=n.text;
+    el.onclick=()=>{
+      info.style.display='block';
+      info.innerHTML='<b>'+n.text+'</b><hr>'+(n.description||'Sin descripción');
+    };
+    map.appendChild(el);
+  });
+}
+draw();
+</script>
+
+</body>
+</html>`;
+
   const blob=new Blob([html],{type:'text/html'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=currentFile.name+'.html';
+  a.download=currentFile.name+'_visual.html';
   a.click();
 }
 </script>
+
 </body>
 </html>
