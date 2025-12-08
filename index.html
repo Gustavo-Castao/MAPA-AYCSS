@@ -4,95 +4,85 @@
 <meta charset="UTF-8">
 <title>Mapa Conceptual PRO</title>
 <style>
-body {
-  margin: 0; font-family: Inter, Arial, sans-serif; background: #e8eaed;
-}
+body { margin:0;font-family:Arial;background:#e6e6e6; }
 
 #toolbar {
-  background: #1f1f1f;
-  color: white;
-  padding: 8px;
-  display: flex;
-  gap: 8px;
+  background:#1e1e1e;
+  color:#fff;
+  padding:8px;
+  display:flex;
+  gap:8px;
 }
 
 button {
-  padding: 8px 12px;
-  border: none;
-  background: #3a3a3a;
-  color: white;
-  cursor: pointer;
-  border-radius: 6px;
+  background:#333;color:#fff;
+  border:none;border-radius:6px;
+  padding:8px 12px;
+  cursor:pointer;
 }
-
-button:hover { background: #555; }
+button:hover { background:#555; }
 
 #workspace {
-  width: 100vw;
-  height: calc(100vh - 50px);
-  background: #f9fafb;
-  position: relative;
-  overflow: hidden;
+  position:relative;
+  width:100vw;height:calc(100vh - 50px);
+  background:#fafafa;
+  overflow:hidden;
 }
 
 .node {
-  position: absolute;
-  min-width: 140px;
-  padding: 10px;
-  background: white;
-  border: 2px solid #222;
-  border-radius: 10px;
-  cursor: move;
-  user-select: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.node[contenteditable="true"] {
-  cursor: text;
+  position:absolute;
+  min-width:140px;
+  padding:10px;
+  background:white;
+  border:2px solid #333;
+  border-radius:10px;
+  cursor:move;
+  user-select:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
 
 .node.selected {
-  border-color: #0a84ff;
-  box-shadow: 0 0 0 2px rgba(10,132,255,.3);
+  border-color:#0a84ff;
+  box-shadow:0 0 0 2px rgba(10,132,255,.3);
 }
 
 .connection {
-  position: absolute;
-  height: 2px;
-  background: #333;
-  transform-origin: left center;
-  pointer-events: none;
+  position:absolute;
+  background:#333;
+  height:2px;
+  transform-origin:left center;
+  pointer-events:none;
 }
 
 .arrow {
-  position: absolute;
-  width: 0; height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-left: 10px solid #333;
-  pointer-events: none;
+  width:0;height:0;
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
+  border-left:10px solid #333;
+  position:absolute;
+  pointer-events:none;
 }
 
 .label {
-  position: absolute;
-  padding: 2px 6px;
-  background: #fff;
-  font-size: 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  pointer-events: none;
+  position:absolute;
+  padding:2px 6px;
+  font-size:12px;
+  background:white;
+  border:1px solid #ccc;
+  border-radius:6px;
+  pointer-events:none;
 }
 
 .mode {
-  position: fixed;
-  top: 60px;
-  left: 20px;
-  background: black;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  display: none;
-  z-index: 10000;
+  position:fixed;
+  top:60px;
+  left:20px;
+  background:black;
+  color:white;
+  padding:8px 14px;
+  border-radius:6px;
+  display:none;
+  z-index:1000;
 }
 </style>
 </head>
@@ -101,7 +91,7 @@ button:hover { background: #555; }
 <div id="toolbar">
   <button onclick="addNode()">➕ Nodo</button>
   <button onclick="toggleConnectMode()">🔗 Conectar</button>
-  <button onclick="toggleDeleteMode()">❌ Eliminar conexión</button>
+  <button onclick="toggleDisconnectMode()">❌ Desconectar</button>
   <button onclick="deleteSelectedNode()">🗑 Borrar nodo</button>
   <button onclick="exportHTML()">💾 Exportar HTML</button>
 </div>
@@ -112,104 +102,96 @@ button:hover { background: #555; }
 <script>
 let nodes = [];
 let connections = [];
+
 let selectedNode = null;
 let selectedConnection = null;
 
 let connectMode = false;
-let deleteMode = false;
-let tempSourceNode = null;
+let disconnectMode = false;
+let sourceNode = null;
 
-const workspace = document.getElementById('workspace');
-const modeBox = document.getElementById('modeBox');
+const workspace = document.getElementById("workspace");
+const modeBox = document.getElementById("modeBox");
 
-function id() {
-  return 'id_' + Date.now() + Math.random().toString(36).substr(2,5);
+function uid(){
+  return 'id_'+Date.now()+Math.random().toString(36).substr(2,5);
 }
 
-function addNode() {
-  nodes.push({
-    id: id(),
-    text: 'Nuevo concepto',
-    x: 100,
-    y: 100
-  });
+function addNode(){
+  nodes.push({id:uid(),text:"Nuevo concepto",x:100,y:100});
   render();
 }
 
-function render() {
-  workspace.innerHTML = '';
+function render(){
+  workspace.innerHTML='';
   connections.forEach(drawConnection);
   nodes.forEach(drawNode);
 }
 
-function drawNode(node) {
-  const el = document.createElement('div');
-  el.className = 'node';
-  el.style.left = node.x + 'px';
-  el.style.top = node.y + 'px';
-  el.innerText = node.text;
-  el.dataset.id = node.id;
+function drawNode(node){
+  const el=document.createElement('div');
+  el.className='node';
+  el.style.left=node.x+'px';
+  el.style.top=node.y+'px';
+  el.innerText=node.text;
+  el.dataset.id=node.id;
 
-  el.addEventListener('mousedown', dragStart);
+  el.addEventListener('mousedown',startDrag);
 
-  el.addEventListener('dblclick', () => {
-    el.contentEditable = true;
+  el.addEventListener('dblclick',()=>{
+    el.contentEditable=true;
     el.focus();
   });
 
-  el.addEventListener('blur', () => {
-    el.contentEditable = false;
-    node.text = el.innerText;
+  el.addEventListener('blur',()=>{
+    el.contentEditable=false;
+    node.text=el.innerText;
   });
 
-  el.addEventListener('click', (e) => {
-    selectNode(node, el);
-    handleConnection(node);
+  el.addEventListener('click',(e)=>{
+    selectNode(node,el);
+    handleConnectClick(node);
     e.stopPropagation();
   });
 
   workspace.appendChild(el);
 }
 
-function drawConnection(conn) {
-  const A = nodes.find(n => n.id === conn.from);
-  const B = nodes.find(n => n.id === conn.to);
-  if (!A || !B) return;
+function drawConnection(conn){
+  const A=nodes.find(n=>n.id===conn.from);
+  const B=nodes.find(n=>n.id===conn.to);
+  if(!A||!B) return;
 
-  const ax = A.x + 70, ay = A.y + 20;
-  const bx = B.x + 70, by = B.y + 20;
+  const ax=A.x+70, ay=A.y+20;
+  const bx=B.x+70, by=B.y+20;
+  const dx=bx-ax, dy=by-ay;
+  const len=Math.hypot(dx,dy);
+  const angle=Math.atan2(dy,dx)*180/Math.PI;
 
-  const dx = bx - ax, dy = by - ay;
-  const len = Math.hypot(dx, dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  const line=document.createElement('div');
+  line.className='connection';
+  line.style.width=len+'px';
+  line.style.left=ax+'px';
+  line.style.top=ay+'px';
+  line.style.transform=`rotate(${angle}deg)`;
 
-  const line = document.createElement('div');
-  line.className = 'connection';
-  line.style.width = len + 'px';
-  line.style.left = ax + 'px';
-  line.style.top = ay + 'px';
-  line.style.transform = `rotate(${angle}deg)`;
+  const arrow=document.createElement('div');
+  arrow.className='arrow';
+  arrow.style.left=(bx-10)+'px';
+  arrow.style.top=(by-6)+'px';
+  arrow.style.transform=`rotate(${angle}deg)`;
 
-  const arrow = document.createElement('div');
-  arrow.className = 'arrow';
-  arrow.style.left = bx - 10 + 'px';
-  arrow.style.top = by - 6 + 'px';
-  arrow.style.transform = `rotate(${angle}deg)`;
+  const label=document.createElement('div');
+  label.className='label';
+  label.innerText=conn.label||'';
+  label.style.left=((ax+bx)/2)+'px';
+  label.style.top=((ay+by)/2)+'px';
 
-  const label = document.createElement('div');
-  label.className = 'label';
-  label.innerText = conn.label;
-
-  const mx = (ax + bx) / 2;
-  const my = (ay + by) / 2;
-  label.style.left = mx + 'px';
-  label.style.top = my + 'px';
-
-  if (deleteMode) {
-    line.style.pointerEvents = 'auto';
-    arrow.style.pointerEvents = 'auto';
-    line.onclick = () => deleteConnection(conn);
-    arrow.onclick = () => deleteConnection(conn);
+  if(disconnectMode){
+    line.style.pointerEvents='auto';
+    arrow.style.pointerEvents='auto';
+    line.onclick=()=>selectConnection(conn);
+    arrow.onclick=()=>selectConnection(conn);
   }
 
   workspace.appendChild(line);
@@ -217,109 +199,107 @@ function drawConnection(conn) {
   workspace.appendChild(label);
 }
 
-function selectNode(node, el) {
-  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+function selectNode(node,el){
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
   el.classList.add('selected');
-  selectedNode = node;
+  selectedNode=node;
+  selectedConnection=null;
 }
 
-function handleConnection(node) {
-  if (!connectMode) return;
+function handleConnectClick(node){
+  if(!connectMode) return;
 
-  if (!tempSourceNode) {
-    tempSourceNode = node;
-    modeBox.innerText = "Selecciona nodo destino";
+  if(!sourceNode){
+    sourceNode=node;
+    modeBox.innerText='Selecciona nodo destino';
     return;
   }
 
-  if (tempSourceNode.id === node.id) return;
+  if(sourceNode.id===node.id) return;
 
-  const label = prompt("Texto de la relación:", "relación");
-  connections.push({
-    from: tempSourceNode.id,
-    to: node.id,
-    label: label || ''
-  });
-
-  connectMode = false;
-  tempSourceNode = null;
-  modeBox.style.display = "none";
-  render();
+  const label=prompt("Texto de relación:","relación");
+  connections.push({from:sourceNode.id,to:node.id,label:label||''});
+  resetModes();
 }
 
-function dragStart(e) {
-  const el = e.target;
-  const node = nodes.find(n => n.id === el.dataset.id);
-  let ox = e.offsetX, oy = e.offsetY;
+function selectConnection(conn){
+  if(!disconnectMode) return;
+  if(confirm("¿Eliminar conexión?")){
+    connections=connections.filter(c=>c!==conn);
+    resetModes();
+  }
+}
 
-  function move(ev) {
-    node.x = ev.pageX - workspace.offsetLeft - ox;
-    node.y = ev.pageY - workspace.offsetTop - oy;
+function startDrag(e){
+  const el=e.target;
+  const node=nodes.find(n=>n.id===el.dataset.id);
+  const ox=e.offsetX, oy=e.offsetY;
+
+  function move(ev){
+    node.x=ev.pageX-workspace.offsetLeft-ox;
+    node.y=ev.pageY-workspace.offsetTop-oy;
     render();
   }
 
-  document.addEventListener('mousemove', move);
-  document.addEventListener('mouseup', () => {
-    document.removeEventListener('mousemove', move);
-  }, { once: true });
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',()=>{
+    document.removeEventListener('mousemove',move);
+  },{once:true});
 }
 
-function toggleConnectMode() {
-  connectMode = !connectMode;
-  deleteMode = false;
-  tempSourceNode = null;
-  modeBox.style.display = connectMode ? "block" : "none";
-  modeBox.innerText = "Selecciona nodo origen";
+function toggleConnectMode(){
+  connectMode=!connectMode;
+  disconnectMode=false;
+  sourceNode=null;
+  modeBox.style.display=connectMode?'block':'none';
+  modeBox.innerText='Selecciona nodo origen';
   render();
 }
 
-function toggleDeleteMode() {
-  deleteMode = !deleteMode;
-  connectMode = false;
-  modeBox.style.display = deleteMode ? "block" : "none";
-  modeBox.innerText = "Click en conexión para borrar";
+function toggleDisconnectMode(){
+  disconnectMode=!disconnectMode;
+  connectMode=false;
+  sourceNode=null;
+  modeBox.style.display=disconnectMode?'block':'none';
+  modeBox.innerText='Click en conexión para borrar';
   render();
 }
 
-function deleteConnection(conn) {
-  connections = connections.filter(c => c !== conn);
+function resetModes(){
+  connectMode=false;
+  disconnectMode=false;
+  sourceNode=null;
+  modeBox.style.display='none';
   render();
 }
 
-function deleteSelectedNode() {
-  if (!selectedNode) return;
-  nodes = nodes.filter(n => n !== selectedNode);
-  connections = connections.filter(c => 
-    c.from !== selectedNode.id && c.to !== selectedNode.id
+function deleteSelectedNode(){
+  if(!selectedNode) return;
+  nodes=nodes.filter(n=>n!==selectedNode);
+  connections=connections.filter(c=>
+    c.from!==selectedNode.id && c.to!==selectedNode.id
   );
-  selectedNode = null;
+  selectedNode=null;
   render();
 }
 
-workspace.addEventListener('click', () => {
-  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
-  selectedNode = null;
+workspace.addEventListener('click',()=>{
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
+  selectedNode=null;
+  selectedConnection=null;
 });
 
-function exportHTML() {
-  const data = {
-    nodes,
-    connections
-  };
+function exportHTML(){
+  const data={nodes,connections};
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body>
-<pre>${JSON.stringify(data, null, 2)}</pre>
-</body>
-</html>`;
+  const html=`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body><pre>${JSON.stringify(data,null,2)}</pre></body></html>`;
 
-  const blob = new Blob([html], { type: 'text/html' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'mapa_conceptual_exportado.html';
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='mapa_conceptual.html';
   a.click();
 }
 </script>
