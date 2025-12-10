@@ -3,404 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Mapas Conceptuales - V6 Estabe</title>
-    
+    <title>Mapa Conceptual - Solución Estable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsplumb/2.15.6/js/jsplumb.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    
     <style>
-        /* --- ESTILOS GENERALES --- */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; }
+        /* ESTILOS BASE */
+        body { margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f0f2f5; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Barra Superior (Pestañas y Herramientas) */
-        #barra-superior {
-            height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; position: relative;
-        }
-        
-        .pestana {
-            padding: 10px 20px; background: #34495e; margin-right: 5px; cursor: pointer; border-radius: 5px 5px 0 0; opacity: 0.7; transition: 0.3s;
-        }
-        .pestana.activa { background: #f4f4f9; color: #333; opacity: 1; font-weight: bold; }
-        .btn-add-tab { padding: 5px 10px; background: #27ae60; border-radius: 3px; cursor: pointer; margin-right: 20px; }
-
-        /* Barra de Herramientas Flotante */
+        /* BARRA SUPERIOR */
         #toolbar {
-            position: absolute; top: 70px; left: 20px; width: 220px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 900;
+            background: #fff; border-bottom: 1px solid #ccc; padding: 10px; display: flex; gap: 10px; align-items: center; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .grupo-herramienta { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .grupo-herramienta:last-child { border-bottom: none; }
-        .btn { display: block; width: 100%; padding: 8px; margin-bottom: 5px; border: none; cursor: pointer; text-align: left; border-radius: 4px; font-size: 14px; transition: 0.2s; }
-        .btn i { margin-right: 8px; width: 20px; text-align: center; }
+        button { padding: 8px 15px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        button:hover { background: #f9f9f9; }
+        button.active { background: #e6f7ff; border-color: #1890ff; color: #1890ff; }
         
-        .btn-crear { background: #3498db; color: white; } .btn-crear:hover { background: #2980b9; }
-        .btn-borrar { background: #e74c3c; color: white; } .btn-borrar:hover { background: #c0392b; }
-        .btn-conectar { background: #f39c12; color: white; } .btn-conectar:hover { background: #d35400; }
-        .btn-conectar.activo { background: #d35400; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
-        .btn-exportar { background: #27ae60; color: white; margin-top: 10px; }
+        .divider { width: 1px; height: 25px; background: #ddd; margin: 0 5px; }
+        input[type="color"] { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; }
 
-        label { font-size: 12px; color: #666; display: block; margin-top: 5px; }
-        input[type="color"], input[type="range"], select { width: 100%; margin-top: 2px; }
+        /* PESTAÑAS */
+        #tabs-bar { display: flex; background: #e1e4e8; padding: 5px 5px 0 5px; border-bottom: 1px solid #ccc; }
+        .tab { padding: 8px 20px; background: #d1d5da; margin-right: 2px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 12px; user-select: none; }
+        .tab.active { background: #fff; font-weight: bold; border-bottom: 2px solid #fff; }
+        .add-tab { background: none; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* --- EL LIENZO (Donde van los nodos) --- */
-        #lienzo-container {
-            position: absolute; top: 60px; left: 0; right: 0; bottom: 0; overflow: auto; background-image: radial-gradient(#ddd 1px, transparent 1px); background-size: 20px 20px;
-        }
-        
-        .lienzo-mapa {
-            width: 3000px; height: 3000px; position: relative; /* Lienzo gigante */
-        }
+        /* ÁREA DE TRABAJO */
+        #workspace { flex-grow: 1; position: relative; overflow: auto; background-image: radial-gradient(#ccc 1px, transparent 1px); background-size: 20px 20px; }
+        .mapa-layer { width: 3000px; height: 3000px; position: relative; display: none; }
+        .mapa-layer.visible { display: block; }
 
-        /* --- LOS NODOS --- */
+        /* NODO (ESTILO IMPORTANTE) */
         .nodo {
-            position: absolute; width: 180px; min-height: 80px; background: white; border: 2px solid #34495e; border-radius: 10px; padding: 0; box-shadow: 3px 3px 10px rgba(0,0,0,0.1); cursor: move; display: flex; flex-direction: column; overflow: hidden;
+            position: absolute;
+            width: 200px;
+            background: #ffffff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            z-index: 10;
         }
         
-        /* Estados del nodo */
-        .nodo.seleccionado { border: 2px solid #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.6); z-index: 500; }
-        .nodo.editando { border: 2px dashed #27ae60; cursor: text; }
+        .nodo.seleccionado {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.3);
+            z-index: 100;
+        }
 
-        /* Partes del nodo */
-        .nodo-header { background: #ecf0f1; padding: 5px; cursor: pointer; text-align: center; border-bottom: 1px solid #ddd; }
-        .nodo-titulo { font-weight: bold; font-size: 16px; min-height: 20px; outline: none; padding: 2px;}
-        .nodo-subtitulo { font-size: 12px; color: #7f8c8d; min-height: 15px; outline: none; padding: 2px;}
+        /* Partes del Nodo */
+        .nodo-header { padding: 8px; background: #f4f4f4; border-bottom: 1px solid #eee; border-radius: 6px 6px 0 0; cursor: move; }
+        .nodo-titulo { font-weight: bold; font-size: 14px; outline: none; }
+        .nodo-subtitulo { font-size: 11px; color: #666; margin-top: 2px; outline: none; font-style: italic; }
+        .nodo-autor { font-size: 10px; color: #888; text-align: right; outline: none; margin-top: 2px; }
         
-        .nodo-body { padding: 10px; font-size: 13px; color: #2c3e50; flex-grow: 1; outline: none; }
+        .nodo-content { padding: 10px; font-size: 12px; color: #333; min-height: 40px; outline: none; background: white; cursor: text; }
+        .nodo-img { width: 100%; display: none; border-bottom: 1px solid #eee; }
         
-        .nodo-img-container { text-align: center; padding: 5px; display: none; }
-        .nodo-img-container img { max-width: 100%; height: auto; border-radius: 4px; }
+        /* Conector visual para arrastrar flechas */
+        .drag-handle {
+            width: 12px; height: 12px; background: #666; position: absolute; bottom: -6px; right: -6px; border-radius: 50%; cursor: crosshair; z-index: 101;
+        }
 
-        /* Conector (Punto para arrastrar líneas - opcional visualmente) */
-        .conector-punto { width: 10px; height: 10px; background: #7f8c8d; position: absolute; bottom: -5px; right: -5px; border-radius: 50%; cursor: crosshair; }
-
+        /* Estilo Responsive para Exportación */
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
 
-    <div id="barra-superior">
-        <div id="lista-pestanas" style="display:flex;">
-            <div class="pestana activa" onclick="cambiarPestana(0)">Mapa 1</div>
-        </div>
-        <div class="btn-add-tab" onclick="nuevaPestana()">+</div>
-        <div style="flex-grow:1;"></div>
-        <div style="font-size: 12px; color: #ccc;">Doble clic para editar texto | Clic para seleccionar</div>
-    </div>
+<div id="tabs-bar" class="no-print">
+    <div class="tab active" onclick="switchTab(0)">Mapa Principal</div>
+    <button class="add-tab" onclick="addTab()">+</button>
+</div>
 
-    <div id="toolbar">
-        <div class="grupo-herramienta">
-            <button class="btn btn-crear" onclick="crearNodo()"><i class="fas fa-plus-circle"></i> Nuevo Nodo</button>
-            <button class="btn btn-borrar" onclick="borrarSeleccionado()"><i class="fas fa-trash"></i> Borrar Nodo</button>
-        </div>
+<div id="toolbar" class="no-print">
+    <button onclick="crearNodo()"><i class="fas fa-plus"></i> Nodo</button>
+    <button onclick="borrarSeleccionado()" style="color:red;"><i class="fas fa-trash"></i> Borrar</button>
+    <div class="divider"></div>
+    
+    <input type="color" id="bgColor" onchange="cambiarColor(this.value, 'bg')" title="Fondo del nodo">
+    <input type="color" id="textColor" onchange="cambiarColor(this.value, 'text')" title="Color texto">
+    
+    <div class="divider"></div>
+    <button onclick="cambiarTamano(1)">A+</button>
+    <button onclick="cambiarTamano(-1)">A-</button>
+    <div class="divider"></div>
+    <button onclick="agregarImagen()"><i class="fas fa-image"></i> Imagen</button>
+    <div style="flex-grow:1;"></div>
+    <button onclick="exportarHTML()" style="background:#28a745; color:white;">Exportar HTML</button>
+</div>
+
+<div id="workspace">
+    <div id="mapa-0" class="mapa-layer visible"></div>
+</div>
+
+<script>
+    // ESTADO GLOBAL
+    let nodoActual = null;
+    let tabActual = 0;
+    let contadorNodos = 0;
+    let jsPlumbInstancias = {}; // Una instancia por pestaña
+
+    $(document).ready(function() {
+        iniciarJsPlumb(0); // Iniciar para la primera pestaña
+
+        // CLICK EN EL FONDO (DESELECCIONAR)
+        $('#workspace').on('click', function(e) {
+            // Si el click fue directo en el mapa y no en un nodo
+            if ($(e.target).hasClass('mapa-layer') || $(e.target).attr('id') === 'workspace') {
+                deseleccionar();
+            }
+        });
         
-        <div class="grupo-herramienta">
-            <button id="btn-modo-conectar" class="btn btn-conectar" onclick="toggleModoConectar()"><i class="fas fa-link"></i> Modo Conectar</button>
-            <label style="color:#e67e22; display:none;" id="aviso-conectar">Arrastra de un nodo a otro</label>
-        </div>
+        // Tecla Suprimir
+        $(document).keydown(function(e){
+            if(e.key === "Delete" && nodoActual) borrarSeleccionado();
+        });
+    });
 
-        <div class="grupo-herramienta" id="panel-edicion" style="opacity: 0.5; pointer-events: none;">
-            <strong>Estilo del Nodo</strong>
-            <label>Color de Fondo</label>
-            <input type="color" id="color-fondo" onchange="cambiarEstilo('fondo', this.value)">
-            
-            <label>Color de Texto</label>
-            <input type="color" id="color-texto" onchange="cambiarEstilo('texto', this.value)">
-            
-            <label>Tamaño Fuente</label>
-            <input type="range" min="10" max="30" value="14" id="tamano-fuente" oninput="cambiarEstilo('tamano', this.value)">
-            
-            <label>Imagen (URL)</label>
-            <input type="text" id="url-imagen" placeholder="Pegar enlace imagen..." style="width:95%;" onchange="agregarImagen(this.value)">
-        </div>
+    // --- 1. GESTIÓN DE JSPLUMB (CONEXIONES) ---
+    function iniciarJsPlumb(tabId) {
+        if (jsPlumbInstancias[tabId]) return; // Ya existe
 
-        <button class="btn btn-exportar" onclick="exportarMapa()"><i class="fas fa-file-export"></i> Exportar HTML</button>
-    </div>
-
-    <div id="lienzo-container">
-        <div id="mapa-0" class="lienzo-mapa"></div>
-    </div>
-
-    <script>
-        // --- VARIABLES GLOBALES ---
-        var nodoSeleccionado = null;
-        var pestanaActual = 0;
-        var contadorNodos = 0;
-        var modoConectar = false;
-        var jsPlumbInstance = null;
-
-        // --- INICIALIZACIÓN ---
-        $(document).ready(function() {
-            inicializarJsPlumb();
-            
-            // Clic en el fondo para deseleccionar
-            $(document).on('click', function(e) {
-                if ($(e.target).closest('.nodo').length === 0 && $(e.target).closest('#toolbar').length === 0 && $(e.target).closest('.pestana').length === 0) {
-                    deseleccionarTodo();
-                }
+        jsPlumb.ready(function() {
+            let instance = jsPlumb.getInstance({
+                Container: "mapa-" + tabId,
+                Connector: ["Bezier", { curviness: 50 }],
+                Endpoint: ["Dot", { radius: 5 }],
+                PaintStyle: { stroke: "#5c5c5c", strokeWidth: 2 },
+                SelectionStyle: { stroke: "#007bff", strokeWidth: 3 }
             });
-
-            // Tecla suprimir para borrar
-            $(document).on('keydown', function(e) {
-                if (e.key === "Delete" && nodoSeleccionado && !$(e.target).is('[contenteditable="true"]')) {
-                    borrarSeleccionado();
-                }
+            
+            // Permitir borrar conexiones con click
+            instance.bind("click", function(conn) {
+                if(confirm("¿Borrar conexión?")) instance.deleteConnection(conn);
             });
+            
+            jsPlumbInstancias[tabId] = instance;
+        });
+    }
+
+    // --- 2. CREACIÓN DE NODOS (CORREGIDO) ---
+    function crearNodo() {
+        contadorNodos++;
+        let id = `nodo-${tabActual}-${contadorNodos}`;
+        let contenedor = $(`#mapa-${tabActual}`);
+        
+        // HTML Del Nodo
+        let html = `
+            <div id="${id}" class="nodo" style="top:50px; left:50px;">
+                <div class="nodo-header">
+                    <div class="nodo-titulo" contenteditable="true">Título</div>
+                    <div class="nodo-subtitulo" contenteditable="true">Subtítulo</div>
+                    <div class="nodo-autor" contenteditable="true">Autor</div>
+                </div>
+                <img src="" class="nodo-img">
+                <div class="nodo-content" contenteditable="true">Detalle...</div>
+                <div class="drag-handle"></div>
+            </div>
+        `;
+        
+        contenedor.append(html);
+        let $nodo = $(`#${id}`);
+        let jp = jsPlumbInstancias[tabActual];
+
+        // A. Configurar Arrastre (Draggable)
+        $nodo.draggable({
+            handle: ".nodo-header", // Solo se arrastra desde el encabezado (para poder seleccionar texto abajo)
+            containment: "parent",
+            start: function() { seleccionar($nodo); },
+            drag: function() { jp.repaintEverything(); } // Actualizar lineas
         });
 
-        function inicializarJsPlumb() {
-            jsPlumbInstance = jsPlumb.getInstance({
-                Connector: ["Bezier", { curviness: 50 }],
-                DragOptions: { cursor: 'pointer', zIndex: 2000 },
-                PaintStyle: { stroke: '#7f8c8d', strokeWidth: 3 },
-                Endpoint: ["Dot", { radius: 5 }],
-                EndpointStyle: { fill: "#7f8c8d" },
-                Container: "mapa-" + pestanaActual
-            });
+        // B. Configurar Conexiones (Source/Target)
+        jp.makeSource($nodo, {
+            filter: ".drag-handle", // Solo sale flecha del puntito gris
+            anchor: "Continuous",
+            connectorStyle: { stroke: "#5c5c5c", strokeWidth: 2, outlineStroke: "transparent", outlineWidth: 4 }
+        });
+        jp.makeTarget($nodo, {
+            anchor: "Continuous",
+            allowLoopback: false
+        });
+
+        // C. EVENTO DE SELECCIÓN (LA CORRECCIÓN CRÍTICA)
+        // Usamos .off() primero por seguridad, y stopPropagation para que no pase al fondo
+        $nodo.off('click').on('click', function(e) {
+            e.stopPropagation(); // ¡ESTO EVITA QUE SE DESELECCIONE!
+            seleccionar($(this));
+        });
+        
+        // Prevenir que escribir active el arrastre
+        $nodo.find('[contenteditable]').on('click', function(e) {
+            e.stopPropagation();
+            seleccionar($nodo); // Asegura que se seleccione al editar
+            $(this).focus();
+        });
+
+        seleccionar($nodo);
+    }
+
+    // --- 3. LÓGICA DE SELECCIÓN ---
+    function seleccionar($nodo) {
+        if (nodoActual && nodoActual[0] === $nodo[0]) return; // Ya es el mismo
+
+        deseleccionar(); // Limpia el anterior
+
+        nodoActual = $nodo;
+        nodoActual.addClass('seleccionado');
+    }
+
+    function deseleccionar() {
+        if (nodoActual) {
+            nodoActual.removeClass('seleccionado');
         }
+        nodoActual = null;
+    }
 
-        // --- GESTIÓN DE PESTAÑAS ---
-        function nuevaPestana() {
-            var id = $(".pestana").length;
-            $("#lista-pestanas").append(`<div class="pestana" onclick="cambiarPestana(${id})">Mapa ${id + 1}</div>`);
-            $("#lienzo-container").append(`<div id="mapa-${id}" class="lienzo-mapa" style="display:none;"></div>`);
-            cambiarPestana(id);
+    // --- 4. EDICIÓN ---
+    function borrarSeleccionado() {
+        if (!nodoActual) return;
+        let jp = jsPlumbInstancias[tabActual];
+        jp.remove(nodoActual); // Borra nodo y conexiones de JSPlumb y del DOM
+        nodoActual = null;
+    }
+
+    function cambiarColor(color, tipo) {
+        if (!nodoActual) return;
+        if (tipo === 'bg') {
+            nodoActual.css('background-color', color);
+            nodoActual.find('.nodo-content').css('background-color', color);
+        } else {
+            nodoActual.css('color', color);
+            nodoActual.find('.nodo-header').css('color', color); // Título también
         }
+    }
 
-        function cambiarPestana(id) {
-            $(".pestana").removeClass("activa");
-            $(".pestana").eq(id).addClass("activa");
-            $(".lienzo-mapa").hide();
-            $("#mapa-" + id).show();
-            pestanaActual = id;
-            deseleccionarTodo();
-            
-            // Reiniciar jsPlumb para el nuevo contenedor
-            jsPlumbInstance.setContainer("mapa-" + id);
+    function cambiarTamano(delta) {
+        if (!nodoActual) return;
+        let content = nodoActual.find('.nodo-content');
+        let size = parseInt(content.css('font-size')) || 12;
+        content.css('font-size', (size + delta) + 'px');
+    }
+
+    function agregarImagen() {
+        if (!nodoActual) return alert("Selecciona un nodo primero");
+        let url = prompt("Ingresa la URL de la imagen:");
+        if (url) {
+            let img = nodoActual.find('.nodo-img');
+            img.attr('src', url).show();
+            jsPlumbInstancias[tabActual].repaintEverything();
         }
+    }
 
-        // --- CREACIÓN Y GESTIÓN DE NODOS ---
-        function crearNodo() {
-            contadorNodos++;
-            var idNodo = `nodo-${pestanaActual}-${contadorNodos}`;
-            
-            var html = `
-                <div id="${idNodo}" class="nodo" style="top:100px; left:300px;">
-                    <div class="nodo-header">
-                        <div class="nodo-titulo" contenteditable="false">Título</div>
-                        <div class="nodo-subtitulo" contenteditable="false">Subtítulo</div>
-                    </div>
-                    <div class="nodo-img-container"><img src="" alt=""></div>
-                    <div class="nodo-body" contenteditable="false">Detalle del concepto...</div>
-                </div>
-            `;
+    // --- 5. PESTAÑAS ---
+    function addTab() {
+        let newId = $('.tab').length;
+        $('#tabs-bar').append(`<div class="tab" onclick="switchTab(${newId})">Mapa ${newId+1}</div>`);
+        $('#workspace').append(`<div id="mapa-${newId}" class="mapa-layer"></div>`);
+        iniciarJsPlumb(newId);
+        switchTab(newId);
+    }
 
-            $("#mapa-" + pestanaActual).append(html);
-            var $nuevoNodo = $("#" + idNodo);
-            
-            asignarEventos($nuevoNodo);
-            hacerConectable($nuevoNodo);
-            seleccionarNodo($nuevoNodo);
-        }
+    function switchTab(id) {
+        tabActual = id;
+        $('.tab').removeClass('active');
+        $('.tab').eq(id).addClass('active');
+        $('.mapa-layer').removeClass('visible');
+        $(`#mapa-${id}`).addClass('visible');
+        deseleccionar();
+    }
 
-        function asignarEventos($nodo) {
-            // 1. Draggable (Mover)
-            $nodo.draggable({
-                containment: "parent",
-                start: function() { seleccionarNodo($(this)); },
-                drag: function() { jsPlumbInstance.repaintEverything(); } // Actualizar líneas al mover
-            });
-
-            // 2. Click (Seleccionar)
-            $nodo.off('click').on('click', function(e) {
-                e.stopPropagation();
-                if (modoConectar) return; // Si estamos conectando, no seleccionamos normal
-                seleccionarNodo($(this));
-            });
-
-            // 3. Doble Click (Editar Texto)
-            $nodo.off('dblclick').on('dblclick', function(e) {
-                e.stopPropagation();
-                activarEdicion($(this));
-            });
-        }
-
-        function hacerConectable($nodo) {
-            // Configurar como origen de conexión
-            jsPlumbInstance.makeSource($nodo, {
-                filter: ".nodo", // Se puede arrastrar desde cualquier parte del nodo
-                anchor: "Continuous",
-                connectorStyle: { stroke: "#34495e", strokeWidth: 2, outlineStroke: "transparent", outlineWidth: 4 },
-                connectionType:"basic",
-                extract:{
-                    "action":"the-action"
-                },
-                maxConnections: -1,
-                onMaxConnections: function (info, e) {
-                    alert("Maximum connections (" + info.maxConnections + ") reached");
-                }
-            });
-
-            // Configurar como destino
-            jsPlumbInstance.makeTarget($nodo, {
-                dropOptions: { hoverClass: "dragHover" },
-                anchor: "Continuous",
-                allowLoopback: false
-            });
-        }
-
-        // --- LÓGICA DE SELECCIÓN (LA CLAVE DE TU PROBLEMA) ---
-        function seleccionarNodo($nodo) {
-            // Si ya está seleccionado, no hacer nada (evita parpadeos)
-            if (nodoSeleccionado && nodoSeleccionado[0] === $nodo[0]) return;
-
-            deseleccionarTodo(); // Limpia el anterior
-
-            nodoSeleccionado = $nodo;
-            nodoSeleccionado.addClass('seleccionado');
-            
-            // Activar panel de edición
-            $("#panel-edicion").css("opacity", "1").css("pointer-events", "auto");
-            
-            // Cargar valores en el panel
-            $("#color-fondo").val(rgbToHex(nodoSeleccionado.css("background-color")));
-            $("#color-texto").val(rgbToHex(nodoSeleccionado.css("color")));
-        }
-
-        function deseleccionarTodo() {
-            if (nodoSeleccionado) {
-                // Desactivar contenteditable de los hijos
-                nodoSeleccionado.find('[contenteditable]').attr('contenteditable', 'false');
-                nodoSeleccionado.removeClass('seleccionado').removeClass('editando');
-                nodoSeleccionado.draggable("enable"); // Reactivar arrastre si estaba editando
-            }
-            nodoSeleccionado = null;
-            $("#panel-edicion").css("opacity", "0.5").css("pointer-events", "none");
-        }
-
-        function borrarSeleccionado() {
-            if (!nodoSeleccionado) return;
-            
-            // Borrar conexiones asociadas primero
-            jsPlumbInstance.remove(nodoSeleccionado); // Esto borra el nodo y sus líneas del DOM y de jsPlumb
-            nodoSeleccionado = null;
-            deseleccionarTodo();
-        }
-
-        // --- EDICIÓN DE TEXTO ---
-        function activarEdicion($nodo) {
-            seleccionarNodo($nodo);
-            $nodo.addClass('editando');
-            $nodo.draggable("disable"); // Desactivar arrastre para poder seleccionar texto
-
-            // Hacer editables las partes de texto
-            var editables = $nodo.find('.nodo-titulo, .nodo-subtitulo, .nodo-body');
-            editables.attr('contenteditable', 'true');
-            
-            // Poner foco en el título
-            $nodo.find('.nodo-titulo').focus();
-
-            // Salir de edición al perder el foco (blur)
-            // Usamos un timeout para no salir si cambiamos entre titulo y cuerpo del mismo nodo
-            /* Nota: La lógica simple es que el usuario haga clic afuera para terminar.
-               Dejamos el contenteditable activo hasta que deseleccione.
-            */
-        }
-
-        // --- PERSONALIZACIÓN Y HERRAMIENTAS ---
-        function cambiarEstilo(tipo, valor) {
-            if (!nodoSeleccionado) return;
-            
-            if (tipo === 'fondo') nodoSeleccionado.css('background-color', valor);
-            if (tipo === 'texto') nodoSeleccionado.css('color', valor);
-            if (tipo === 'tamano') nodoSeleccionado.find('.nodo-body').css('font-size', valor + 'px');
-        }
-
-        function agregarImagen(url) {
-            if (!nodoSeleccionado || !url) return;
-            var container = nodoSeleccionado.find('.nodo-img-container');
-            container.find('img').attr('src', url);
-            container.show();
-            jsPlumbInstance.repaintEverything(); // Recalcular conexiones por el cambio de tamaño
-            $("#url-imagen").val(""); // Limpiar input
-        }
-
-        function toggleModoConectar() {
-            modoConectar = !modoConectar;
-            if (modoConectar) {
-                $("#btn-modo-conectar").addClass("activo");
-                $("#aviso-conectar").show();
-                // Desactivar draggable para facilitar la conexión desde cualquier punto
-                $(".nodo").draggable("disable");
-            } else {
-                $("#btn-modo-conectar").removeClass("activo");
-                $("#aviso-conectar").hide();
-                $(".nodo").draggable("enable");
-            }
-        }
-
-        // Ayuda para convertir colores a hex para el input color
-        function rgbToHex(rgb) {
-            if (!rgb || rgb === 'rgba(0, 0, 0, 0)') return '#ffffff';
-            if (rgb.indexOf('#') === 0) return rgb;
-            rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            if (!rgb) return "#ffffff";
-            function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
-            return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
-        }
-
-        // --- EXPORTAR ---
-        function exportarMapa() {
-            deseleccionarTodo();
-            
-            // Clonar el mapa actual
-            var $mapaClone = $("#mapa-" + pestanaActual).clone();
-            
-            // Limpiar clases de jsPlumb que pueden dar error fuera
-            $mapaClone.find('.jtk-endpoint, .jtk-connector').remove(); 
-            // NOTA: Para exportar conexiones SVG de jsPlumb estáticas es complejo. 
-            // En esta versión simplificada de exportación, exportaremos los NODOS como HTML limpio.
-            // Si necesitas las flechas en el exportado estático, requiere capturar el SVG.
-            // Para fines educativos simples, exportaremos una versión "Lectura" con las líneas si es posible, 
-            // pero jsPlumb dibuja líneas absolutas al body o contenedor.
-            
-            // Solución de exportación simple: Generar un archivo HTML con el contenido actual
-            // pero inyectando los scripts necesarios para que se vean las líneas al abrirlo.
-            
-            var contenidoHTML = `
+    // --- 6. EXPORTAR (Responsivo y sin marco) ---
+    function exportarHTML() {
+        deseleccionar();
+        
+        // Clonamos el mapa actual
+        let contenido = $(`#mapa-${tabActual}`).html();
+        
+        // Limpiamos los elementos de control de JsPlumb para el export (endpoints feos)
+        // Nota: Las líneas SVG de jsPlumb se quedan en el DOM, pero al exportar estático 
+        // a veces se pierden si no se recalcula. Para esta versión simple, exportamos el contenido.
+        
+        let htmlExport = `
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Mapa Exportado</title>
-    <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
-        .nodo { position: absolute; background: white; border: 2px solid #34495e; border-radius: 10px; padding: 10px; width: 180px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-        .nodo-titulo { font-weight: bold; text-align: center; margin-bottom: 5px; }
-        .nodo-subtitulo { font-size: 0.8em; text-align: center; color: #777; margin-bottom: 5px; }
-        .nodo-img-container img { max-width: 100%; }
-        /* Ajuste para móviles */
-        @media (max-width: 600px) {
-            .nodo { position: relative !important; left: auto !important; top: auto !important; margin-bottom: 20px; width: 100%; }
-        }
-    </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Exportado</title>
+<style>
+    body { font-family: sans-serif; padding: 20px; background: #fff; }
+    .nodo { 
+        position: absolute; border: 2px solid #333; background: #fff; padding: 0; width: 200px; border-radius: 8px; 
+    }
+    .nodo-header { background: #f4f4f4; padding: 5px; font-weight: bold; border-bottom: 1px solid #ccc; }
+    .nodo-subtitulo { font-size: 0.8em; color: #666; font-style: italic; }
+    .nodo-content { padding: 10px; font-size: 0.9em; }
+    .nodo-img { max-width: 100%; }
+    
+    /* Responsivo para celular: Pone los nodos uno abajo del otro si la pantalla es chica */
+    @media (max-width: 600px) {
+        .nodo { position: relative !important; top: auto !important; left: auto !important; width: 100% !important; margin-bottom: 20px; }
+        /* Ocultar conectores en movil porque se rompe la posición absoluta */
+        svg { display: none; } 
+    }
+</style>
 </head>
 <body>
-    <h1>Mapa Conceptual</h1>
-    <div style="position:relative; height: 100vh;">
-        ${$("#mapa-" + pestanaActual).html()} 
+    <div style="position:relative; min-height:100vh;">
+        ${contenido}
     </div>
-    </body>
+</body>
 </html>`;
+        
+        let blob = new Blob([htmlExport], {type: "text/html"});
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "mi_mapa.html";
+        a.click();
+    }
+</script>
 
-            var blob = new Blob([contenidoHTML], {type: "text/html;charset=utf-8"});
-            var link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "mapa_exportado.html";
-            link.click();
-        }
-
-    </script>
 </body>
 </html>
